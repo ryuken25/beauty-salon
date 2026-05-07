@@ -1,0 +1,424 @@
+:root {
+  --salon-black: #17120d;
+  --salon-charcoal: #1f1a14;
+  --salon-gold: #c9a24d;
+  --salon-gold-soft: #d6b15e;
+  --salon-cream: #fffaf0;
+  --salon-ivory: #f8f1e4;
+  --salon-beige: #eadcc4;
+  --salon-brown: #4a3828;
+  --salon-muted: #806f5f;
+  --salon-card: #ffffff;
+  --salon-border: rgba(74, 56, 40, .14);
+  --salon-shadow: 0 14px 34px rgba(31, 26, 20, .08);
+  --salon-shadow-soft: 0 8px 22px rgba(31, 26, 20, .06);
+  --salon-radius: 1.1rem;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(214, 177, 94, .16), transparent 34rem),
+    linear-gradient(180deg, var(--salon-cream) 0%, var(--salon-ivory) 100%);
+  color: var(--salon-brown);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+a {
+  color: #7a5d20;
+}
+
+a:hover {
+  color: var(--salon-black);
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+}
+
+.navbar-salon {
+  background: linear-gradient(90deg, var(--salon-black), var(--salon-charcoal));
+  border-bottom: 3px solid rgba(201, 162, 77, .76);
+  box-shadow: 0 8px 24px rgba(23, 18, 13, .15);
+}
+
+.navbar-salon .navbar-brand,
+.navbar-salon .nav-link,
+.navbar-salon .btn-link {
+  color: rgba(255, 250, 240, .88);
+}
+
+.navbar-salon .navbar-brand:hover,
+.navbar-salon .nav-link:hover,
+.navbar-salon .nav-link.active,
+.navbar-salon .btn-link:hover {
+  color: var(--salon-gold-soft);
+}
+
+.navbar-salon .nav-link,
+.navbar-salon .btn-link {
+  border-radius: 999px;
+  padding-inline: .85rem;
+}
+
+.navbar-salon .nav-link.active {
+  background: rgba(201, 162, 77, .12);
+}
+
+.brand-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: .65rem;
+}
+
+.brand-mark {
+  width: 2.3rem;
+  height: 2.3rem;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(214, 177, 94, .7);
+  border-radius: 999px;
+  background: rgba(255, 250, 240, .08);
+  color: var(--salon-gold-soft);
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.brand-subtext {
+  display: block;
+  color: rgba(255, 250, 240, .64);
+  font-size: .72rem;
+  font-weight: 500;
+  margin-top: -.16rem;
+}
+
+.page-header,
+.hero-section,
+.salon-card,
+.soft-card,
+.form-card,
+.table-card,
+.stat-card {
+  background: rgba(255, 255, 255, .88);
+  border: 1px solid var(--salon-border);
+  border-radius: var(--salon-radius);
+  box-shadow: var(--salon-shadow-soft);
+}
+
+.page-header {
+  padding: 1.35rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.page-header h1,
+.page-header h2,
+.section-title,
+.hero-section h1,
+.form-card h2,
+.form-card h3 {
+  color: var(--salon-black);
+  letter-spacing: -.02em;
+}
+
+.small-muted,
+.text-muted {
+  color: var(--salon-muted) !important;
+}
+
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2rem, 5vw, 4rem);
+  background:
+    radial-gradient(circle at right top, rgba(201, 162, 77, .17), transparent 19rem),
+    linear-gradient(135deg, #ffffff 0%, #fff8ea 100%);
+  box-shadow: var(--salon-shadow);
+}
+
+.hero-section::after {
+  content: "";
+  position: absolute;
+  right: -3rem;
+  bottom: -4rem;
+  width: 13rem;
+  height: 13rem;
+  border: 1px solid rgba(201, 162, 77, .28);
+  border-radius: 50%;
+}
+
+.hero-card {
+  position: relative;
+  z-index: 1;
+}
+
+.section-title {
+  font-weight: 750;
+}
+
+.section-title::after {
+  content: "";
+  display: block;
+  width: 4rem;
+  height: .18rem;
+  margin-top: .5rem;
+  border-radius: 999px;
+  background: var(--salon-gold);
+}
+
+.salon-card,
+.soft-card,
+.form-card,
+.table-card {
+  overflow: hidden;
+}
+
+.salon-card .card-body,
+.soft-card,
+.form-card,
+.table-card {
+  padding: 1.25rem;
+}
+
+.salon-card {
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.salon-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(201, 162, 77, .36);
+  box-shadow: var(--salon-shadow);
+}
+
+.stat-card {
+  padding: 1.25rem;
+  height: 100%;
+  border-left: 4px solid var(--salon-gold);
+}
+
+.stat-card .stat-label {
+  color: var(--salon-muted);
+  font-size: .9rem;
+}
+
+.stat-card .stat-value {
+  color: var(--salon-black);
+  font-weight: 800;
+  margin: .3rem 0 0;
+}
+
+.btn {
+  border-radius: 999px;
+  font-weight: 650;
+}
+
+.btn-primary,
+.btn-gold {
+  --bs-btn-color: #fffaf0;
+  --bs-btn-bg: #17120d;
+  --bs-btn-border-color: #17120d;
+  --bs-btn-hover-color: #17120d;
+  --bs-btn-hover-bg: #d6b15e;
+  --bs-btn-hover-border-color: #d6b15e;
+  --bs-btn-active-color: #17120d;
+  --bs-btn-active-bg: #c9a24d;
+  --bs-btn-active-border-color: #c9a24d;
+  box-shadow: 0 8px 18px rgba(23, 18, 13, .14);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #1f1a14;
+  --bs-btn-border-color: #c9a24d;
+  --bs-btn-hover-color: #17120d;
+  --bs-btn-hover-bg: #eadcc4;
+  --bs-btn-hover-border-color: #c9a24d;
+  --bs-btn-active-color: #17120d;
+  --bs-btn-active-bg: #d6b15e;
+  --bs-btn-active-border-color: #d6b15e;
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: #6f6258;
+  --bs-btn-border-color: #d9ccb8;
+  --bs-btn-hover-color: #17120d;
+  --bs-btn-hover-bg: #f4ead9;
+  --bs-btn-hover-border-color: #d9ccb8;
+}
+
+.form-control,
+.form-select {
+  border-color: rgba(74, 56, 40, .2);
+  border-radius: .85rem;
+  color: var(--salon-brown);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--salon-gold);
+  box-shadow: 0 0 0 .2rem rgba(201, 162, 77, .18);
+}
+
+label,
+.form-label {
+  color: var(--salon-charcoal);
+  font-weight: 650;
+  margin-bottom: .35rem;
+}
+
+.table-card .table,
+.table-responsive .table {
+  margin-bottom: 0;
+}
+
+.table {
+  vertical-align: middle;
+}
+
+.table thead th,
+.table tbody:first-child tr:first-child th {
+  background: #fff5df;
+  color: var(--salon-charcoal);
+  border-bottom-color: rgba(201, 162, 77, .32);
+  font-size: .9rem;
+  white-space: nowrap;
+}
+
+.table td,
+.table th {
+  border-color: rgba(74, 56, 40, .1);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-bg-type: rgba(234, 220, 196, .2);
+}
+
+.gold-badge,
+.badge-status,
+.badge.text-bg-info,
+.badge.text-bg-secondary,
+.badge.text-bg-light {
+  border: 1px solid rgba(201, 162, 77, .34);
+  background: #fff4d8 !important;
+  color: #5d4215 !important;
+  font-weight: 700;
+}
+
+.badge-status.status-accepted,
+.badge-status.status-completed {
+  background: #eaf7ee !important;
+  border-color: rgba(25, 135, 84, .2);
+  color: #1f6b3c !important;
+}
+
+.badge-status.status-rejected,
+.badge-status.status-cancelled {
+  background: #fff0ed !important;
+  border-color: rgba(220, 53, 69, .2);
+  color: #9b2f3a !important;
+}
+
+.slot-btn {
+  min-width: 7.25rem;
+  border-radius: .85rem;
+  padding: .55rem .8rem;
+}
+
+.slot-btn.disabled,
+.slot-btn:disabled {
+  opacity: .48;
+  pointer-events: none;
+  background: #f1eee8;
+  border-color: #ddd4c4;
+  color: #8b8175;
+}
+
+.slot-btn.selected,
+.slot-btn.btn-primary {
+  background: var(--salon-black);
+  border-color: var(--salon-gold);
+  color: var(--salon-gold-soft);
+}
+
+.feature-pill {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .8rem .95rem;
+  border: 1px solid rgba(201, 162, 77, .28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .72);
+  color: var(--salon-charcoal);
+  font-weight: 650;
+}
+
+.feature-dot {
+  width: .65rem;
+  height: .65rem;
+  border-radius: 50%;
+  background: var(--salon-gold);
+  box-shadow: 0 0 0 .25rem rgba(201, 162, 77, .15);
+}
+
+.service-price {
+  color: var(--salon-black);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.admin-actions {
+  gap: .65rem;
+}
+
+.footer-salon {
+  background: rgba(23, 18, 13, .96);
+  color: rgba(255, 250, 240, .72);
+  border-top: 2px solid rgba(201, 162, 77, .55);
+}
+
+.alert {
+  border-radius: .95rem;
+  border: 0;
+  box-shadow: var(--salon-shadow-soft);
+}
+
+@media (max-width: 767.98px) {
+  .app-main {
+    padding-top: 1rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  .page-header,
+  .form-card,
+  .soft-card,
+  .table-card {
+    padding: 1rem;
+  }
+
+  .hero-section {
+    padding: 1.6rem;
+  }
+
+  .btn,
+  .slot-btn {
+    width: 100%;
+  }
+
+  .admin-actions .btn,
+  .table .btn,
+  form.d-inline .btn {
+    width: auto;
+  }
+
+  .feature-pill {
+    border-radius: .95rem;
+  }
+}
