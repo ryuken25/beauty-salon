@@ -7,6 +7,8 @@ use RuntimeException;
 class SlotService
 {
     public const SLOT_MINUTES = 30;
+    public const DEFAULT_OPEN = '09:00';
+    public const DEFAULT_CLOSE = '21:00';
 
     public function slotCount(int $durationMinutes): int
     {
@@ -15,6 +17,35 @@ class SlotService
         }
 
         return (int) ($durationMinutes / self::SLOT_MINUTES);
+    }
+
+    public function salonHours(): array
+    {
+        $db = db_connect();
+        $rows = $db->table('app_settings')->whereIn('setting_key', ['salon_open_time', 'salon_close_time'])->get()->getResultArray();
+        $map = [];
+        foreach ($rows as $r) {
+            $map[$r['setting_key']] = $r['setting_value'];
+        }
+        $open = $this->normaliseTime($map['salon_open_time'] ?? '', self::DEFAULT_OPEN);
+        $close = $this->normaliseTime($map['salon_close_time'] ?? '', self::DEFAULT_CLOSE);
+        if (strtotime("1970-01-01 {$close}") <= strtotime("1970-01-01 {$open}")) {
+            $open = self::DEFAULT_OPEN;
+            $close = self::DEFAULT_CLOSE;
+        }
+        return ['open' => $open, 'close' => $close];
+    }
+
+    private function normaliseTime(string $value, string $fallback): string
+    {
+        $value = trim($value);
+        if ($value === '' || ! preg_match('/^\d{1,2}:\d{2}(:\d{2})?$/', $value)) {
+            return $fallback;
+        }
+        $parts = explode(':', $value);
+        $h = max(0, min(23, (int) $parts[0]));
+        $m = max(0, min(59, (int) $parts[1]));
+        return sprintf('%02d:%02d', $h, $m);
     }
 
     public function generateAvailableSlots(int $serviceId, int $stylistId, string $date): array
@@ -46,10 +77,14 @@ class SlotService
         if (! $hour || $date < date('Y-m-d')) {
             return [];
         }
-        $start = strtotime($date . ' ' . $hour['start_time']);
-        $workEnd = strtotime($date . ' ' . $hour['end_time']);
+        $salon = $this->salonHours();
+        $windowStart = max(strtotime($date . ' ' . $hour['start_time']), strtotime($date . ' ' . $salon['open']));
+        $windowEnd = min(strtotime($date . ' ' . $hour['end_time']), strtotime($date . ' ' . $salon['close']));
+        if ($windowEnd <= $windowStart) {
+            return [];
+        }
         $slots = [];
-        for ($cursor = $start; $cursor + ($count * 1800) <= $workEnd; $cursor += 1800) {
+        for ($cursor = $windowStart; $cursor + ($count * 1800) <= $windowEnd; $cursor += 1800) {
             if ($date === date('Y-m-d') && $cursor < time()) {
                 continue;
             }
@@ -58,6 +93,7 @@ class SlotService
             $slots[] = [
                 'start' => substr($slotStart, 0, 5),
                 'end' => substr($slotEnd, 0, 5),
+                'duration_minutes' => $count * self::SLOT_MINUTES,
                 'available' => $this->isSequenceAvailable($stylistId, $date, $slotStart, $count),
             ];
         }
@@ -101,8 +137,11 @@ class SlotService
         $count = $this->slotCount((int) $service['duration_minutes']);
         $start = strtotime($date . ' ' . $startTime);
         $end = $start + ($count * 1800);
-        if ($start < strtotime($date . ' ' . $hour['start_time']) || $end > strtotime($date . ' ' . $hour['end_time'])) {
-            throw new RuntimeException('Waktu booking berada di luar jam kerja stylist.');
+        $salon = $this->salonHours();
+        $windowStart = max(strtotime($date . ' ' . $hour['start_time']), strtotime($date . ' ' . $salon['open']));
+        $windowEnd = min(strtotime($date . ' ' . $hour['end_time']), strtotime($date . ' ' . $salon['close']));
+        if ($start < $windowStart || $end > $windowEnd) {
+            throw new RuntimeException('Waktu booking berada di luar jam operasional salon atau stylist.');
         }
         if (! $this->isSequenceAvailable($stylistId, $date, $startTime, $count)) {
             throw new RuntimeException('Slot sudah terisi, silakan pilih waktu lain.');

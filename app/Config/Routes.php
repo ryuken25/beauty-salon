@@ -17,6 +17,7 @@ $routes->group('pelanggan', ['filter' => 'auth'], static function ($routes) {
     $routes->match(['get', 'post'], 'booking/baru', 'Customer\BookingController::create', ['filter' => 'role:customer']);
     $routes->get('booking/slots', 'Customer\BookingController::slots', ['filter' => 'role:customer']);
     $routes->get('booking', 'Customer\BookingController::history', ['filter' => 'role:customer']);
+    $routes->get('booking/(:num)/sukses', 'Customer\BookingController::success/$1', ['filter' => 'role:customer']);
     $routes->get('booking/(:num)', 'Customer\BookingController::detail/$1', ['filter' => 'role:customer']);
     $routes->post('booking/(:num)/batal', 'Customer\BookingController::cancel/$1', ['filter' => 'role:customer']);
 });

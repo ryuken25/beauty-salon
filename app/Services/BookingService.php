@@ -64,6 +64,14 @@ class BookingService
                 throw new RuntimeException('Slot sudah terisi, silakan pilih waktu lain.');
             }
             $db->transCommit();
+            $this->logEvent($bookingId, 'created', $this->actorFromUserId($data['created_by'] ?? null, $data['source'] ?? 'online'), $this->actorRole($data['source'] ?? 'online'), [
+                'service_id' => (int) $data['service_id'],
+                'stylist_id' => (int) $data['stylist_id'],
+                'booking_date' => $data['booking_date'],
+                'start_time' => $validation['start_time'],
+                'end_time' => $validation['end_time'],
+                'slot_count' => $validation['slot_count'],
+            ]);
             try {
                 (new TelegramService())->sendBookingNotification($bookingId);
             } catch (RuntimeException $e) {
@@ -81,7 +89,16 @@ class BookingService
 
     public function accept(int $bookingId, ?int $userId = null, ?string $telegramChatId = null): void
     {
-        $this->changePending($bookingId, 'accepted', ['verified_by' => $userId, 'verified_by_telegram_chat_id' => $telegramChatId, 'verified_at' => date('Y-m-d H:i:s')]);
+        $via = $telegramChatId ? 'telegram' : 'dashboard';
+        $fields = [
+            'verified_by' => $userId,
+            'verified_by_telegram_chat_id' => $telegramChatId,
+            'verified_via' => $via,
+            'verified_at' => date('Y-m-d H:i:s'),
+        ];
+        $this->changePending($bookingId, 'accepted', $fields);
+        $this->logEvent($bookingId, 'verified', $this->actorFor($via, $userId, $telegramChatId), $via === 'telegram' ? 'admin' : 'admin', ['via' => $via]);
+        $this->afterVerificationSync($bookingId, 'verified', $via, $userId, $telegramChatId);
     }
 
     public function reject(int $bookingId, ?int $userId = null, ?string $reason = null, ?string $telegramChatId = null): void
@@ -93,13 +110,24 @@ class BookingService
             $db->transRollback();
             throw new RuntimeException('Booking ini sudah diproses.');
         }
-        $db->table('bookings')->where('id', $bookingId)->where('status', 'pending_verification')->update(['status' => 'rejected', 'rejection_reason' => $reason, 'verified_by' => $userId, 'verified_by_telegram_chat_id' => $telegramChatId, 'verified_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]);
+        $via = $telegramChatId ? 'telegram' : 'dashboard';
+        $db->table('bookings')->where('id', $bookingId)->where('status', 'pending_verification')->update([
+            'status' => 'rejected',
+            'rejection_reason' => $reason,
+            'verified_by' => $userId,
+            'verified_by_telegram_chat_id' => $telegramChatId,
+            'verified_via' => $via,
+            'verified_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
         if ($db->affectedRows() !== 1) {
             $db->transRollback();
             throw new RuntimeException('Booking ini sudah diproses.');
         }
         $db->table('booking_slots')->where('booking_id', $bookingId)->delete();
         $db->transCommit();
+        $this->logEvent($bookingId, 'rejected', $this->actorFor($via, $userId, $telegramChatId), 'admin', ['via' => $via, 'reason' => $reason]);
+        $this->afterVerificationSync($bookingId, 'rejected', $via, $userId, $telegramChatId, $reason);
     }
 
     public function cancel(int $bookingId, ?int $userId, bool $customerRule = false): void
@@ -122,6 +150,8 @@ class BookingService
         }
         $db->table('booking_slots')->where('booking_id', $bookingId)->delete();
         $db->transCommit();
+        $role = $customerRule ? 'pelanggan' : 'admin';
+        $this->logEvent($bookingId, 'cancelled', $this->actorFromUserId($userId, 'dashboard'), $role, ['by_customer' => $customerRule]);
         try {
             (new TelegramService())->sendStatusNotification($bookingId, 'BATAL');
         } catch (RuntimeException $e) {
@@ -144,11 +174,14 @@ class BookingService
             $db->transRollback();
             throw new RuntimeException('Booking sudah berubah status dan tidak dapat ditandai selesai.');
         }
+        $transactionCreated = false;
         $exists = $db->table('transactions')->where('booking_id', $bookingId)->countAllResults();
         if ($exists === 0) {
             $db->table('transactions')->insert(['booking_id' => $bookingId, 'transaction_code' => 'TRX-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(3))), 'amount' => $booking['service_price'], 'payment_method' => 'cash', 'transaction_date' => $now, 'created_by' => $userId, 'created_at' => $now, 'updated_at' => $now]);
+            $transactionCreated = true;
         }
         $db->transCommit();
+        $this->logEvent($bookingId, 'completed', $this->actorFromUserId($userId, 'dashboard'), 'admin', ['transaction_created' => $transactionCreated, 'amount' => (float) $booking['service_price']]);
     }
 
     private function changePending(int $bookingId, string $status, array $fields): void
@@ -177,5 +210,59 @@ class BookingService
             throw new RuntimeException('Booking tidak ditemukan.');
         }
         return $booking;
+    }
+
+    public function logEvent(int $bookingId, string $eventType, string $actor, string $actorRole, array $payload = [], ?string $notes = null): void
+    {
+        try {
+            db_connect()->table('booking_logs')->insert([
+                'booking_id' => $bookingId,
+                'event_type' => $eventType,
+                'actor' => $actor,
+                'actor_role' => $actorRole,
+                'payload' => $payload ? json_encode($payload, JSON_UNESCAPED_UNICODE) : null,
+                'notes' => $notes,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Gagal menulis booking_logs #' . $bookingId . ': ' . $e->getMessage());
+        }
+    }
+
+    private function actorFor(string $via, ?int $userId, ?string $telegramChatId): string
+    {
+        if ($via === 'telegram') {
+            return 'telegram:' . ($telegramChatId ?? 'unknown');
+        }
+        return 'dashboard:' . ($userId !== null ? (string) $userId : 'unknown');
+    }
+
+    private function actorFromUserId(?int $userId, string $source): string
+    {
+        if ($source === 'walkin') {
+            return 'walkin:' . ($userId !== null ? (string) $userId : 'unknown');
+        }
+        if ($source === 'online') {
+            return 'customer:' . ($userId !== null ? (string) $userId : 'unknown');
+        }
+        return 'dashboard:' . ($userId !== null ? (string) $userId : 'system');
+    }
+
+    private function actorRole(string $source): string
+    {
+        return match ($source) {
+            'walkin' => 'admin',
+            'online' => 'pelanggan',
+            default => 'system',
+        };
+    }
+
+    private function afterVerificationSync(int $bookingId, string $eventType, string $via, ?int $userId, ?string $telegramChatId, ?string $reason = null): void
+    {
+        try {
+            (new TelegramService())->onBookingVerified($bookingId, $eventType, $via, $userId, $telegramChatId, $reason);
+        } catch (\Throwable $e) {
+            log_message('error', 'Gagal sinkronisasi Telegram booking #' . $bookingId . ': ' . $e->getMessage());
+        }
     }
 }

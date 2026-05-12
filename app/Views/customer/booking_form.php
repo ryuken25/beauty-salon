@@ -16,9 +16,12 @@
         <select class="form-select" name="service_id" id="service_id" required>
           <option value="">Pilih layanan</option>
           <?php foreach ($services as $s): ?>
-            <option value="<?= $s['id'] ?>"><?= esc($s['name']) ?> - <?= $s['duration_minutes'] ?> menit - Rp<?= number_format($s['price'], 0, ',', '.') ?></option>
+            <option value="<?= $s['id'] ?>" data-duration="<?= (int) $s['duration_minutes'] ?>"><?= esc($s['name']) ?> · <?= $s['duration_minutes'] ?> menit · Rp<?= number_format($s['price'], 0, ',', '.') ?></option>
           <?php endforeach ?>
         </select>
+        <div id="durationBadge" class="mt-2" style="display:none;">
+          <span class="gold-badge badge rounded-pill">Durasi layanan: <span id="durationLabel">0</span> menit</span>
+        </div>
       </div>
       <div class="col-md-6">
         <label class="form-label">Stylist</label>
@@ -34,12 +37,13 @@
         <input type="date" class="form-control" name="booking_date" id="booking_date" min="<?= date('Y-m-d') ?>" required>
       </div>
       <div class="col-12">
-        <label class="form-label">Slot Waktu 30 Menit</label>
+        <label class="form-label">Slot Mulai (grid 30 menit)</label>
         <div id="slots" class="d-flex flex-wrap gap-2 my-2">
           <span class="small-muted">Pilih layanan, stylist, dan tanggal.</span>
         </div>
         <input type="hidden" name="start_time" id="start_time" required>
-        <div class="small-muted">Slot yang sudah terisi akan otomatis dinonaktifkan.</div>
+        <div id="occupiedHint" class="small-muted mt-2"></div>
+        <div class="small-muted">Slot mulai akan otomatis menahan blok sesuai durasi layanan. Slot terisi dinonaktifkan.</div>
       </div>
       <div class="col-12">
         <label class="form-label">Catatan</label>
@@ -51,11 +55,44 @@
 </div>
 
 <script>
+const durationBadge = document.getElementById('durationBadge');
+const durationLabel = document.getElementById('durationLabel');
+const occupiedHint = document.getElementById('occupiedHint');
+
+function currentDuration() {
+  const opt = service_id.options[service_id.selectedIndex];
+  return opt ? parseInt(opt.dataset.duration || '0', 10) : 0;
+}
+
+function refreshDurationBadge() {
+  const duration = currentDuration();
+  if (duration > 0) {
+    durationLabel.textContent = duration;
+    durationBadge.style.display = '';
+  } else {
+    durationBadge.style.display = 'none';
+  }
+}
+
+function updateOccupiedHint() {
+  if (!start_time.value) { occupiedHint.textContent = ''; return; }
+  const duration = currentDuration();
+  if (!duration) { occupiedHint.textContent = ''; return; }
+  const [h, m] = start_time.value.split(':').map(Number);
+  const startMin = h * 60 + m;
+  const endMin = startMin + duration;
+  const endH = String(Math.floor(endMin / 60)).padStart(2, '0');
+  const endM = String(endMin % 60).padStart(2, '0');
+  occupiedHint.innerHTML = '🔒 Slot yang akan ditahan: <strong>' + start_time.value + ' – ' + endH + ':' + endM + '</strong> (' + duration + ' menit)';
+}
+
 async function loadSlots() {
   const serviceId = service_id.value;
   const stylistId = stylist_id.value;
   const date = booking_date.value;
   start_time.value = '';
+  occupiedHint.textContent = '';
+  refreshDurationBadge();
 
   if (!serviceId || !stylistId || !date) {
     slots.innerHTML = '<span class="small-muted">Pilih layanan, stylist, dan tanggal.</span>';
@@ -76,7 +113,7 @@ async function loadSlots() {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'btn btn-sm slot-btn ' + (slot.available ? 'btn-outline-primary' : 'btn-outline-secondary disabled');
-    button.textContent = slot.start + ' - ' + slot.end + (slot.available ? '' : ' (Terisi)');
+    button.textContent = slot.start + ' – ' + slot.end + (slot.available ? '' : ' (Terisi)');
     button.disabled = !slot.available;
     if (slot.available) {
       button.onclick = () => {
@@ -89,6 +126,7 @@ async function loadSlots() {
         });
         button.classList.remove('btn-outline-primary');
         button.classList.add('btn-primary', 'selected');
+        updateOccupiedHint();
       };
     }
     slots.appendChild(button);
@@ -96,6 +134,7 @@ async function loadSlots() {
 }
 
 [service_id, stylist_id, booking_date].forEach((element) => element.addEventListener('change', loadSlots));
+service_id.addEventListener('change', refreshDurationBadge);
 </script>
 
 <?= $this->endSection() ?>
