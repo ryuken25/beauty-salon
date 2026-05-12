@@ -115,7 +115,8 @@ a:hover { color: var(--color-gold-deep); }
 .slot--available { border: 1px solid var(--color-gold); color: var(--color-charcoal); }
 .slot--available:hover { background: var(--color-ivory-warm); }
 .slot--selected { background: var(--color-gold); border: 1px solid var(--color-gold); color: #fff; }
-.slot--held { background: var(--color-ivory-warm); border: 1px solid var(--color-gold); color: var(--color-gold-dark); cursor: default; }
+.slot--held { background: var(--color-ivory-warm); border: 1px solid var(--color-gold); color: var(--color-gold-dark); cursor: pointer; }
+.slot--held:hover { background: #e8d6a8; }
 .slot--booked { background: #d4cfc0; border: 1px solid #b8b0a0; color: #6e6657; text-decoration: line-through; cursor: not-allowed; position: relative; }
 .slot--booked::after {
   content: ''; position: absolute; inset: 0;

@@ -181,14 +181,12 @@ function renderGrid() {
       d.classList.add('slot--past');
     } else if (state.booked.includes(slot)) {
       d.classList.add('slot--booked');
-    } else if (state.slot && slot === state.slot) {
-      d.classList.add('slot--selected');
-    } else if (isHeld(slot)) {
-      d.classList.add('slot--held');
     } else if (isInsufficient(slot)) {
       d.classList.add('slot--insufficient');
     } else {
-      d.classList.add('slot--available');
+      if (state.slot && slot === state.slot) d.classList.add('slot--selected');
+      else if (isHeld(slot)) d.classList.add('slot--held');
+      else d.classList.add('slot--available');
       d.onclick = () => { state.slot = slot; document.getElementById('slotInput').value = slot; renderGrid(); updateSummary(); };
     }
     grid.appendChild(d);

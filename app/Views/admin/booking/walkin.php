@@ -87,10 +87,13 @@ function render() {
     if (m<state.openMin||m>=state.closeMin) d.classList.add('slot--insufficient');
     else if (isToday && m<cur) d.classList.add('slot--past');
     else if (state.booked.includes(s)) d.classList.add('slot--booked');
-    else if (state.slot && s===state.slot) d.classList.add('slot--selected');
-    else if (held(s)) d.classList.add('slot--held');
     else if (insuf(s)) d.classList.add('slot--insufficient');
-    else { d.classList.add('slot--available'); d.onclick = () => { state.slot=s; document.getElementById('slotInput').value=s; render(); }; }
+    else {
+      if (state.slot && s===state.slot) d.classList.add('slot--selected');
+      else if (held(s)) d.classList.add('slot--held');
+      else d.classList.add('slot--available');
+      d.onclick = () => { state.slot=s; document.getElementById('slotInput').value=s; render(); };
+    }
     grid.appendChild(d);
   });
 }
