@@ -1,38 +1,75 @@
-# System Usability Scale (SUS)
+# System Usability Scale (SUS) — SW Beauty Salon
 
-Gunakan skala Likert 1-5:
+Instrumen baku John Brooke (1986) yang sudah diterjemahkan ke Bahasa Indonesia. Sepuluh pernyataan dengan skala Likert 1–5 (1 = Sangat Tidak Setuju, 5 = Sangat Setuju). Target responden minimal 5–10 orang per kelompok pengguna (pelanggan + admin/pemilik).
 
-- 1 = Sangat Tidak Setuju
-- 2 = Tidak Setuju
-- 3 = Netral
-- 4 = Setuju
-- 5 = Sangat Setuju
+## Pernyataan
 
-## Instrumen 10 Pertanyaan SUS
+Untuk setiap pernyataan, lingkari salah satu: 1 (sangat tidak setuju) — 2 — 3 — 4 — 5 (sangat setuju).
 
-1. Saya merasa akan sering menggunakan sistem ini.
-2. Saya merasa sistem ini terlalu kompleks untuk digunakan.
+1. Saya berpikir akan menggunakan sistem ini lagi.
+2. Saya merasa sistem ini rumit untuk digunakan.
 3. Saya merasa sistem ini mudah digunakan.
-4. Saya membutuhkan bantuan orang teknis untuk dapat menggunakan sistem ini.
-5. Saya merasa fitur-fitur dalam sistem ini terintegrasi dengan baik.
-6. Saya merasa terdapat terlalu banyak ketidakkonsistenan dalam sistem ini.
-7. Saya membayangkan sebagian besar pengguna akan cepat mempelajari sistem ini.
-8. Saya merasa sistem ini rumit digunakan.
-9. Saya merasa percaya diri saat menggunakan sistem ini.
-10. Saya perlu mempelajari banyak hal sebelum dapat menggunakan sistem ini.
+4. Saya membutuhkan bantuan dari orang lain atau teknisi dalam menggunakan sistem ini.
+5. Saya merasa fitur-fitur sistem ini berjalan dengan semestinya.
+6. Saya merasa ada banyak hal yang tidak konsisten pada sistem ini.
+7. Saya merasa orang lain akan memahami cara menggunakan sistem ini dengan cepat.
+8. Saya merasa sistem ini membingungkan.
+9. Saya merasa tidak ada hambatan dalam menggunakan sistem ini.
+10. Saya perlu membiasakan diri terlebih dahulu sebelum menggunakan sistem ini.
 
-## Cara Menghitung Skor
+## Perhitungan skor
 
-1. Untuk pertanyaan ganjil 1, 3, 5, 7, 9: skor kontribusi = jawaban - 1.
-2. Untuk pertanyaan genap 2, 4, 6, 8, 10: skor kontribusi = 5 - jawaban.
-3. Jumlahkan seluruh skor kontribusi.
-4. Kalikan total dengan 2,5.
-5. Hasil akhir berada pada rentang 0-100.
-6. Skor rata-rata = jumlah seluruh skor SUS responden / jumlah responden.
+Untuk setiap responden:
 
-## Interpretasi Umum
+- Pernyataan **ganjil** (1, 3, 5, 7, 9): skor = (jawaban − 1).
+- Pernyataan **genap** (2, 4, 6, 8, 10): skor = (5 − jawaban).
+- Jumlahkan 10 skor, lalu kalikan dengan **2.5**.
 
-- Skor di bawah 50: usability rendah dan perlu perbaikan besar.
-- Skor 50-68: cukup, tetapi masih perlu peningkatan.
-- Skor di atas 68: usability baik.
-- Skor di atas 80: usability sangat baik.
+```
+SUS = ((q1−1) + (5−q2) + (q3−1) + (5−q4) + (q5−1) + (5−q6) + (q7−1) + (5−q8) + (q9−1) + (5−q10)) × 2.5
+```
+
+Skor akhir 0–100.
+
+## Skor rata-rata sampel
+
+```
+SUS_total = Σ SUS_responden / jumlah_responden
+```
+
+## Interpretasi (Tabel 2.6 proposal)
+
+| Skor | Grade | Adjective |
+|---|---|---|
+| ≥ 81 | A | Excellent |
+| 68 – 80 | B | Good |
+| 51 – 67 | C | Okay / Marginal |
+| 35 – 50 | D | Poor |
+| < 35 | F | Worst Imaginable |
+
+(Catatan: ambang batas berbeda-beda di literatur. Versi yang umum dipakai oleh Bangor et al. 2009 dan dikutip di proposal SEMPRO: ≥ 80.3 Excellent, 71.4–80.3 Good, 50.9–71.4 OK, dst.)
+
+## Template tabel rekap
+
+| Responden | Q1 | Q2 | Q3 | Q4 | Q5 | Q6 | Q7 | Q8 | Q9 | Q10 | Skor (×2.5) | Grade |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| R01 |  |  |  |  |  |  |  |  |  |  |  |  |
+| R02 |  |  |  |  |  |  |  |  |  |  |  |  |
+| R03 |  |  |  |  |  |  |  |  |  |  |  |  |
+| R04 |  |  |  |  |  |  |  |  |  |  |  |  |
+| R05 |  |  |  |  |  |  |  |  |  |  |  |  |
+| **Rata-rata** | | | | | | | | | | | | |
+
+## Pelaksanaan
+
+1. Responden mengakses sistem pada device masing-masing (mobile / desktop) selama ±15 menit.
+2. Skenario task minimal: cari layanan, buat booking, lihat halaman sukses, cek status via /cek-booking, batalkan booking (opsional).
+3. Setelah selesai task, responden mengisi kuesioner (online via Google Form atau cetak).
+4. Hitung skor per responden, lalu rata-rata.
+5. Sajikan distribusi (histogram) + skor rata-rata dengan interpretasi.
+
+## Rekomendasi tindak lanjut
+
+- Skor < 68 → ada masalah usability serius. Lakukan revisi UI sebelum submit TA.
+- Skor 68–80 → acceptable, tapi catat feedback kualitatif responden untuk perbaikan minor.
+- Skor ≥ 80 → siap submit. Tulis di Bab IV hasil pengujian.

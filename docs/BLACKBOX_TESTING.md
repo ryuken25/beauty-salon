@@ -1,45 +1,112 @@
-# Checklist Black Box Testing
+# Black Box Testing — SW Beauty Salon
 
-Checklist ini disusun sesuai proposal “Sistem Informasi Penjadwalan dan Pelayanan pada SW Beauty Salon dengan Pendekatan Fixed Time Slot”. Pengujian dilakukan dari sisi input-output tanpa menilai struktur internal kode.
+Pengujian sesuai Bab III Section 3.6 proposal SEMPRO: metode Black Box, fokus input/output tanpa menilai struktur internal kode. Catat hasil "Berhasil" atau "Gagal" untuk setiap skenario. Target: 100% skenario lulus sebelum penyerahan TA.
 
-| No | Fitur | Skenario | Input | Output yang Diharapkan | Hasil Aktual | Status | Catatan/Perbaikan |
-|---|---|---|---|---|---|---|---|
-| 1 | Registrasi pelanggan | Pelanggan membuat akun baru | Nama, email unik, nomor WhatsApp valid, password minimal 8 karakter | Akun role pelanggan dan data pelanggan tersimpan | Validasi form tersedia, password di-hash, pelanggan tersimpan | Berhasil | Endpoint register memakai validasi server-side |
-| 2 | Login pelanggan | Pelanggan login | `pelanggan@example.com` dan password benar | Masuk dashboard pelanggan | Login diverifikasi dengan password hash | Berhasil | Role customer diarahkan ke `/pelanggan` |
-| 3 | Login admin | Admin login | `admin@swbeautysalon.local` dan password benar | Masuk daftar booking operasional admin | Admin diarahkan ke area admin dan dashboard pemilik dialihkan ke daftar booking | Berhasil | Dashboard pendapatan khusus pemilik |
-| 4 | Login pemilik | Pemilik login | `owner@swbeautysalon.local` dan password benar | Masuk dashboard pemilik | Pemilik dapat mengakses dashboard, master data, transaksi | Berhasil | Role owner memiliki fitur admin + pemilik |
-| 5 | Pelanggan melihat layanan | Buka halaman layanan | Browser pelanggan/umum | Daftar layanan aktif, harga, durasi tampil | Query layanan aktif tersedia | Berhasil | Layanan nonaktif tidak dipakai booking baru |
-| 6 | Pelanggan memilih stylist | Pilih stylist aktif pada form booking | Stylist aktif | Stylist bisa dipilih | Form hanya mengambil stylist aktif | Berhasil | Stylist nonaktif tidak tampil |
-| 7 | Pelanggan memilih tanggal | Pilih tanggal valid | Tanggal hari ini/besok | Sistem memproses tanggal valid | Tanggal masa lalu ditolak server-side | Berhasil | Format tanggal divalidasi |
-| 8 | Sistem menampilkan slot 30 menit tersedia | Pilih layanan, stylist, tanggal | Layanan aktif, stylist aktif, tanggal kerja | Slot mulai valid dalam grid 30 menit tampil | `SlotService` membentuk slot 30 menit dari jam kerja stylist | Berhasil | Slot tidak cukup durasi tidak ditampilkan |
-| 9 | Booking berhasil saat slot tersedia | Submit booking slot kosong | Layanan 60 menit, stylist A, 08:00 | Booking status menunggu verifikasi, slot 08:00 dan 08:30 terkunci | Booking dan `booking_slots` dibuat dalam transaction | Berhasil | Harga layanan disimpan sebagai snapshot |
-| 10 | Booking ditolak saat slot bentrok | Booking kedua stylist/tanggal/slot sama | Stylist A, tanggal sama, 08:30 pada booking 60 menit aktif | Booking ditolak | Unique constraint dan validasi sequence menolak | Berhasil | Pesan memilih slot lain tampil |
-| 11 | Booking ditolak saat slot tidak berurutan/cukup durasi | Pilih slot yang tidak cukup sampai jam selesai | Layanan 90 menit mendekati akhir jam kerja | Slot tidak tampil/ditolak | Server menolak jika end_time melewati jam kerja | Berhasil | Tidak bergantung JS saja |
-| 12 | Booking ditolak di luar jam kerja stylist | Submit manual waktu luar jam kerja | Jam sebelum mulai/setelah selesai | Sistem menolak | `validateSlot()` menolak luar jam kerja | Berhasil | Termasuk hari libur stylist |
-| 13 | Booking baru masuk status menunggu verifikasi | Pelanggan membuat booking valid | Slot kosong | Status `pending_verification` | Status default dibuat menunggu verifikasi | Berhasil | Label UI “Menunggu Verifikasi” |
-| 14 | Telegram Bot mengirim notifikasi booking baru ke pemilik | Booking baru, env Telegram valid | Token + chat ID pemilik | Notifikasi detail booking terkirim | Service mengirim detail dan tombol terima/tolak | Berhasil | Jika kosong, log pending dan aplikasi tidak crash |
-| 15 | Pemilik menerima booking | Klik Terima web/Telegram | Booking pending | Status diterima, slot tetap terkunci | Transisi pending → accepted dibatasi | Berhasil | Double action dicegah dengan status check |
-| 16 | Pemilik menolak booking | Klik Tolak web/Telegram | Booking pending + alasan | Status ditolak, slot dilepas | Reject menghapus slot terkait | Berhasil | Token Telegram divalidasi |
-| 17 | Booking ditolak mengembalikan slot | Tolak booking aktif | Booking pending | Slot bisa dipilih ulang | `booking_slots` dihapus saat reject | Berhasil | Berlaku web dan Telegram |
-| 18 | Pelanggan melihat riwayat booking | Buka riwayat | Login pelanggan | Hanya booking miliknya tampil | Query dibatasi `customer_id` milik session | Berhasil | Pelanggan lain tidak terlihat |
-| 19 | Pelanggan membatalkan booking jika status masih boleh | Klik batal pada pending/accepted sebelum jadwal | Booking milik sendiri | Status batal, slot dilepas | Owner check customer + status check tersedia | Berhasil | Booking final ditolak |
-| 20 | Pembatalan mengembalikan slot | Batalkan booking aktif | Booking pending/accepted | Slot bisa dipilih ulang | `booking_slots` dihapus saat cancel | Berhasil | Booking selesai tidak bisa batal |
-| 21 | Admin input booking walk-in/offline | Admin isi pelanggan/layanan/stylist/tanggal/slot | Data walk-in valid | Booking walk-in tersimpan menunggu verifikasi | Controller memakai `BookingService` yang sama | Berhasil | Slot tetap tervalidasi server-side |
-| 22 | Admin membatalkan booking | Admin klik batal | Booking pending/accepted | Status batal, slot dilepas | Service membatasi status aktif | Berhasil | Status final ditolak |
-| 23 | Admin mengubah booking menjadi selesai | Admin klik selesai | Booking diterima | Status selesai | Service hanya menerima status accepted | Berhasil | Slot histori tetap, tidak dilepas |
-| 24 | Booking selesai membuat transaksi otomatis | Tandai selesai | Booking diterima | Satu transaksi dibuat | Unique `booking_id` mencegah duplikasi | Berhasil | Nominal dari snapshot harga booking |
-| 25 | Dashboard menampilkan pendapatan harian | Pemilik buka dashboard | Transaksi hari ini | Total harian tampil | Query transaksi selesai tersaji | Berhasil | Dashboard hanya pemilik |
-| 26 | Dashboard menampilkan pendapatan mingguan | Pemilik buka dashboard | Transaksi minggu ini | Total mingguan tampil | Query tanggal minggu berjalan tersedia | Berhasil | Deskriptif, bukan prediktif |
-| 27 | Dashboard menampilkan pendapatan bulanan | Pemilik buka dashboard | Transaksi bulan ini | Total bulanan tampil | Query bulan berjalan tersedia | Berhasil | Deskriptif |
-| 28 | Dashboard menampilkan layanan paling sering digunakan | Pemilik buka dashboard | Booking selesai bulan ini | Top service tampil | Query booking completed per layanan | Berhasil | Tidak memakai rekomendasi/AI |
-| 29 | WhatsApp template tersedia dan tetap manual | Buka detail booking | Booking status accepted/rejected/cancelled/completed | Template dan link `wa.me` tampil | Service hanya membuat template/link | Berhasil | Tidak ada WA API otomatis |
-| 30 | Role pelanggan tidak bisa akses admin/pemilik | Pelanggan buka URL admin | Session customer | Akses ditolak/dialihkan | Route memakai role filter | Berhasil | Endpoint terlindungi, bukan hanya menu |
-| 31 | Role admin tidak bisa akses fitur khusus pemilik jika dibatasi | Admin buka master data/transaksi/dashboard pemilik | Session admin | Akses ditolak/dialihkan | Route master data, pengaturan, transaksi dibatasi owner; `/admin` dialihkan ke booking | Berhasil | Admin tetap bisa operasional booking |
-| 32 | Role pemilik bisa akses dashboard dan master data | Pemilik buka dashboard/layanan/stylist | Session owner | Halaman tampil | Route owner tersedia | Berhasil | Pemilik juga bisa fitur admin |
-| 33 | Tidak ada fitur out-of-scope muncul di UI | Audit menu dan teks | UI utama | Tidak ada payment gateway, WA API otomatis, stok, membership, forecasting, AI | UI tetap pada booking, layanan, stylist, transaksi, dashboard deskriptif, Telegram, WA manual | Berhasil | Fitur out-of-scope tidak dikembangkan |
+## Persiapan
 
-## Catatan Pengujian
+- Database fresh (migrate + seed): `php spark migrate && php spark db:seed SalonSeeder`.
+- Server lokal aktif: `php spark serve` di port 8080.
+- Browser modern (Chrome / Firefox), buka `http://localhost:8080`.
+- Akun: `owner@swbeautysalon.local` / `Password123!`, `admin@swbeautysalon.local` / `Password123!`.
 
-- Pengujian Telegram membutuhkan `TELEGRAM_BOT_TOKEN` dan `TELEGRAM_ALLOWED_CHAT_IDS` yang valid di konfigurasi lokal.
-- Jika token/chat ID kosong, booking tetap tersimpan dan notifikasi Telegram dilewati dengan log aman.
-- WhatsApp hanya template manual melalui tombol salin/buka link; admin/pemilik tetap menekan kirim sendiri.
+## A. Customer flow (publik)
+
+| ID | Skenario | Input | Output diharapkan | Hasil |
+|---|---|---|---|---|
+| BB-01 | Buka beranda | GET `/` | Tampil hero + 3 layanan unggulan + section "Mengapa memilih kami" | |
+| BB-02 | Lihat semua layanan | GET `/layanan` | Tampil grid layanan + chip kategori berfungsi (klik filter) | |
+| BB-03 | Filter layanan via chip | Klik chip "Hair" di `/layanan` | Hanya kartu kategori Hair yang tampil | |
+| BB-04 | Booking sukses | Nama "Putri", HP "081234567890", layanan Hair Treatment, tanggal besok, jam 10:00 | Redirect ke `/booking/sukses/{kode}`, kode booking ditampilkan, tombol WA owner aktif | |
+| BB-05 | Slot tertahan benar | Lihat DB tabel `booking_slots` setelah BB-04 | 3 row dengan `slot_waktu` 10:00, 10:30, 11:00 dan `status='held'` | |
+| BB-06 | Slot bentrok ditolak | Coba booking layanan apapun dengan slot 10:30 di tanggal sama (setelah BB-04) | Pesan error "Slot waktu tidak tersedia" | |
+| BB-07 | Booking di luar jam tutup | Pilih Hair Color (120m) jam 18:00 | Pesan error "Waktu di luar jam operasional salon" | |
+| BB-08 | Tanggal masa lalu | Pilih tanggal kemarin | Tanggal tidak tampil di date strip / error "Tanggal di luar rentang booking" | |
+| BB-09 | Tanggal > 7 hari | Pilih tanggal +8 hari ke depan | Tanggal tidak tampil di date strip | |
+| BB-10 | Format HP invalid | HP "abc123" | Validasi form gagal, error ditampilkan | |
+| BB-11 | Nama < 3 karakter | Nama "Pu" | Validasi gagal | |
+| BB-12 | Slot picker — selected state | Pilih slot 10:00 untuk layanan 90 menit | Slot 10:00 berwarna gold (selected), 10:30 & 11:00 cream (held) | |
+| BB-13 | Slot picker — booked state | Lihat slot yang sudah dibook orang lain | Tampil abu-abu strikethrough dengan diagonal stripe | |
+| BB-14 | Slot picker — past state | Buka form, pilih hari ini, lihat slot pagi yang sudah lewat | Tampil cream pudar strikethrough, tidak bisa diklik | |
+| BB-15 | Cek booking — HP terdaftar | POST `/cek-booking` dengan HP yang ada booking | Tampil list booking dengan badge status | |
+| BB-16 | Cek booking — HP tidak terdaftar | POST `/cek-booking` dengan HP random | Tampil empty state "Tidak ada booking" | |
+| BB-17 | Detail booking — HP cocok | Klik "Detail" dari halaman cek-booking | Tampil detail + timeline + tombol cancel kalau eligible | |
+| BB-18 | Detail booking — HP tidak cocok | GET `/booking/{kode}?no_hp=salahnomor` | Redirect ke `/cek-booking` dengan error | |
+| BB-19 | Customer cancel booking pending | Klik "Batalkan" di detail booking pending | Status berubah ke `cancelled`, slot dilepas | |
+| BB-20 | Customer cancel — kurang dari 2 jam | Booking 1 jam ke depan, coba cancel | Error "minimal 2 jam sebelum jam booking" | |
+| BB-21 | Customer cancel — booking selesai | Coba cancel booking dengan status completed | Error "tidak dapat dibatalkan karena status sudah final" | |
+| BB-22 | WhatsApp button | Klik tombol "Chat owner" di halaman sukses | Buka tab baru `https://wa.me/{nomor}?text=...` dengan pesan terisi | |
+
+## B. Admin authentication
+
+| ID | Skenario | Input | Output diharapkan | Hasil |
+|---|---|---|---|---|
+| BB-30 | Login berhasil (pemilik) | Email `owner@…`, pwd `Password123!` | Redirect `/admin/dashboard`, sidebar lengkap (Layanan, Stylist, Transaksi, Pengaturan) | |
+| BB-31 | Login berhasil (admin) | Email `admin@…`, pwd `Password123!` | Redirect `/admin/dashboard`, sidebar terbatas | |
+| BB-32 | Login gagal — password salah | Pwd `salah` | Tetap di halaman login, error "Email atau password salah" | |
+| BB-33 | Login gagal — akun nonaktif | User di-set `is_active=0` lalu coba login | Error | |
+| BB-34 | Brute force protection | Login 6 kali berturut-turut gagal | Diblokir 15 menit dengan pesan throttle | |
+| BB-35 | Akses `/admin/dashboard` tanpa login | GET `/admin/dashboard` (anonim) | Redirect ke `/admin/login` | |
+| BB-36 | Admin akses route pemilik-only | Login sebagai admin, GET `/admin/layanan` | Redirect `/admin/dashboard` dengan error | |
+| BB-37 | Logout | POST `/admin/logout` | Session destroyed, redirect `/` | |
+| BB-38 | Navbar publik bersih | Buka `/` (anonim) | TIDAK ada link "Admin" di navbar | |
+
+## C. Booking management admin
+
+| ID | Skenario | Input | Output diharapkan | Hasil |
+|---|---|---|---|---|
+| BB-40 | List booking | GET `/admin/booking` | Tampil tabel + filter chips status | |
+| BB-41 | Filter status | Klik chip "Pending" | Hanya booking pending_verification tampil | |
+| BB-42 | Filter tanggal & cari | Pilih tanggal, isi nama | Hasil terfilter sesuai input | |
+| BB-43 | Verifikasi via dashboard | Buka detail booking pending, klik "Verifikasi" | Status jadi `accepted`, `verified_via='dashboard:<uid>'`, entry log baru | |
+| BB-44 | Tolak via dashboard | Klik "Tolak" + alasan | Status `rejected`, slot dilepas (cek `booking_slots`) | |
+| BB-45 | Selesaikan booking | Klik "Selesaikan + transaksi" di booking accepted | Status `completed`, row baru di `transaksi` dengan nominal=harga | |
+| BB-46 | Selesaikan dua kali (idempoten) | Coba selesaikan booking yang sudah completed | Error "sudah berubah status" | |
+| BB-47 | Walk-in booking | GET `/admin/booking/walkin`, isi form, submit | Booking sumber=`walkin`, status langsung `accepted` | |
+| BB-48 | Jadwal harian | GET `/admin/booking/jadwal?tanggal=2026-05-15` | Tabel timeline per stylist, sel berwarna sesuai status | |
+| BB-49 | WhatsApp template (admin) | Buka detail, klik "Salin pesan" | Pesan dicopy ke clipboard, alert konfirmasi | |
+| BB-50 | Tandai WA sudah dikirim | Klik "Tandai sudah dikirim" | `wa_sent=1`, badge "WA terkirim" muncul | |
+
+## D. CRUD pemilik
+
+| ID | Skenario | Input | Output diharapkan | Hasil |
+|---|---|---|---|---|
+| BB-60 | Tambah layanan | Form layanan baru | Layanan masuk list, muncul di `/layanan` publik kalau aktif | |
+| BB-61 | Edit layanan | Ubah harga | Harga baru tersimpan, terlihat di booking form | |
+| BB-62 | Non-aktifkan layanan | Set `is_active=0` | Tidak muncul di booking form, masih ada di list admin | |
+| BB-63 | Tambah stylist | Form stylist | Stylist baru muncul, auto-generated schedule senin-minggu 08:00-19:00 | |
+| BB-64 | Edit jadwal stylist | Set Minggu = libur | Stylist tidak menerima booking di hari Minggu (cek API `/api/slots`) | |
+| BB-65 | Set stylist default | Toggle is_default ke stylist lain | Stylist lama otomatis di-unset, hanya 1 default | |
+
+## E. Telegram integration
+
+| ID | Skenario | Input | Output diharapkan | Hasil |
+|---|---|---|---|---|
+| BB-70 | Test message | Klik "Kirim test message" di Pengaturan > Telegram | Chat owner menerima "✅ Test SW Beauty Salon" | |
+| BB-71 | Notif booking baru | Customer submit booking | Chat owner menerima pesan inline + 2 button (Verifikasi/Tolak) dalam ≤5 detik | |
+| BB-72 | Verifikasi via Telegram | Owner klik "✅ Verifikasi" | Status booking → accepted, message di-edit jadi "✅ Sudah diverifikasi via Telegram oleh chat X" | |
+| BB-73 | Tolak via Telegram | Owner klik "❌ Tolak" | Status → rejected, slot dilepas, message di-edit | |
+| BB-74 | Dual verify sync | Verify via dashboard, lihat Telegram | Message asli di-edit jadi "via Dashboard oleh {nama}", broadcast ke chat lain | |
+| BB-75 | Token kedaluwarsa | Klik tombol di message > 2 hari | Response "Token tidak valid atau kedaluwarsa" | |
+| BB-76 | Chat ID tidak diizinkan | Forward message ke chat lain, klik tombol | Response "Chat ID tidak diizinkan" | |
+
+## F. Dashboard
+
+| ID | Skenario | Input | Output diharapkan | Hasil |
+|---|---|---|---|---|
+| BB-80 | Pendapatan hari ini (pemilik) | Sebelum ada transaksi hari ini | Rp 0 | |
+| BB-81 | Pendapatan after complete | Selesaikan 1 booking 250k | Pendapatan hari ini = Rp 250.000 | |
+| BB-82 | Chart 7 hari | Buka dashboard pemilik | Chart Chart.js terisi 7 bar (terakhir paling solid) | |
+| BB-83 | Top layanan | Beberapa booking completed bulan ini | List layanan terpopuler + bar gold proporsional | |
+| BB-84 | Admin dashboard limited | Login sebagai admin | Tidak tampil card Pendapatan & Stylist aktif, tidak ada chart pendapatan | |
+
+## G. Operasional
+
+| ID | Skenario | Input | Output diharapkan | Hasil |
+|---|---|---|---|---|
+| BB-90 | Migrate clean | `php spark migrate:rollback && php spark migrate` | Tidak ada error, semua tabel dibuat ulang | |
+| BB-91 | Seeder clean | `php spark db:seed SalonSeeder` setelah migrate fresh | Demo data terisi, 2 user + 1 stylist + 8 layanan + settings | |
+| BB-92 | Routes inspect | `php spark routes` | Tidak ada duplicate/orphan, semua handler ada | |
+| BB-93 | Lint sweep | PHP lint script di README | Tidak ada syntax error | |
+| BB-94 | Responsive 375px | Buka beranda + booking form di viewport 375px | Tidak ada horizontal scroll, slot grid 4 kolom | |
+
+Total: 50+ skenario. Target lulus 100% sebelum submit TA.

@@ -4,129 +4,84 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\StylistModel;
+use App\Models\StylistScheduleModel;
 
 class StylistController extends BaseController
 {
-    private StylistModel $m;
-
-    public function __construct()
-    {
-        $this->m = new StylistModel();
-    }
-
     public function index()
     {
-        return view('admin/stylists/index', ['stylists' => $this->m->withDeleted()->findAll()]);
+        $rows = (new StylistModel())->orderBy('is_default', 'DESC')->orderBy('nama')->find();
+        return view('admin/stylist/index', ['rows' => $rows]);
     }
 
-    public function new()
+    public function store()
     {
-        return view('admin/stylists/form', ['stylist' => null]);
+        $rules = ['nama' => 'required|min_length[2]', 'nomor_hp' => 'permit_empty|min_length[8]'];
+        if (! $this->validate($rules)) return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
+        $isDefault = $this->request->getPost('is_default') ? 1 : 0;
+        if ($isDefault) (new StylistModel())->builder()->where('is_default', 1)->update(['is_default' => 0]);
+        $id = (new StylistModel())->insert([
+            'nama' => $this->request->getPost('nama'),
+            'nomor_hp' => $this->request->getPost('nomor_hp'),
+            'peran' => $this->request->getPost('peran'),
+            'is_default' => $isDefault,
+            'is_active' => $this->request->getPost('is_active') ? 1 : 0,
+        ]);
+        $hari = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
+        $now = date('Y-m-d H:i:s');
+        $rows = [];
+        foreach ($hari as $h) $rows[] = ['stylist_id' => $id, 'hari' => $h, 'jam_mulai' => '08:00:00', 'jam_selesai' => '19:00:00', 'is_libur' => 0, 'created_at' => $now, 'updated_at' => $now];
+        db_connect()->table('stylist_schedules')->insertBatch($rows);
+        return redirect()->to('/admin/stylist')->with('success', 'Stylist ditambahkan.');
     }
 
-    public function create()
+    public function update(int $id)
     {
-        $data = $this->validData();
-        if ($data === null) {
-            return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
-        }
-
-        $id = $this->m->insert($data);
-        $this->seedHours((int) $id);
-
-        return redirect()->to('/admin/stylist')->with('success', 'Stylist berhasil ditambahkan.');
+        $model = new StylistModel();
+        if (! $model->find($id)) return redirect()->to('/admin/stylist')->with('error', 'Stylist tidak ditemukan.');
+        $isDefault = $this->request->getPost('is_default') ? 1 : 0;
+        if ($isDefault) $model->builder()->where('id !=', $id)->update(['is_default' => 0]);
+        $model->update($id, [
+            'nama' => $this->request->getPost('nama'),
+            'nomor_hp' => $this->request->getPost('nomor_hp'),
+            'peran' => $this->request->getPost('peran'),
+            'is_default' => $isDefault,
+            'is_active' => $this->request->getPost('is_active') ? 1 : 0,
+        ]);
+        return redirect()->to('/admin/stylist')->with('success', 'Stylist diperbarui.');
     }
 
-    public function edit($id = null)
+    public function delete(int $id)
     {
-        $stylist = $this->m->withDeleted()->find($id);
-        if (! $stylist) {
-            return redirect()->to('/admin/stylist')->with('error', 'Stylist tidak ditemukan.');
-        }
-
-        return view('admin/stylists/form', ['stylist' => $stylist]);
+        (new StylistModel())->update($id, ['is_active' => 0]);
+        return redirect()->to('/admin/stylist')->with('success', 'Stylist dinon-aktifkan.');
     }
 
-    public function update($id = null)
+    public function jadwal(int $id)
     {
-        if (! $this->m->withDeleted()->find($id)) {
-            return redirect()->to('/admin/stylist')->with('error', 'Stylist tidak ditemukan.');
-        }
-
-        $data = $this->validData();
-        if ($data === null) {
-            return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
-        }
-
-        $this->m->update($id, $data);
-
-        return redirect()->to('/admin/stylist')->with('success', 'Stylist berhasil diperbarui.');
-    }
-
-    public function delete($id = null)
-    {
-        if (! $this->m->withDeleted()->find($id)) {
-            return redirect()->to('/admin/stylist')->with('error', 'Stylist tidak ditemukan.');
-        }
-
-        $this->m->update($id, ['is_active' => 0]);
-        $this->m->delete($id);
-
-        return redirect()->to('/admin/stylist')->with('success', 'Stylist dinonaktifkan/dihapus lunak agar booking historis tetap aman.');
-    }
-
-    public function hours($id)
-    {
-        $db = db_connect();
-        if (! $this->m->find($id)) {
-            return redirect()->to('/admin/stylist')->with('error', 'Stylist tidak ditemukan atau tidak aktif.');
-        }
-
+        $stylist = (new StylistModel())->find($id);
+        if (! $stylist) return redirect()->to('/admin/stylist')->with('error', 'Stylist tidak ditemukan.');
+        $hari = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
         if ($this->request->getMethod() === 'POST') {
-            for ($d = 0; $d <= 6; $d++) {
-                $start = $this->request->getPost("start_$d") ?: '08:00';
-                $end = $this->request->getPost("end_$d") ?: '19:00';
-                if (! $this->validTime($start) || ! $this->validTime($end) || strtotime($end) <= strtotime($start)) {
-                    return redirect()->back()->withInput()->with('error', 'Jam kerja harus valid dan jam selesai harus lebih besar dari jam mulai.');
-                }
-
-                $row = [
-                    'stylist_id' => $id,
-                    'day_of_week' => $d,
-                    'start_time' => $start,
-                    'end_time' => $end,
-                    'is_working' => $this->request->getPost("work_$d") ? 1 : 0,
-                    'updated_at' => date('Y-m-d H:i:s'),
+            foreach ($hari as $h) {
+                $isLibur = (int) $this->request->getPost('libur_' . $h) ? 1 : 0;
+                $row = (new StylistScheduleModel())->forStylist($id, $h);
+                $data = [
+                    'stylist_id' => $id, 'hari' => $h,
+                    'jam_mulai' => $this->request->getPost('mulai_' . $h) ?: '08:00',
+                    'jam_selesai' => $this->request->getPost('selesai_' . $h) ?: '19:00',
+                    'is_libur' => $isLibur,
                 ];
-                $exists = $db->table('stylist_working_hours')->where(['stylist_id' => $id, 'day_of_week' => $d])->get()->getRowArray();
-                $exists ? $db->table('stylist_working_hours')->where('id', $exists['id'])->update($row) : $db->table('stylist_working_hours')->insert($row + ['created_at' => date('Y-m-d H:i:s')]);
+                if ($row) (new StylistScheduleModel())->update($row['id'], $data);
+                else (new StylistScheduleModel())->insert($data);
             }
-
-            return redirect()->back()->with('success', 'Jam kerja stylist diperbarui.');
+            return redirect()->to('/admin/stylist/' . $id . '/jadwal')->with('success', 'Jadwal diperbarui.');
         }
-
-        return view('admin/stylists/hours', ['stylist' => $this->m->find($id), 'hours' => $db->table('stylist_working_hours')->where('stylist_id', $id)->get()->getResultArray()]);
-    }
-
-    private function validData(): ?array
-    {
-        if (! $this->validate(['name' => 'required|max_length[120]', 'phone' => 'permit_empty|min_length[8]|max_length[30]'])) {
-            return null;
+        $schedules = [];
+        foreach ($hari as $h) {
+            $row = (new StylistScheduleModel())->forStylist($id, $h);
+            $schedules[$h] = $row ?: ['hari' => $h, 'jam_mulai' => '08:00', 'jam_selesai' => '19:00', 'is_libur' => 0];
         }
-
-        return ['name' => $this->request->getPost('name'), 'phone' => $this->request->getPost('phone'), 'is_owner' => $this->request->getPost('is_owner') ? 1 : 0, 'is_active' => $this->request->getPost('is_active') ? 1 : 0];
-    }
-
-    private function validTime(string $time): bool
-    {
-        return (bool) preg_match('/^([01]\d|2[0-3]):(00|30)$/', $time);
-    }
-
-    private function seedHours(int $id): void
-    {
-        $db = db_connect();
-        for ($d = 0; $d <= 6; $d++) {
-            $db->table('stylist_working_hours')->insert(['stylist_id' => $id, 'day_of_week' => $d, 'start_time' => '08:00', 'end_time' => '19:00', 'is_working' => 1, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]);
-        }
+        return view('admin/stylist/jadwal', ['stylist' => $stylist, 'schedules' => $schedules]);
     }
 }

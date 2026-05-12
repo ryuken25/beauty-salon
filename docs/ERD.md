@@ -1,101 +1,69 @@
-# ERD Ringkas SW Beauty Salon
+# ERD — SW Beauty Salon
 
-## Tabel dan Relasi
+Visualisasi ringkas schema. Lihat migration `app/Database/Migrations/2026-05-12-100000_ResetAndCreateSalonSchema.php` untuk DDL definitif.
 
-### `users`
+## Hubungan utama
 
-Menyimpan akun login dengan role `customer`, `admin`, atau `owner`.
+- **`users`** — akun login (role `admin` atau `pemilik`). Pelanggan tidak punya akun.
+- **`stylists`** + **`stylist_schedules`** — daftar stylist + jam kerja per hari (`hari` ENUM senin..minggu).
+- **`layanan`** — katalog layanan (CRUD pemilik). `durasi_menit` kelipatan 30.
+- **`bookings`** — booking utama. Otentikasi customer via kombinasi `(kode_booking, nomor_hp_pelanggan)`.
+- **`booking_slots`** — 1 row per 30-menit yang ditahan booking. Tabel ini sumber kebenaran untuk anti double-booking.
+- **`transaksi`** — 1:1 ke `bookings`. Dibuat otomatis ketika booking `completed`.
+- **`booking_logs`** — audit trail lifecycle (`created`, `verified`, `rejected`, `cancelled`, `completed`, `telegram_sent`, `wa_sent`).
+- **`settings`** (key-value) — konfigurasi runtime: jam buka/tutup, range hari booking, template WA, kredensial Telegram.
+- **`telegram_action_tokens`** — token sekali pakai untuk inline-button callback Telegram.
 
-- `users.id` direlasikan opsional ke `customers.user_id`.
-- `users.id` direlasikan opsional ke `stylists.user_id`.
+## Skema kolom utama
 
-### `customers`
-
-Menyimpan data pelanggan online maupun walk-in.
-
-- Satu customer dapat memiliki banyak `bookings`.
-
-### `services`
-
-Menyimpan data layanan salon, durasi, harga, kategori, dan status aktif.
-
-- Satu service dapat digunakan banyak `bookings`.
-- Harga booking disalin ke `bookings.service_price` agar transaksi memakai harga saat booking.
-
-### `stylists`
-
-Menyimpan data stylist.
-
-- Satu stylist memiliki banyak `stylist_working_hours`.
-- Satu stylist dapat memiliki banyak `bookings`.
-- Satu stylist dapat memiliki banyak `booking_slots`.
-
-### `stylist_working_hours`
-
-Jam kerja mingguan stylist berdasarkan `day_of_week` 0-6.
-
-- Unique per `stylist_id + day_of_week`.
-
-### `stylist_day_offs`
-
-Hari libur opsional per stylist.
-
-### `bookings`
-
-Tabel utama booking.
-
-- `bookings.customer_id` ke `customers.id`.
-- `bookings.service_id` ke `services.id`.
-- `bookings.stylist_id` ke `stylists.id`.
-- Status internal: `pending_verification`, `accepted`, `rejected`, `cancelled`, `completed`.
-- Tidak dihapus saat batal/tolak, hanya status berubah.
-
-### `booking_slots`
-
-Menyimpan slot 30 menit yang ditempati booking.
-
-- `booking_slots.booking_id` ke `bookings.id`.
-- `booking_slots.stylist_id` ke `stylists.id`.
-- Unique constraint wajib: `stylist_id + slot_date + slot_start`.
-- Constraint ini mencegah double booking pada slot stylist yang sama.
-
-### `transactions`
-
-Transaksi otomatis setelah booking `accepted` menjadi `completed`.
-
-- `transactions.booking_id` unique ke `bookings.id`.
-- Mencegah transaksi ganda.
-- `amount` berasal dari `bookings.service_price`.
-
-### `notification_logs`
-
-Log notifikasi Telegram dan pencatatan WhatsApp manual.
-
-### `telegram_action_tokens`
-
-Token pendek untuk inline keyboard Telegram.
-
-- `booking_id` ke `bookings.id`.
-- `action`: `accept` atau `reject`.
-- `token` unique.
-- `expires_at` dan `used_at` untuk validasi.
-
-### `app_settings`
-
-Konfigurasi dasar seperti nomor WhatsApp salon, Telegram allowed chat IDs, dan offset polling.
-
-## Relasi Utama
-
-```text
-users 1--0..1 customers
-users 1--0..1 stylists
-customers 1--* bookings
-services 1--* bookings
-stylists 1--* bookings
-stylists 1--* stylist_working_hours
-stylists 1--* stylist_day_offs
-bookings 1--* booking_slots
-bookings 1--0..1 transactions
-bookings 1--* telegram_action_tokens
-bookings 0..1--* notification_logs
 ```
+users(id PK, email UQ, password_hash, nama, role ENUM[admin,pemilik], is_active, timestamps)
+
+stylists(id PK, nama, nomor_hp, peran, is_default, is_active, timestamps)
+
+stylist_schedules(id PK, stylist_id FK, hari ENUM, jam_mulai, jam_selesai, is_libur, timestamps)
+    UNIQUE (stylist_id, hari)
+
+layanan(id PK, nama, kategori, deskripsi, durasi_menit, harga, ikon, is_active, timestamps)
+
+bookings(
+  id PK, kode_booking UQ, nama_pelanggan, nomor_hp_pelanggan,
+  layanan_id FK -> layanan, stylist_id FK -> stylists,
+  tanggal, slot_mulai, slot_selesai, jumlah_slot, harga_layanan,
+  status ENUM[pending_verification,accepted,rejected,cancelled,completed],
+  sumber ENUM[online,walkin], catatan, wa_sent,
+  verified_via, verified_at, completed_at,
+  cancelled_at, cancelled_by, rejection_reason,
+  telegram_message_chat_id, telegram_message_id, timestamps
+)
+    INDEX (tanggal, slot_mulai), INDEX (status), INDEX (nomor_hp_pelanggan)
+
+booking_slots(id PK, booking_id FK, stylist_id FK, tanggal, slot_waktu, status ENUM[held,released], created_at)
+    INDEX (stylist_id, tanggal, slot_waktu)
+
+transaksi(id PK, booking_id FK UQ, nominal, metode_bayar, tanggal_transaksi, catatan, created_at)
+
+settings(id PK, key_name UQ, value, updated_at)
+
+booking_logs(id PK, booking_id FK, event_type, actor, actor_role, payload JSON, notes, created_at)
+    INDEX (booking_id, created_at)
+
+telegram_action_tokens(id PK, booking_id FK, action ENUM[verify,reject], token UQ, expires_at, used_at, created_at)
+```
+
+## Status lifecycle
+
+```
+pending_verification
+   ├── verify (dashboard / telegram) ──► accepted ──► complete ──► completed (+ create transaksi)
+   ├── reject                        ──► rejected   (slots dilepas)
+   └── cancel (admin/customer)       ──► cancelled  (slots dilepas)
+
+accepted ──► cancel ──► cancelled (slots dilepas)
+```
+
+## Aturan pembatalan customer
+
+- Hanya status `pending_verification` atau `accepted`.
+- Minimal 2 jam sebelum `slot_mulai`.
+- Validasi via kombinasi `kode_booking` + `nomor_hp_pelanggan`.

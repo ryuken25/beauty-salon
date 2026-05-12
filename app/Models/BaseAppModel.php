@@ -8,4 +8,5 @@ abstract class BaseAppModel extends Model
 {
     protected $useTimestamps = true;
     protected $returnType = 'array';
+    protected $dateFormat = 'datetime';
 }

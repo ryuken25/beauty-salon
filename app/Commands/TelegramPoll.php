@@ -8,17 +8,26 @@ use CodeIgniter\CLI\CLI;
 
 class TelegramPoll extends BaseCommand
 {
-    protected $group = 'Telegram';
+    protected $group = 'Salon';
     protected $name = 'telegram:poll';
-    protected $description = 'Menjalankan Telegram Bot API long polling untuk mode lokal tanpa HTTPS.';
+    protected $description = 'Long-poll Telegram bot for updates (development).';
 
     public function run(array $params)
     {
-        CLI::write('Telegram long polling berjalan. Tekan Ctrl+C untuk berhenti.', 'green');
-        $service = new TelegramService();
+        $svc = new TelegramService();
+        if (! $svc->isConfigured()) {
+            CLI::error('Telegram belum dikonfigurasi (token/chat_ids kosong di settings).');
+            return;
+        }
+        CLI::write('Telegram polling dimulai. Ctrl+C untuk berhenti.', 'green');
         while (true) {
-            $service->pollOnce();
-            sleep(1);
+            try {
+                $n = $svc->pollOnce();
+                if ($n > 0) CLI::write("Diproses: {$n} update");
+            } catch (\Throwable $e) {
+                CLI::error('Error: ' . $e->getMessage());
+                sleep(5);
+            }
         }
     }
 }

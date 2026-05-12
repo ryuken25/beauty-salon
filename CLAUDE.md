@@ -4,79 +4,81 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**SW Beauty Salon** — CodeIgniter 4 booking app for a beauty salon. PHP 8.1+, MySQL/MariaDB, Bootstrap 5 + Chart.js via CDN, Telegram Bot API (optional), WhatsApp manual via `wa.me` (no paid API).
+**SW Beauty Salon** — CodeIgniter 4 booking app for a salon in Tabanan, Bali. Customer side is fully public (no login); admin/owner login via `/admin`. Stack: PHP 8.1+, MySQL/MariaDB, Bootstrap 5 + Bootstrap Icons + Chart.js via CDN, Telegram Bot API, WhatsApp manual via `wa.me`.
 
 ## Common Commands
 
 ```bash
 composer install
 cp .env.localhost .env          # Windows: copy .env.localhost .env
-php spark migrate               # apply migrations
-php spark migrate:rollback      # rollback (must stay clean)
-php spark db:seed SalonSeeder   # seed demo data + demo accounts
+php spark migrate               # baseline reset migration
+php spark migrate:rollback
+php spark db:seed SalonSeeder
 php spark serve                 # http://localhost:8080
-php spark routes                # inspect routes (must have no duplicates/orphans)
-php spark telegram:poll         # long-polling for Telegram bot (local, no HTTPS)
-vendor/bin/phpunit              # run all tests
-vendor/bin/phpunit --filter TestName tests/path/To/FileTest.php   # single test
+php spark routes                # inspect routes
+php spark telegram:poll         # local Telegram long-polling
+vendor/bin/phpunit              # run tests
 ```
 
-PHP lint sweep (used in CI-like checks):
+PHP lint sweep:
 ```bash
 php -r "foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator('.')) as $f) { if ($f->isFile() && strtolower($f->getExtension()) === 'php' && strpos($f->getPathname(), DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR) === false) { passthru('php -l ' . escapeshellarg($f->getPathname()), $code); if ($code !== 0) exit($code); } }"
 ```
 
-Demo accounts (password `Password123!`): `owner@swbeautysalon.local`, `admin@swbeautysalon.local`, `pelanggan@example.com`.
+Demo accounts (password `Password123!`):
+- Pemilik: `owner@swbeautysalon.local`
+- Admin: `admin@swbeautysalon.local`
 
 ## Architecture
 
-Standard CI4 layout. The non-obvious pieces are concentrated in **services** and the **booking/slot domain**.
+### Roles & access
+- Customer flow is **fully public** (no auth). Booking by name + WhatsApp number; lookup status at `/cek-booking` by HP number; cancel from booking detail using HP + kode.
+- Admin login lives at `/admin/login` (or `/admin`) and is **not linked** from the public navbar.
+- Roles: `admin` and `pemilik`. Filters: [AdminFilter](app/Filters/AdminFilter.php), [PemilikFilter](app/Filters/PemilikFilter.php). Pemilik-only routes: CRUD layanan/stylist, transaksi, pengaturan.
 
-### Layered domain code
-- **Controllers** ([app/Controllers/Admin/](app/Controllers/Admin/), [app/Controllers/Customer/](app/Controllers/Customer/)) — thin; delegate state changes to services. Routes live in [app/Config/Routes.php](app/Config/Routes.php) and use Indonesian URL segments (`pelanggan/booking/baru`, `admin/booking/jadwal`, etc.) while controller namespaces are English (`Customer\BookingController`, `Admin\BookingController`).
-- **Services** ([app/Services/](app/Services/)) hold business logic:
-  - `BookingService` — booking lifecycle state transitions (accept/reject/cancel/complete). Central place for any new lifecycle hook.
-  - `SlotService` — slot availability calculation. **The slot model is the load-bearing piece** of this app; see below.
-  - `TelegramService` — Bot API calls + callback handling. Currently optional (no-op when token empty); spec calls for it to become mandatory in `production`.
-  - `WhatsAppTemplateService` — generates `wa.me` URLs + copyable message templates. Manual-only by design — never integrate a paid WhatsApp API.
-- **Models** ([app/Models/](app/Models/)) — extend `BaseAppModel`. Notable: `BookingSlotModel` (the join/lock table for slot occupancy), `AppSettingModel` (key/value settings store), `TelegramActionTokenModel` (signed callback tokens), `NotificationLogModel`.
-- **Migrations** live in [app/Database/Migrations/](app/Database/Migrations/). Current baseline is a **single** consolidated migration `2026-04-30-000001_CreateSalonTables.php`. Add NEW dated migrations for any schema change — never edit the baseline.
-- **Commands** — `php spark telegram:poll` ([app/Commands/TelegramPoll.php](app/Commands/TelegramPoll.php)) is the dev-mode equivalent of the webhook.
+### Fixed-slot domain (load-bearing)
+- All times are 30-minute slots from `jam_buka` to `jam_tutup` (default 08:00–19:00, settable in `/admin/pengaturan`).
+- A booking with `pending_verification`/`accepted`/`completed` holds N consecutive slots in `booking_slots` (status `held`). On `rejected`/`cancelled`, slot rows are deleted.
+- Cinema-style picker: 5 visual states (available / selected / held / booked / past or insufficient). Frontend logic in [public/booking_form.php](app/Views/public/booking_form.php) and [admin/booking/walkin.php](app/Views/admin/booking/walkin.php) calls `/api/slots`.
+- Server-side validation in [SlotService::validateBookingSlot](app/Services/SlotService.php) is the authoritative gate; never trust the JS-side.
 
-### Slot model (read before touching booking code)
-Today the app uses **fixed 30-minute slots**. A booking with statuses `pending_verification`, `accepted`, or `completed` holds its slot; `rejected` / `cancelled` release it. The slot-holding logic lives in `SlotService` and `BookingSlotModel`.
+### Service layer
+- [BookingService](app/Services/BookingService.php) — full lifecycle (`create`, `verify`, `reject`, `cancel`, `complete`, `markWaSent`) + audit `logEvent()`.
+- [SlotService](app/Services/SlotService.php) — availability + slot validation.
+- [TelegramService](app/Services/TelegramService.php) — inline-button verification, message edit on dashboard verify, command-style polling.
+- [WhatsAppTemplateService](app/Services/WhatsAppTemplateService.php) — renders templates from settings, builds `wa.me` links. Manual-only — never integrate a paid WhatsApp API.
 
-The roadmap in [implementation.md](implementation.md) replaces this with **dynamic slot duration** (`services.durasi_menit` defines how many consecutive 30-min slots a booking occupies, snap-to-30 start times). Anything that touches slot math (`SlotService`, `BookingModel`, admin schedule view, customer booking form) must respect that durations span multiple base slots.
+### Schema (Indonesian column names)
+- `users` (admin + pemilik only), `stylists` + `stylist_schedules`, `layanan`, `bookings` (`kode_booking`, `nama_pelanggan`, `nomor_hp_pelanggan`, `slot_mulai`, `slot_selesai`, `jumlah_slot`, status, …), `booking_slots`, `transaksi`, `settings` (key/value), `booking_logs`, `telegram_action_tokens`.
+- Single baseline migration: `2026-05-12-100000_ResetAndCreateSalonSchema.php`. Add NEW dated migrations for any further schema change.
 
-### Telegram integration
-Two ingress paths share the same handler logic:
-- **Webhook** — `POST /telegram/webhook` → `TelegramController::webhook()` (production w/ HTTPS).
-- **Long polling** — `php spark telegram:poll` runs the same processing loop locally.
-
-Allowed admin chats are gated by `TELEGRAM_ALLOWED_CHAT_IDS` (comma-separated). `TelegramActionTokenModel` issues signed tokens for inline-button callbacks so URLs/callbacks can't be forged.
-
-### Booking status vocabulary (must match the UI labels)
-| Internal | UI label (ID) | Slot held? |
+### Booking status vocabulary
+| Internal | UI label | Slot held? |
 |---|---|---|
 | `pending_verification` | Menunggu Verifikasi | yes |
-| `accepted` | Diterima / Terjadwal | yes |
+| `accepted` | Diterima | yes |
 | `rejected` | Ditolak | no |
 | `cancelled` | Batal | no |
 | `completed` | Selesai | historical |
 
-Transactions (`TransactionModel`) are created **once** on transition to `completed` — financial source of truth. Don't double-write on retries.
+Transactions in `transaksi` are created **once** on transition to `completed` (nominal = layanan.harga, payment method manual).
 
-## Hard constraints (from [implementation.md](implementation.md))
+### Customer cancel rule
+Customer can cancel via `/booking/{kode}?no_hp=…` while booking is `pending_verification` or `accepted` AND ≥ 2 jam sebelum `slot_mulai`. Logic in [BookingService::cancel](app/Services/BookingService.php).
 
-- **Do not change the visual theme.** Black-gold + cream/ivory; keep using `public/assets/css/salon-theme.css`. No new frontend deps — Bootstrap 5 + Chart.js via CDN only.
-- **Never use a paid WhatsApp API** (Cloud API, Twilio, Meta Graph). Only `wa.me` links + copy-to-clipboard templates.
-- **Don't modify the baseline migration** `2026-04-30-000001_CreateSalonTables.php`. Add new dated migrations instead.
-- **All UI labels in Bahasa Indonesia.** Existing DB columns mix Indonesian + English snake_case (`slot_start`, `nama_pelanggan`); follow what's already in the table.
-- **PHP 8.1+, MySQL 8.0+ / MariaDB 10.6+.** Don't drop below.
-- `composer.json` edits should be rare — only when truly needed (e.g. `guzzlehttp/guzzle` for Telegram). Don't churn it.
+## Hard constraints (from IMPLEMENTATION_PLAN aka [implementation.md](implementation.md))
 
-## Docs worth reading
-- [implementation.md](implementation.md) — current roadmap (5 revisions: dynamic slots, mandatory Telegram + inline buttons, WhatsApp auto-redirect, dual verification, booking audit trail). Spec calls for branch `feature/dynamic-slots-and-telegram-verification` and **plan-before-code per revision**.
+- **Stack lock:** PHP 8.1+, CodeIgniter 4, MySQL, Bootstrap 5, Chart.js. No React/Vue/Tailwind/Sass/build tools. Custom CSS lives in [public/assets/css/salon-theme.css](public/assets/css/salon-theme.css).
+- **No paid WhatsApp API.** `wa.me` links + copy-to-clipboard templates only.
+- **No payment gateway**, no ML/AI/forecasting, no multi-branch, no inventory.
+- **Customer tidak punya akun.** Booking anonymous (nama + HP). Cancel lewat kode + HP.
+- **Admin URL `/admin` tidak ditampilkan di navbar publik.**
+- **Jam operasional & range hari** dapat diubah di Pengaturan; default 08:00–19:00 dan 7 hari ke depan.
+- **Bahasa Indonesia** di semua label UI dan error message.
+
+## Docs
+- [implementation.md](implementation.md) — IMPLEMENTATION_PLAN lengkap.
 - [docs/ERD.md](docs/ERD.md) — schema overview.
-- [docs/BLACKBOX_TESTING.md](docs/BLACKBOX_TESTING.md) — manual test scenarios.
-- [cara install.md](cara%20install.md) — install steps (Indonesian).
+- [docs/BLACKBOX_TESTING.md](docs/BLACKBOX_TESTING.md) — skenario uji.
+- [docs/SUS.md](docs/SUS.md) — instrumen System Usability Scale.
+- [cara install.md](cara%20install.md) — install steps.
