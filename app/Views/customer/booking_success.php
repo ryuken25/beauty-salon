@@ -58,8 +58,12 @@ $waLink = $ownerPhone !== '' ? 'https://wa.me/' . $ownerPhone . '?text=' . rawur
     <p class="small-muted mb-0">Nomor WhatsApp owner belum diatur. Admin akan menghubungi Anda melalui WhatsApp manual setelah verifikasi.</p>
   <?php endif ?>
   <div class="mt-4 d-flex justify-content-center gap-2 flex-wrap">
-    <a class="btn btn-outline-primary" href="<?= base_url('pelanggan/booking/' . $booking['id']) ?>">Lihat Detail Booking</a>
-    <a class="btn btn-outline-secondary" href="<?= base_url('pelanggan/booking') ?>">Riwayat Booking</a>
+    <a class="btn btn-outline-primary" href="<?= base_url('pelanggan/booking/cek') ?>">Cek Status Booking</a>
+    <a class="btn btn-outline-secondary" href="<?= base_url('/') ?>">Kembali ke Beranda</a>
+  </div>
+  <div class="alert alert-info mt-4 mb-0">
+    <strong>Simpan kode booking:</strong> <code><?= esc($booking['booking_code']) ?></code><br>
+    Gunakan kode ini bersama No. WhatsApp Anda untuk mengecek status / membatalkan booking di halaman <em>Cek Booking</em>.
   </div>
 </div>
 

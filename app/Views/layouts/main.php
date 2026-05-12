@@ -21,18 +21,13 @@
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
           <li class="nav-item"><a class="nav-link <?= $uriPath === 'layanan' ? 'active' : '' ?>" href="<?= base_url('layanan') ?>">Layanan</a></li>
-          <?php if (session('user_id')): ?>
-            <?php if (session('role') === 'customer'): ?>
-              <li class="nav-item"><a class="nav-link <?= str_starts_with($uriPath, 'pelanggan') ? 'active' : '' ?>" href="<?= base_url('pelanggan') ?>">Pelanggan</a></li>
-            <?php elseif (session('role') === 'owner'): ?>
-              <li class="nav-item"><a class="nav-link <?= str_starts_with($uriPath, 'admin') ? 'active' : '' ?>" href="<?= base_url('admin') ?>">Pemilik</a></li>
-            <?php else: ?>
-              <li class="nav-item"><a class="nav-link <?= str_starts_with($uriPath, 'admin') ? 'active' : '' ?>" href="<?= base_url('admin/booking') ?>">Admin</a></li>
-            <?php endif ?>
+          <li class="nav-item"><a class="nav-link <?= $uriPath === 'pelanggan/booking/baru' ? 'active' : '' ?>" href="<?= base_url('pelanggan/booking/baru') ?>">Booking</a></li>
+          <li class="nav-item"><a class="nav-link <?= $uriPath === 'pelanggan/booking/cek' ? 'active' : '' ?>" href="<?= base_url('pelanggan/booking/cek') ?>">Cek Booking</a></li>
+          <?php if (session('user_id') && in_array(session('role'), ['admin', 'owner'], true)): ?>
+            <li class="nav-item"><a class="nav-link <?= str_starts_with($uriPath, 'admin') ? 'active' : '' ?>" href="<?= base_url('admin') ?>"><?= session('role') === 'owner' ? 'Pemilik' : 'Admin' ?></a></li>
             <li class="nav-item"><form method="post" action="<?= base_url('logout') ?>"><?= csrf_field() ?><button class="btn btn-link nav-link" type="submit">Logout</button></form></li>
           <?php else: ?>
-            <li class="nav-item"><a class="nav-link <?= $uriPath === 'login' ? 'active' : '' ?>" href="<?= base_url('login') ?>">Login</a></li>
-            <li class="nav-item"><a class="nav-link <?= $uriPath === 'register' ? 'active' : '' ?>" href="<?= base_url('register') ?>">Register</a></li>
+            <li class="nav-item"><a class="nav-link <?= str_starts_with($uriPath, 'admin') || $uriPath === 'login' ? 'active' : '' ?>" href="<?= base_url('admin') ?>">Admin</a></li>
           <?php endif ?>
         </ul>
       </div>

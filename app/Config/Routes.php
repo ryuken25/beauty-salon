@@ -8,18 +8,16 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('layanan', 'Home::services');
 $routes->match(['get', 'post'], 'login', 'Auth::login');
-$routes->match(['get', 'post'], 'register', 'Auth::register');
 $routes->post('logout', 'Auth::logout', ['filter' => 'auth']);
 $routes->post('telegram/webhook', 'TelegramController::webhook');
 
-$routes->group('pelanggan', ['filter' => 'auth'], static function ($routes) {
-    $routes->get('/', 'Customer\Dashboard::index', ['filter' => 'role:customer']);
-    $routes->match(['get', 'post'], 'booking/baru', 'Customer\BookingController::create', ['filter' => 'role:customer']);
-    $routes->get('booking/slots', 'Customer\BookingController::slots', ['filter' => 'role:customer']);
-    $routes->get('booking', 'Customer\BookingController::history', ['filter' => 'role:customer']);
-    $routes->get('booking/(:num)/sukses', 'Customer\BookingController::success/$1', ['filter' => 'role:customer']);
-    $routes->get('booking/(:num)', 'Customer\BookingController::detail/$1', ['filter' => 'role:customer']);
-    $routes->post('booking/(:num)/batal', 'Customer\BookingController::cancel/$1', ['filter' => 'role:customer']);
+// Public customer booking flow (no auth required per SEMPRO revised scope)
+$routes->group('pelanggan', static function ($routes) {
+    $routes->match(['get', 'post'], 'booking/baru', 'Customer\BookingController::create');
+    $routes->get('booking/slots', 'Customer\BookingController::slots');
+    $routes->match(['get', 'post'], 'booking/cek', 'Customer\BookingController::lookup');
+    $routes->get('booking/sukses/(:num)/(:alphanum)', 'Customer\BookingController::success/$1/$2');
+    $routes->post('booking/(:num)/batal', 'Customer\BookingController::cancel/$1');
 });
 
 $routes->group('admin', ['filter' => 'auth'], static function ($routes) {

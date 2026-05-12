@@ -4,19 +4,34 @@
 <div class="page-header">
   <span class="gold-badge badge rounded-pill mb-2">Booking pelanggan</span>
   <h1 class="h2 mb-2">Form Booking</h1>
-  <p class="small-muted mb-0">Pilih layanan, stylist, tanggal, lalu tentukan slot waktu yang masih tersedia.</p>
+  <p class="small-muted mb-0">Isi data, pilih layanan, stylist, tanggal, lalu pilih slot waktu yang tersedia. Tidak perlu daftar akun.</p>
 </div>
 
 <div class="form-card">
   <form method="post">
     <?= csrf_field() ?>
+    <h2 class="h5 section-title mb-3">Data Pelanggan</h2>
+    <div class="row g-3 mb-2">
+      <div class="col-md-6">
+        <label class="form-label">Nama Lengkap</label>
+        <input class="form-control" name="customer_name" value="<?= esc(old('customer_name')) ?>" required minlength="3">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">No. WhatsApp</label>
+        <input class="form-control" name="customer_phone" value="<?= esc(old('customer_phone')) ?>" placeholder="08xxxxxxxxxx" required minlength="8">
+        <div class="small-muted">Pakai nomor aktif. Nomor ini juga dipakai untuk Cek Booking nanti.</div>
+      </div>
+    </div>
+
+    <hr class="my-4">
+    <h2 class="h5 section-title mb-3">Detail Booking</h2>
     <div class="row g-3">
       <div class="col-md-6">
         <label class="form-label">Layanan</label>
         <select class="form-select" name="service_id" id="service_id" required>
           <option value="">Pilih layanan</option>
           <?php foreach ($services as $s): ?>
-            <option value="<?= $s['id'] ?>" data-duration="<?= (int) $s['duration_minutes'] ?>"><?= esc($s['name']) ?> · <?= $s['duration_minutes'] ?> menit · Rp<?= number_format($s['price'], 0, ',', '.') ?></option>
+            <option value="<?= $s['id'] ?>" data-duration="<?= (int) $s['duration_minutes'] ?>" <?= old('service_id') == $s['id'] ? 'selected' : '' ?>><?= esc($s['name']) ?> · <?= $s['duration_minutes'] ?> menit · Rp<?= number_format($s['price'], 0, ',', '.') ?></option>
           <?php endforeach ?>
         </select>
         <div id="durationBadge" class="mt-2" style="display:none;">
@@ -28,26 +43,26 @@
         <select class="form-select" name="stylist_id" id="stylist_id" required>
           <option value="">Pilih stylist</option>
           <?php foreach ($stylists as $st): ?>
-            <option value="<?= $st['id'] ?>"><?= esc($st['name']) ?></option>
+            <option value="<?= $st['id'] ?>" <?= old('stylist_id') == $st['id'] ? 'selected' : '' ?>><?= esc($st['name']) ?></option>
           <?php endforeach ?>
         </select>
       </div>
       <div class="col-md-6">
         <label class="form-label">Tanggal</label>
-        <input type="date" class="form-control" name="booking_date" id="booking_date" min="<?= date('Y-m-d') ?>" required>
+        <input type="date" class="form-control" name="booking_date" id="booking_date" min="<?= date('Y-m-d') ?>" value="<?= esc(old('booking_date')) ?>" required>
       </div>
       <div class="col-12">
         <label class="form-label">Slot Mulai (grid 30 menit)</label>
         <div id="slots" class="d-flex flex-wrap gap-2 my-2">
           <span class="small-muted">Pilih layanan, stylist, dan tanggal.</span>
         </div>
-        <input type="hidden" name="start_time" id="start_time" required>
+        <input type="hidden" name="start_time" id="start_time" required value="<?= esc(old('start_time')) ?>">
         <div id="occupiedHint" class="small-muted mt-2"></div>
         <div class="small-muted">Slot mulai akan otomatis menahan blok sesuai durasi layanan. Slot terisi dinonaktifkan.</div>
       </div>
       <div class="col-12">
         <label class="form-label">Catatan</label>
-        <textarea class="form-control" name="notes" rows="3" placeholder="Opsional, misalnya permintaan model atau catatan khusus."></textarea>
+        <textarea class="form-control" name="notes" rows="3" placeholder="Opsional, misalnya permintaan model atau catatan khusus."><?= esc(old('notes')) ?></textarea>
       </div>
     </div>
     <button class="btn btn-primary mt-4" type="submit">Submit Booking</button>
@@ -100,7 +115,7 @@ async function loadSlots() {
   }
 
   slots.innerHTML = '<span class="small-muted">Memuat slot...</span>';
-  const response = await fetch('/pelanggan/booking/slots?service_id=' + serviceId + '&stylist_id=' + stylistId + '&date=' + date);
+  const response = await fetch('<?= base_url('pelanggan/booking/slots') ?>?service_id=' + serviceId + '&stylist_id=' + stylistId + '&date=' + date);
   const data = await response.json();
   slots.innerHTML = '';
 
@@ -135,6 +150,7 @@ async function loadSlots() {
 
 [service_id, stylist_id, booking_date].forEach((element) => element.addEventListener('change', loadSlots));
 service_id.addEventListener('change', refreshDurationBadge);
+refreshDurationBadge();
 </script>
 
 <?= $this->endSection() ?>

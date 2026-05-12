@@ -6,8 +6,8 @@
     <div class="form-card">
       <div class="text-center mb-4">
         <span class="brand-mark mx-auto mb-3">SW</span>
-        <h1 class="h3 mb-2">Selamat datang kembali</h1>
-        <p class="small-muted mb-0">Masuk untuk mengelola booking atau melihat riwayat layanan.</p>
+        <h1 class="h3 mb-2">Login Admin / Pemilik</h1>
+        <p class="small-muted mb-0">Halaman ini khusus untuk admin dan pemilik salon.</p>
       </div>
       <form method="post">
         <?= csrf_field() ?>
@@ -21,7 +21,7 @@
         </div>
         <button class="btn btn-primary w-100" type="submit">Login</button>
       </form>
-      <p class="small-muted text-center mt-3 mb-0">Belum punya akun? <a href="<?= base_url('register') ?>">Daftar pelanggan</a>.</p>
+      <p class="small-muted text-center mt-3 mb-0">Pelanggan tidak perlu akun. Langsung <a href="<?= base_url('pelanggan/booking/baru') ?>">booking di sini</a> atau <a href="<?= base_url('pelanggan/booking/cek') ?>">cek booking</a>.</p>
     </div>
   </div>
 </div>
