@@ -38,12 +38,6 @@ if (! function_exists('rel_time_id')) {
           <?= esc($log['actor'] ?? 'sistem') ?>
           <?= ! empty($log['actor_role']) ? ' · ' . esc($log['actor_role']) : '' ?>
         </div>
-        <?php if (! empty($log['payload'])): ?>
-          <details>
-            <summary class="caption" style="cursor:pointer;">Payload</summary>
-            <pre style="background:var(--color-ivory-warm); padding:0.5rem; border-radius:6px; font-size:0.75rem; white-space:pre-wrap; margin:0.25rem 0 0;"><?= esc(json_encode(json_decode((string) $log['payload'], true), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) ?></pre>
-          </details>
-        <?php endif ?>
       </li>
     <?php endforeach ?>
   </ol>
