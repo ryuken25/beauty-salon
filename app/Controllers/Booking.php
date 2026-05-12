@@ -6,7 +6,6 @@ use App\Models\BookingLogModel;
 use App\Models\BookingModel;
 use App\Models\LayananModel;
 use App\Models\SettingModel;
-use App\Models\StylistModel;
 use App\Services\BookingService;
 use App\Services\SlotService;
 use App\Services\WhatsAppTemplateService;
@@ -70,7 +69,7 @@ class Booking extends BaseController
         }
         $set = new SettingModel();
         $owner = $set->getValue('nomor_hp_owner', '');
-        $template = view('public/_template_wa_owner', ['booking' => $row], ['saveData' => true]);
+        $template = (new WhatsAppTemplateService())->ownerConfirmationMessage($row);
         $waLink = $owner ? 'https://wa.me/' . preg_replace('/\D+/', '', $owner) . '?text=' . rawurlencode($template) : '';
         return view('public/booking_sukses', ['booking' => $row, 'wa_link' => $waLink]);
     }
