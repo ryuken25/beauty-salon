@@ -50,6 +50,7 @@ class BookingService
 
             $bookingRow = [
                 'kode_booking' => $kode,
+                'user_id' => isset($data['user_id']) && $data['user_id'] ? (int) $data['user_id'] : null,
                 'nama_pelanggan' => trim((string) $data['nama_pelanggan']),
                 'nomor_hp_pelanggan' => $phone,
                 'layanan_id' => (int) $layanan['id'],

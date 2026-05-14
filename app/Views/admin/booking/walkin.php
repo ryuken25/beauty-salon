@@ -80,20 +80,31 @@ async function refreshSlots() {
   render();
 }
 function n(){return Math.ceil(state.durasi/30);} function insuf(s){const sm=toMin(s);const em=sm+state.durasi;if(em>state.closeMin) return true;for(let i=1;i<n();i++){if(state.booked.includes(fromMin(sm+i*30))) return true;}return false;} function held(s){if(!state.slot) return false;const sm=toMin(state.slot);const m=toMin(s);return m>sm && m<sm+state.durasi;}
+let slotLock = false;
+function pickSlot(s) {
+  if (slotLock) return;
+  slotLock = true;
+  state.slot = (state.slot === s) ? null : s;
+  document.getElementById('slotInput').value = state.slot || '';
+  render();
+  setTimeout(() => { slotLock = false; }, 180);
+}
 function render() {
   const grid = document.getElementById('slotGrid'); grid.innerHTML = '';
   const isToday = state.tanggal === todayISO(); const cur = nowM();
   allSlots.forEach((s) => { const d = document.createElement('div'); d.className='slot'; d.textContent=s; const m=toMin(s);
+    let clickable = false;
     if (m<state.openMin||m>=state.closeMin) d.classList.add('slot--insufficient');
     else if (isToday && m<cur) d.classList.add('slot--past');
     else if (state.booked.includes(s)) d.classList.add('slot--booked');
-    else if (insuf(s)) d.classList.add('slot--insufficient');
+    else if (insuf(s) && !(state.slot && s===state.slot)) d.classList.add('slot--insufficient');
     else {
       if (state.slot && s===state.slot) d.classList.add('slot--selected');
       else if (held(s)) d.classList.add('slot--held');
       else d.classList.add('slot--available');
-      d.onclick = () => { state.slot=s; document.getElementById('slotInput').value=s; render(); };
+      clickable = true;
     }
+    if (clickable) d.addEventListener('click', (ev) => { ev.preventDefault(); pickSlot(s); });
     grid.appendChild(d);
   });
 }

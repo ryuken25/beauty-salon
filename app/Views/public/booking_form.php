@@ -20,11 +20,11 @@ $today = date('Y-m-d');
     <div class="row-salon cols-2">
       <div>
         <label class="form-salon-label">Nama lengkap *</label>
-        <input class="form-salon-input" type="text" name="nama_pelanggan" required minlength="3" value="<?= esc(old('nama_pelanggan')) ?>">
+        <input class="form-salon-input" type="text" name="nama_pelanggan" required minlength="3" value="<?= esc(old('nama_pelanggan') ?? ($prefill_nama ?? '')) ?>">
       </div>
       <div>
         <label class="form-salon-label">Nomor WhatsApp *</label>
-        <input class="form-salon-input" type="tel" name="nomor_hp_pelanggan" required value="<?= esc(old('nomor_hp_pelanggan')) ?>" placeholder="08xxxxxxxxxx">
+        <input class="form-salon-input" type="tel" name="nomor_hp_pelanggan" required value="<?= esc(old('nomor_hp_pelanggan') ?? ($prefill_hp ?? '')) ?>" placeholder="08xxxxxxxxxx">
         <div class="form-salon-help">Contoh: 081234567890. Nomor ini dipakai untuk Cek Booking.</div>
       </div>
     </div>
@@ -165,6 +165,17 @@ function isHeld(slot) {
   return slotMin > startMin && slotMin < startMin + state.durasi;
 }
 
+let slotClickLock = false;
+function pickSlot(slot) {
+  if (slotClickLock) return;
+  slotClickLock = true;
+  state.slot = (state.slot === slot) ? null : slot;
+  document.getElementById('slotInput').value = state.slot || '';
+  renderGrid();
+  updateSummary();
+  setTimeout(() => { slotClickLock = false; }, 180);
+}
+
 function renderGrid() {
   const grid = document.getElementById('slotGrid');
   grid.innerHTML = '';
@@ -175,19 +186,23 @@ function renderGrid() {
     d.className = 'slot';
     d.textContent = slot;
     const m = toMin(slot);
+    let clickable = false;
     if (m < state.openMin || m >= state.closeMin) {
       d.classList.add('slot--insufficient');
     } else if (isToday && m < nowM) {
       d.classList.add('slot--past');
     } else if (state.booked.includes(slot)) {
       d.classList.add('slot--booked');
-    } else if (isInsufficient(slot)) {
+    } else if (isInsufficient(slot) && !(state.slot && slot === state.slot)) {
       d.classList.add('slot--insufficient');
     } else {
       if (state.slot && slot === state.slot) d.classList.add('slot--selected');
       else if (isHeld(slot)) d.classList.add('slot--held');
       else d.classList.add('slot--available');
-      d.onclick = () => { state.slot = slot; document.getElementById('slotInput').value = slot; renderGrid(); updateSummary(); };
+      clickable = true;
+    }
+    if (clickable) {
+      d.addEventListener('click', (ev) => { ev.preventDefault(); pickSlot(slot); }, { once: false });
     }
     grid.appendChild(d);
   });

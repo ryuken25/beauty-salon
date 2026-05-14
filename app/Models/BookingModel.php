@@ -3,7 +3,7 @@ namespace App\Models;
 class BookingModel extends BaseAppModel {
     protected $table = 'bookings';
     protected $allowedFields = [
-        'kode_booking','nama_pelanggan','nomor_hp_pelanggan','layanan_id','stylist_id',
+        'kode_booking','user_id','nama_pelanggan','nomor_hp_pelanggan','layanan_id','stylist_id',
         'tanggal','slot_mulai','slot_selesai','jumlah_slot','harga_layanan','status','sumber','catatan',
         'wa_sent','verified_via','verified_at','completed_at','cancelled_at','cancelled_by',
         'rejection_reason','telegram_message_chat_id','telegram_message_id',
@@ -22,6 +22,16 @@ class BookingModel extends BaseAppModel {
     public function findByNomorHp(string $nomorHp): array
     {
         return $this->joinedBuilder()->where('b.nomor_hp_pelanggan', $nomorHp)->orderBy('b.created_at', 'DESC')->limit(20)->get()->getResultArray();
+    }
+
+    public function findByUserOrHp(int $userId, string $nomorHp): array
+    {
+        return $this->joinedBuilder()
+            ->groupStart()->where('b.user_id', $userId)->orWhere('b.nomor_hp_pelanggan', $nomorHp)->groupEnd()
+            ->orderBy('b.created_at', 'DESC')
+            ->limit(50)
+            ->get()
+            ->getResultArray();
     }
 
     private function joinedBuilder()

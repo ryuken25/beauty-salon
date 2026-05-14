@@ -18,9 +18,16 @@ $routes->get('api/slots', 'Api::slots');
 
 $routes->post('telegram/webhook', 'TelegramController::webhook');
 
-$routes->match(['get', 'post'], 'admin/login', 'Admin\Auth::login');
-$routes->get('admin', 'Admin\Auth::login');
-$routes->post('admin/logout', 'Admin\Auth::logout', ['filter' => 'admin']);
+$routes->match(['get', 'post'], 'login', 'Auth::login');
+$routes->match(['get', 'post'], 'register', 'Auth::register');
+$routes->post('logout', 'Auth::logout');
+$routes->match(['get', 'post'], 'admin/login', 'Auth::login');
+$routes->get('admin', 'Auth::login');
+$routes->post('admin/logout', 'Auth::logout');
+
+$routes->group('pelanggan', ['filter' => 'pelanggan'], static function ($routes) {
+    $routes->get('dashboard', 'Pelanggan::dashboard');
+});
 
 $routes->group('admin', ['filter' => 'admin'], static function ($routes) {
     $routes->get('dashboard', 'Admin\Dashboard::index');

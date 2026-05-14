@@ -9,21 +9,34 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="<?= base_url('assets/css/salon-theme.css') ?>" rel="stylesheet">
 </head>
 <body>
+<?php $isPelanggan = session('is_logged_in') && session('user_role') === 'pelanggan'; ?>
 <nav class="nav-salon">
   <a class="nav-salon__brand" href="<?= base_url('/') ?>">
-    <span class="nav-salon__wordmark">SW BEAUTY SALON</span>
-    <span class="nav-salon__tagline">Reserve · Refine · Revel</span>
+    <img class="nav-salon__logo" src="<?= base_url('assets/img/logo.png') ?>" alt="SW">
+    <span class="nav-salon__brand-text">
+      <span class="nav-salon__wordmark">SW BEAUTY SALON</span>
+      <span class="nav-salon__tagline">Reserve · Refine · Revel</span>
+    </span>
   </a>
   <div class="nav-salon__links">
     <a class="nav-salon__link <?= $uriPath === '' ? 'active' : '' ?>" href="<?= base_url('/') ?>">Beranda</a>
     <a class="nav-salon__link <?= $uriPath === 'layanan' ? 'active' : '' ?>" href="<?= base_url('layanan') ?>">Layanan</a>
     <a class="nav-salon__link <?= str_starts_with($uriPath, 'booking') && $uriPath !== 'cek-booking' ? 'active' : '' ?>" href="<?= base_url('booking') ?>">Booking</a>
     <a class="nav-salon__link <?= $uriPath === 'cek-booking' ? 'active' : '' ?>" href="<?= base_url('cek-booking') ?>">Cek Booking</a>
-    <a class="btn-salon-primary" href="<?= base_url('booking') ?>">Booking sekarang</a>
+    <?php if ($isPelanggan): ?>
+      <a class="nav-salon__link <?= str_starts_with($uriPath, 'pelanggan') ? 'active' : '' ?>" href="<?= base_url('pelanggan/dashboard') ?>"><i class="bi bi-person-circle"></i> <?= esc(session('user_nama')) ?></a>
+      <form method="post" action="<?= base_url('logout') ?>" style="display:inline;">
+        <?= csrf_field() ?>
+        <button class="btn-salon-ghost" type="submit">Logout</button>
+      </form>
+    <?php else: ?>
+      <a class="nav-salon__link" href="<?= base_url('login') ?>">Masuk</a>
+      <a class="btn-salon-primary" href="<?= base_url('booking') ?>">Booking sekarang</a>
+    <?php endif ?>
   </div>
 </nav>
 

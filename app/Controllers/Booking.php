@@ -28,6 +28,7 @@ class Booking extends BaseController
                 return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
             }
             try {
+                $userId = session('user_role') === 'pelanggan' ? (int) session('user_id') : null;
                 $row = $svc->create([
                     'nama_pelanggan' => $this->request->getPost('nama_pelanggan'),
                     'nomor_hp_pelanggan' => $this->request->getPost('nomor_hp_pelanggan'),
@@ -38,6 +39,7 @@ class Booking extends BaseController
                     'sumber' => 'online',
                     'actor' => 'pelanggan',
                     'actor_role' => 'pelanggan',
+                    'user_id' => $userId,
                 ]);
                 return redirect()->to('/booking/sukses/' . $row['kode_booking']);
             } catch (RuntimeException $e) {
@@ -58,6 +60,8 @@ class Booking extends BaseController
             'all_slots' => $allSlots,
             'dates' => $dates,
             'preselect_layanan_id' => (int) ($this->request->getGet('layanan_id') ?? 0),
+            'prefill_nama' => session('user_role') === 'pelanggan' ? (string) session('user_nama') : '',
+            'prefill_hp' => session('user_role') === 'pelanggan' ? (string) session('user_hp') : '',
         ]);
     }
 
