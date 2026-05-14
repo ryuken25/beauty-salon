@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/auth') ?>
 <?= $this->section('content') ?>
-<div class="card-salon">
+<div class="card-salon" style="background:var(--card);">
   <div class="text-center">
     <img src="<?= base_url('assets/img/logo.png') ?>" alt="SW Beauty Salon" style="width:80px;height:80px;object-fit:contain;margin-bottom:0.5rem;">
     <div class="h1" style="margin-bottom:0.25rem;">Daftar Akun Pelanggan</div>

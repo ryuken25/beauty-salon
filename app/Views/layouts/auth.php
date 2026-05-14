@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= esc($title ?? 'Login · SW Beauty Salon') ?></title>
+  <title><?= esc($title ?? 'Masuk · SW Beauty Salon') ?></title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="<?= base_url('assets/css/salon-theme.css') ?>" rel="stylesheet">
 </head>
 <body>
-<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding: 1.5rem;">
-  <div style="width:100%; max-width:400px;">
+<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem; background:var(--bg);">
+  <div style="width:100%; max-width:420px;">
     <?php if (session()->getFlashdata('success')): ?>
       <div class="alert-salon alert-salon--success"><?= esc(session()->getFlashdata('success')) ?></div>
     <?php endif ?>
