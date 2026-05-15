@@ -1,7 +1,6 @@
 <?php
 $eventLabels = [
     'created' => ['icon' => 'bi-pencil-square', 'label' => 'Booking dibuat'],
-    'telegram_sent' => ['icon' => 'bi-send', 'label' => 'Notifikasi Telegram terkirim'],
     'verified' => ['icon' => 'bi-check-circle', 'label' => 'Diverifikasi'],
     'rejected' => ['icon' => 'bi-x-circle', 'label' => 'Ditolak'],
     'cancelled' => ['icon' => 'bi-slash-circle', 'label' => 'Dibatalkan'],

@@ -29,7 +29,6 @@
     <div class="caption text-center mt-1">Pesan akan terisi otomatis.</div>
   <?php endif ?>
 
-  <div class="alert-salon alert-salon--info mt-3"><i class="bi bi-send"></i> Admin sudah dikirimi notifikasi Telegram otomatis.</div>
 
   <div class="text-center mt-3">
     <div class="tagline">Terima kasih sudah memesan</div>

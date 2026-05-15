@@ -5,14 +5,12 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Models\SettingModel;
 use App\Models\UserModel;
-use App\Services\TelegramService;
 
 class PengaturanController extends BaseController
 {
     private array $editableKeys = [
         'nama_salon', 'alamat_salon', 'telp_salon', 'nomor_hp_owner',
         'jam_buka', 'jam_tutup', 'range_hari_booking',
-        'telegram_bot_token', 'telegram_allowed_chat_ids',
         'template_wa_diterima', 'template_wa_ditolak', 'template_wa_reminder', 'template_wa_selesai',
     ];
 
@@ -29,13 +27,6 @@ class PengaturanController extends BaseController
         }
         $users = (new UserModel())->orderBy('role')->orderBy('nama')->find();
         return view('admin/pengaturan/index', ['s' => $set->all(), 'users' => $users]);
-    }
-
-    public function telegramTest()
-    {
-        $resp = (new TelegramService())->sendTestMessage();
-        $msg = $resp['ok'] ? 'Test message terkirim.' : ('Gagal: ' . ($resp['reason'] ?? 'Cek log.'));
-        return redirect()->to('/admin/pengaturan')->with($resp['ok'] ? 'success' : 'error', $msg);
     }
 
     public function gantiPassword()

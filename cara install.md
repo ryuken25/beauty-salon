@@ -94,7 +94,7 @@ php spark migrate
 php spark db:seed SalonSeeder
 ```
 
-Akan bikin semua tabel + isi data sample: 2 akun admin, 1 stylist default, 8 layanan, setting awal (termasuk bot Telegram).
+Akan bikin semua tabel + isi data sample: 2 akun admin, 1 stylist default, 8 layanan, setting awal salon.
 
 ---
 
@@ -137,44 +137,6 @@ Untuk cek status booking nantinya:
 
 ---
 
-## 10. Bot Telegram (opsional tapi udah disetup)
-
-Bot udah aktif dengan token bawaan. Super admin: **chat ID `1553203064`**.
-
-### Cara pakai bot lokal (development)
-
-Buka **terminal baru** (jangan tutup yang `spark serve`), jalankan:
-
-```bash
-php spark telegram:poll
-```
-
-Ini mulai polling Telegram. Buka chat ke bot → kirim `/start` untuk dapat chat ID kamu.
-
-### Perintah bot
-
-| Command | Akses | Fungsi |
-|---|---|---|
-| `/start` atau `/id` | Siapa aja | Tampilin chat ID. Kalau bukan admin → `kamu bukan admin` |
-| `/help` | Admin | Daftar perintah |
-| `/pending` | Admin | Booking pending + tombol verify/tolak inline |
-| `/today` | Admin | Jadwal booking hari ini |
-| `/list [keyword]` | Admin | Daftar layanan aktif |
-| `/new <nominal> <nama paket>` | Admin | Catat pesanan walk-in (auto-completed + transaksi). Contoh: `/new 250000 Hair Treatment` |
-| `/stats` | Admin | Pendapatan + jumlah booking hari ini |
-| `/cancel <kode>` | Admin | Batalkan booking via kode |
-| `/admin list` | **Super admin saja** | Daftar admin |
-| `/admin add <chat_id>` | **Super admin saja** | Tambah admin baru |
-| `/admin remove <chat_id>` | **Super admin saja** | Hapus admin |
-
-### Cara nambah admin Telegram baru
-
-1. Suruh temen kirim `/start` ke bot — dia dapat chat ID-nya.
-2. Super admin (1553203064) kirim `/admin add <chat_id>` ke bot.
-3. Temen lo sekarang udah jadi admin Telegram.
-
----
-
 ## 11. Cara pull update terbaru
 
 Kalau ada update di GitHub:
@@ -211,11 +173,6 @@ php spark serve
 - Reset DB: `php spark migrate:refresh` (HATI-HATI: ini hapus semua data!).
 - Lalu seed ulang: `php spark db:seed SalonSeeder`.
 
-### ❌ Bot Telegram gak respon
-- Pastiin `php spark telegram:poll` jalan di terminal terpisah.
-- Cek bot token di `/admin/pengaturan` → tab Telegram.
-- Kalau di production (deploy ke server HTTPS), bisa pakai webhook `POST /telegram/webhook` dari Telegram.
-
 ### ❌ Halaman blank / error 500
 - Buka `writable/logs/log-YYYY-MM-DD.log` — error biasanya di sana.
 - Cek `.env` → `CI_ENVIRONMENT = development` biar error message muncul jelas.
@@ -229,7 +186,6 @@ php spark serve
 3. Bikin `.env` di server, isi `CI_ENVIRONMENT = production` + database production.
 4. Run `php spark migrate` + `php spark db:seed SalonSeeder`.
 5. Point document root ke folder `public/` (bukan root project).
-6. Untuk Telegram di production: setup webhook bukan polling.
 
 ---
 
@@ -240,7 +196,7 @@ php spark serve
 | `.env` | Konfigurasi database + environment |
 | `app/Views/` | Tampilan halaman |
 | `app/Controllers/` | Logika per halaman |
-| `app/Services/` | Logika domain (booking, slot, telegram, WA) |
+| `app/Services/` | Logika domain (booking, slot, WhatsApp template) |
 | `public/assets/css/salon-theme.css` | Styling custom |
 | `app/Database/Migrations/` | Schema database |
 | `app/Database/Seeds/SalonSeeder.php` | Data awal |

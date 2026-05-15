@@ -77,18 +77,6 @@ Pengujian sesuai Bab III Section 3.6 proposal SEMPRO: metode Black Box, fokus in
 | BB-64 | Edit jadwal stylist | Set Minggu = libur | Stylist tidak menerima booking di hari Minggu (cek API `/api/slots`) | |
 | BB-65 | Set stylist default | Toggle is_default ke stylist lain | Stylist lama otomatis di-unset, hanya 1 default | |
 
-## E. Telegram integration
-
-| ID | Skenario | Input | Output diharapkan | Hasil |
-|---|---|---|---|---|
-| BB-70 | Test message | Klik "Kirim test message" di Pengaturan > Telegram | Chat owner menerima "✅ Test SW Beauty Salon" | |
-| BB-71 | Notif booking baru | Customer submit booking | Chat owner menerima pesan inline + 2 button (Verifikasi/Tolak) dalam ≤5 detik | |
-| BB-72 | Verifikasi via Telegram | Owner klik "✅ Verifikasi" | Status booking → accepted, message di-edit jadi "✅ Sudah diverifikasi via Telegram oleh chat X" | |
-| BB-73 | Tolak via Telegram | Owner klik "❌ Tolak" | Status → rejected, slot dilepas, message di-edit | |
-| BB-74 | Dual verify sync | Verify via dashboard, lihat Telegram | Message asli di-edit jadi "via Dashboard oleh {nama}", broadcast ke chat lain | |
-| BB-75 | Token kedaluwarsa | Klik tombol di message > 2 hari | Response "Token tidak valid atau kedaluwarsa" | |
-| BB-76 | Chat ID tidak diizinkan | Forward message ke chat lain, klik tombol | Response "Chat ID tidak diizinkan" | |
-
 ## F. Dashboard
 
 | ID | Skenario | Input | Output diharapkan | Hasil |

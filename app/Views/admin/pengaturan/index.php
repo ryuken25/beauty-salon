@@ -4,13 +4,12 @@
 <div class="page-header-salon">
   <div>
     <div class="h1">Pengaturan</div>
-    <div class="tagline">Konfigurasi salon, Telegram, WhatsApp, akun</div>
+    <div class="tagline">Konfigurasi salon, WhatsApp, akun</div>
   </div>
 </div>
 
 <ul class="nav nav-tabs mb-3" role="tablist">
   <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabSalon">Salon</button></li>
-  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabTelegram">Telegram</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabWa">WhatsApp</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAkun">Akun</button></li>
 </ul>
@@ -30,21 +29,6 @@
         <div><label class="form-salon-label">Durasi slot</label><input class="form-salon-input" value="30 menit (fixed sesuai novelty)" disabled></div>
       </div>
       <button class="btn-salon-primary mt-2" type="submit">Simpan</button>
-    </form>
-  </div>
-
-  <div class="tab-pane fade" id="tabTelegram">
-    <form class="card-salon" method="post">
-      <?= csrf_field() ?>
-      <div class="h2 mb-2">Telegram bot</div>
-      <div><label class="form-salon-label">Bot token</label><input class="form-salon-input" type="password" name="telegram_bot_token" value="<?= esc($s['telegram_bot_token'] ?? '') ?>"></div>
-      <div class="mt-1"><label class="form-salon-label">Chat ID diizinkan (pisahkan koma)</label><textarea class="form-salon-textarea" name="telegram_allowed_chat_ids" rows="2"><?= esc($s['telegram_allowed_chat_ids'] ?? '') ?></textarea></div>
-      <div class="caption mt-1">Dapatkan chat ID dengan mengirim /start ke bot Anda.</div>
-      <button class="btn-salon-primary mt-2" type="submit">Simpan</button>
-    </form>
-    <form class="mt-2" method="post" action="<?= base_url('admin/pengaturan/telegram-test') ?>">
-      <?= csrf_field() ?>
-      <button class="btn-salon-secondary" type="submit"><i class="bi bi-send"></i> Kirim test message</button>
     </form>
   </div>
 

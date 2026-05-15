@@ -51,7 +51,7 @@ class BookingController extends BaseController
     public function verify(int $id)
     {
         try {
-            (new BookingService())->verify($id, 'dashboard', (int) session('user_id'), null);
+            (new BookingService())->verify($id, (int) session('user_id'));
             return redirect()->to('/admin/booking/' . $id)->with('success', 'Booking diverifikasi.');
         } catch (RuntimeException $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -61,7 +61,7 @@ class BookingController extends BaseController
     public function reject(int $id)
     {
         try {
-            (new BookingService())->reject($id, 'dashboard', (int) session('user_id'), null, $this->request->getPost('rejection_reason'));
+            (new BookingService())->reject($id, (int) session('user_id'), $this->request->getPost('rejection_reason'));
             return redirect()->to('/admin/booking/' . $id)->with('success', 'Booking ditolak.');
         } catch (RuntimeException $e) {
             return redirect()->back()->with('error', $e->getMessage());

@@ -1,8 +1,8 @@
 # SW Beauty Salon
 
-Aplikasi web CodeIgniter 4 untuk booking layanan SW Beauty Salon dengan fixed time slot 30 menit, verifikasi booking admin/pemilik, notifikasi Telegram opsional, template WhatsApp manual, transaksi otomatis saat layanan selesai, dan dashboard pendapatan.
+Aplikasi web CodeIgniter 4 untuk booking layanan SW Beauty Salon dengan fixed time slot 30 menit, verifikasi booking admin/pemilik, template WhatsApp manual, transaksi otomatis saat layanan selesai, dan dashboard pendapatan.
 
-Tampilan aplikasi menggunakan konsep **salon lokal yang rapi, hangat, elegan, dan terpercaya** dengan tema black-gold soft dan background cream/ivory. Tidak ada dependency frontend berat; Bootstrap 5 tetap dipakai via CDN.
+Tampilan aplikasi memakai **dark editorial theme** (deep onyx + accent gold) — lihat `public/assets/css/salon-theme.css`. Bootstrap 5 dipakai via CDN.
 
 ## Tech Stack
 
@@ -10,7 +10,6 @@ Tampilan aplikasi menggunakan konsep **salon lokal yang rapi, hangat, elegan, da
 - Database: MySQL.
 - Frontend: Bootstrap 5, CSS custom di `public/assets/css/salon-theme.css`, JavaScript sederhana.
 - Grafik: Chart.js via CDN.
-- Integrasi: Telegram Bot API opsional.
 - WhatsApp: manual melalui template dan tautan `wa.me`, tanpa API pengiriman otomatis.
 
 ## Clone dan Install Lokal
@@ -68,10 +67,6 @@ database.default.password =
 database.default.DBDriver = MySQLi
 database.default.DBPrefix =
 database.default.port = 3306
-
-TELEGRAM_BOT_TOKEN = ''
-TELEGRAM_ALLOWED_CHAT_IDS = ''
-TELEGRAM_WEBHOOK_SECRET = ''
 ```
 
 Jika MySQL lokal memakai password, isi `database.default.password` di file `.env` masing-masing.
@@ -98,34 +93,6 @@ Jika MySQL lokal memakai password, isi `database.default.password` di file `.env
 - Input booking walk-in/offline.
 - Manajemen layanan, stylist, jam kerja stylist, dan pengaturan dasar.
 - Template WhatsApp manual: Salin Pesan, Buka WhatsApp, dan Tandai WA Sudah Dikirim.
-- Telegram long polling/webhook opsional untuk notifikasi dan aksi booking.
-
-## Telegram Opsional
-
-Telegram tidak wajib agar aplikasi berjalan. Jika token dan chat ID kosong, booking tetap tersimpan dan aplikasi tidak crash.
-
-Isi `.env` lokal jika ingin mengaktifkan Telegram:
-
-```env
-TELEGRAM_BOT_TOKEN = 'isi_token_bot_anda'
-TELEGRAM_ALLOWED_CHAT_IDS = '123456789,987654321'
-TELEGRAM_WEBHOOK_SECRET = ''
-```
-
-Untuk lokal tanpa HTTPS:
-
-```bash
-php spark telegram:poll
-```
-
-Perintah bot:
-
-- `/start`: menampilkan chat ID dan instruksi.
-- `/pending`: menampilkan booking pending dengan tombol.
-- `/today`: menampilkan jadwal hari ini.
-- `/help`: daftar perintah.
-
-Endpoint webhook opsional tersedia di `POST /telegram/webhook` jika aplikasi dipasang di server HTTPS.
 
 ## WhatsApp Manual
 
@@ -187,6 +154,5 @@ Halaman yang disarankan dicek manual:
 ## Catatan Keamanan Repo Public
 
 - Jangan commit `.env` asli.
-- Jangan commit token Telegram atau secret asli.
 - Jangan commit folder `vendor/`.
 - Gunakan `composer install` setelah clone untuk membuat folder `vendor/` lokal.

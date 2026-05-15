@@ -100,14 +100,6 @@ class BookingService
                 'slot_selesai' => $validation['slot_selesai'],
             ]);
 
-            if ($sumber === 'online') {
-                try {
-                    (new TelegramService())->sendBookingNotification($bookingId);
-                } catch (\Throwable $e) {
-                    log_message('error', 'Telegram notif gagal: ' . $e->getMessage());
-                }
-            }
-
             $row = (new BookingModel())->detail($bookingId);
             return $row ?: ['id' => $bookingId, 'kode_booking' => $kode];
         } catch (DatabaseException|RuntimeException $e) {
@@ -119,14 +111,14 @@ class BookingService
         }
     }
 
-    public function verify(int $bookingId, string $via, ?int $userId = null, ?string $telegramChatId = null): void
+    public function verify(int $bookingId, ?int $userId = null): void
     {
-        $this->transitionPending($bookingId, 'accepted', $via, $userId, $telegramChatId, null);
+        $this->transitionPending($bookingId, 'accepted', $userId, null);
     }
 
-    public function reject(int $bookingId, string $via, ?int $userId = null, ?string $telegramChatId = null, ?string $reason = null): void
+    public function reject(int $bookingId, ?int $userId = null, ?string $reason = null): void
     {
-        $this->transitionPending($bookingId, 'rejected', $via, $userId, $telegramChatId, $reason);
+        $this->transitionPending($bookingId, 'rejected', $userId, $reason);
     }
 
     public function cancel(int $bookingId, string $by, ?int $userId = null): void
@@ -160,12 +152,6 @@ class BookingService
         $db->transCommit();
 
         $this->logEvent($bookingId, 'cancelled', $cancelledBy, $by === 'pelanggan' ? 'pelanggan' : 'admin', []);
-
-        try {
-            (new TelegramService())->onBookingCancelled($bookingId, $cancelledBy);
-        } catch (\Throwable $e) {
-            log_message('error', 'Telegram notif gagal: ' . $e->getMessage());
-        }
     }
 
     public function complete(int $bookingId, ?int $userId, string $metodeBayar = 'cash', ?string $catatan = null): void
@@ -239,7 +225,7 @@ class BookingService
         return "BK-{$date}-{$seq}";
     }
 
-    private function transitionPending(int $bookingId, string $newStatus, string $via, ?int $userId, ?string $telegramChatId, ?string $reason): void
+    private function transitionPending(int $bookingId, string $newStatus, ?int $userId, ?string $reason): void
     {
         $db = db_connect();
         $db->transBegin();
@@ -249,9 +235,7 @@ class BookingService
             throw new RuntimeException('Booking ini sudah diproses.');
         }
         $now = date('Y-m-d H:i:s');
-        $verifiedVia = $via === 'telegram'
-            ? 'telegram:' . ($telegramChatId ?? 'unknown')
-            : 'dashboard:' . ($userId ?? 'unknown');
+        $verifiedVia = 'dashboard:' . ($userId ?? 'unknown');
         $fields = [
             'status' => $newStatus,
             'verified_via' => $verifiedVia,
@@ -272,15 +256,8 @@ class BookingService
         $db->transCommit();
 
         $this->logEvent($bookingId, $newStatus === 'accepted' ? 'verified' : 'rejected', $verifiedVia, 'admin', [
-            'via' => $via,
             'reason' => $reason,
         ]);
-
-        try {
-            (new TelegramService())->onBookingVerified($bookingId, $newStatus, $via, $userId, $telegramChatId, $reason);
-        } catch (\Throwable $e) {
-            log_message('error', 'Telegram sync gagal: ' . $e->getMessage());
-        }
     }
 
     public function logEvent(int $bookingId, string $eventType, string $actor, string $actorRole, array $payload = [], ?string $notes = null): void

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**SW Beauty Salon** — CodeIgniter 4 booking app for a salon in Tabanan, Bali. Customer side is fully public (no login); admin/owner login via `/admin`. Stack: PHP 8.1+, MySQL/MariaDB, Bootstrap 5 + Bootstrap Icons + Chart.js via CDN, Telegram Bot API, WhatsApp manual via `wa.me`.
+**SW Beauty Salon** — CodeIgniter 4 booking app for a salon in Tabanan, Bali. Unified login at `/login` for admin / pemilik / pelanggan; anonymous booking also supported (anyone can book without an account). Stack: PHP 8.1+, MySQL/MariaDB, Bootstrap 5 + Bootstrap Icons + Chart.js via CDN, WhatsApp manual via `wa.me`. **No Telegram integration.**
 
 ## Common Commands
 
@@ -16,7 +16,6 @@ php spark migrate:rollback
 php spark db:seed SalonSeeder
 php spark serve                 # http://localhost:8080
 php spark routes                # inspect routes
-php spark telegram:poll         # local Telegram long-polling
 vendor/bin/phpunit              # run tests
 ```
 
@@ -45,12 +44,11 @@ Demo accounts (password `Password123!`):
 ### Service layer
 - [BookingService](app/Services/BookingService.php) — full lifecycle (`create`, `verify`, `reject`, `cancel`, `complete`, `markWaSent`) + audit `logEvent()`.
 - [SlotService](app/Services/SlotService.php) — availability + slot validation.
-- [TelegramService](app/Services/TelegramService.php) — inline-button verification, message edit on dashboard verify, command-style polling.
 - [WhatsAppTemplateService](app/Services/WhatsAppTemplateService.php) — renders templates from settings, builds `wa.me` links. Manual-only — never integrate a paid WhatsApp API.
 
 ### Schema (Indonesian column names)
-- `users` (admin + pemilik only), `stylists` + `stylist_schedules`, `layanan`, `bookings` (`kode_booking`, `nama_pelanggan`, `nomor_hp_pelanggan`, `slot_mulai`, `slot_selesai`, `jumlah_slot`, status, …), `booking_slots`, `transaksi`, `settings` (key/value), `booking_logs`, `telegram_action_tokens`.
-- Single baseline migration: `2026-05-12-100000_ResetAndCreateSalonSchema.php`. Add NEW dated migrations for any further schema change.
+- `users` (admin, pemilik, pelanggan — `nomor_hp` optional), `stylists` + `stylist_schedules`, `layanan`, `bookings` (`kode_booking`, `user_id` nullable, `nama_pelanggan`, `nomor_hp_pelanggan`, `slot_mulai`, `slot_selesai`, `jumlah_slot`, status, …), `booking_slots`, `transaksi`, `settings` (key/value), `booking_logs`.
+- Baseline migration: `2026-05-12-100000_ResetAndCreateSalonSchema.php`. Subsequent: `2026-05-14_AddPelangganRoleAndUserBookings`, `2026-05-15_DropTelegramArtifacts`. Add NEW dated migrations for any further schema change.
 
 ### Booking status vocabulary
 | Internal | UI label | Slot held? |

@@ -16,8 +16,6 @@ $routes->post('booking/(:segment)/batal', 'Booking::batal/$1');
 
 $routes->get('api/slots', 'Api::slots');
 
-$routes->post('telegram/webhook', 'TelegramController::webhook');
-
 $routes->match(['get', 'post'], 'login', 'Auth::login');
 $routes->match(['get', 'post'], 'register', 'Auth::register');
 $routes->post('logout', 'Auth::logout');
@@ -58,6 +56,5 @@ $routes->group('admin', ['filter' => 'pemilik'], static function ($routes) {
     $routes->get('transaksi', 'Admin\TransaksiController::index');
 
     $routes->match(['get', 'post'], 'pengaturan', 'Admin\PengaturanController::index');
-    $routes->post('pengaturan/telegram-test', 'Admin\PengaturanController::telegramTest');
     $routes->post('pengaturan/ganti-password', 'Admin\PengaturanController::gantiPassword');
 });

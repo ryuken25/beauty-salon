@@ -1,5 +1,7 @@
 # IMPLEMENTATION_PLAN.md — SW Beauty Salon
 
+> ⚠️ **OBSOLETE SECTIONS (per 2026-05-15):** Telegram Bot integration telah dihapus seluruhnya dari aplikasi (controller, service, command, migration cleanup, route `/telegram/webhook`, command `php spark telegram:poll`, dan settings `telegram_*`). Semua bagian di bawah yang mention `TelegramNotifier`, `TelegramPoll`, inline-button verification, dan webhook Telegram sudah **tidak berlaku** — verifikasi booking sekarang hanya lewat dashboard `/admin/booking`. Dokumen ini ditinggalkan sebagai history plan; rujuk `README.md` + `docs/ERD.md` untuk state terbaru.
+
 > **Cara pakai:** clone repo, buka Claude Code di root project, kasih satu perintah: *"Baca file IMPLEMENTATION_PLAN.md di root project terus eksekusi sesuai urutan di Section 12. Sebelum mulai tiap section, show me your plan dulu — jangan langsung coding."* Selesai.
 
 ---
