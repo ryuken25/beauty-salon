@@ -33,16 +33,51 @@ class SalonSeeder extends Seeder
         }
         $this->db->table('stylist_schedules')->insertBatch($schedules);
 
-        $this->db->table('layanan')->insertBatch([
-            ['nama' => 'Hair Treatment', 'kategori' => 'Hair', 'deskripsi' => 'Perawatan rambut premium untuk rambut sehat dan lembut.', 'durasi_menit' => 90, 'harga' => 250000, 'ikon' => 'bi-scissors', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['nama' => 'Facial Premium', 'kategori' => 'Facial', 'deskripsi' => 'Perawatan wajah signature dengan produk premium.', 'durasi_menit' => 60, 'harga' => 180000, 'ikon' => 'bi-flower1', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['nama' => 'Hair Color', 'kategori' => 'Hair', 'deskripsi' => 'Pewarnaan rambut bold & beautiful sesuai konsultasi.', 'durasi_menit' => 120, 'harga' => 350000, 'ikon' => 'bi-droplet', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['nama' => 'Manicure', 'kategori' => 'Nails', 'deskripsi' => 'Perawatan tangan dan kuku elegan.', 'durasi_menit' => 60, 'harga' => 120000, 'ikon' => 'bi-hand-index', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['nama' => 'Make Up', 'kategori' => 'Make Up', 'deskripsi' => 'Make up profesional untuk acara spesial.', 'durasi_menit' => 90, 'harga' => 300000, 'ikon' => 'bi-stars', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['nama' => 'Diamond Tooth', 'kategori' => 'Aesthetic', 'deskripsi' => 'Pemasangan aksen diamond tooth kelas atas.', 'durasi_menit' => 30, 'harga' => 150000, 'ikon' => 'bi-gem', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['nama' => 'Nails Art', 'kategori' => 'Nails', 'deskripsi' => 'Dekorasi kuku artistik.', 'durasi_menit' => 60, 'harga' => 100000, 'ikon' => 'bi-palette', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['nama' => 'Sulam Alis', 'kategori' => 'Sulam', 'deskripsi' => 'Sulam alis natural dengan teknik premium.', 'durasi_menit' => 180, 'harga' => 450000, 'ikon' => 'bi-eye', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-        ]);
+        // Layanan SW Beauty Salon — durasi harus kelipatan 30 menit (fixed time slot).
+        // Harga estimasi range Tabanan; pemilik bisa adjust via /admin/layanan.
+        $layanan = [
+            // — Nails & Body —
+            ['nama' => 'Nail Art',                  'kategori' => 'Nails',          'deskripsi' => 'Dekorasi kuku artistik (30–90 menit).',                'durasi_menit' => 60,  'harga' => 100000, 'ikon' => 'bi-palette'],
+            ['nama' => 'Manicure / Pedicure',       'kategori' => 'Nails',          'deskripsi' => 'Perawatan tangan & kuku elegan.',                      'durasi_menit' => 30,  'harga' => 80000,  'ikon' => 'bi-hand-index'],
+            ['nama' => 'Callus Removal',            'kategori' => 'Nails',          'deskripsi' => 'Pengangkatan kapalan & kulit mati pada kaki.',         'durasi_menit' => 60,  'harga' => 100000, 'ikon' => 'bi-droplet-half'],
+
+            // — Lashes & Brow —
+            ['nama' => 'Eyelash Extension',         'kategori' => 'Lashes',         'deskripsi' => 'Pemasangan bulu mata premium (30–60 menit).',          'durasi_menit' => 60,  'harga' => 200000, 'ikon' => 'bi-eye'],
+            ['nama' => 'Shaping Alis',              'kategori' => 'Brow',           'deskripsi' => 'Pembentukan alis natural (kurang lebih 5 menit).',     'durasi_menit' => 30,  'harga' => 50000,  'ikon' => 'bi-eye-fill'],
+            ['nama' => 'Sulam Alis',                'kategori' => 'Sulam',          'deskripsi' => 'Sulam alis natural teknik premium (±3 jam).',          'durasi_menit' => 180, 'harga' => 450000, 'ikon' => 'bi-pen'],
+            ['nama' => 'Sulam Bibir',               'kategori' => 'Sulam',          'deskripsi' => 'Sulam bibir premium (±2 jam).',                        'durasi_menit' => 120, 'harga' => 400000, 'ikon' => 'bi-emoji-kiss'],
+
+            // — Body Treatment —
+            ['nama' => 'IPL Treatment',             'kategori' => 'Body',           'deskripsi' => 'Perawatan IPL kulit.',                                 'durasi_menit' => 30,  'harga' => 250000, 'ikon' => 'bi-lightning'],
+            ['nama' => 'Waxing + Detox Underarm',   'kategori' => 'Body',           'deskripsi' => 'Waxing ketiak + detox (1 jam).',                       'durasi_menit' => 60,  'harga' => 100000, 'ikon' => 'bi-droplet'],
+            ['nama' => 'Wax Kaki / Tangan',         'kategori' => 'Body',           'deskripsi' => 'Hair removal kaki atau tangan (30 menit).',            'durasi_menit' => 30,  'harga' => 80000,  'ikon' => 'bi-droplet'],
+
+            // — Face —
+            ['nama' => 'Facial',                    'kategori' => 'Facial',         'deskripsi' => 'Perawatan wajah signature (30–60 menit).',             'durasi_menit' => 60,  'harga' => 180000, 'ikon' => 'bi-flower1'],
+
+            // — Hair —
+            ['nama' => 'Keramas',                   'kategori' => 'Hair',           'deskripsi' => 'Cuci rambut + pijat kepala (±30 menit).',              'durasi_menit' => 30,  'harga' => 35000,  'ikon' => 'bi-droplet-half'],
+            ['nama' => 'Masker Bilas',              'kategori' => 'Hair',           'deskripsi' => 'Masker rambut bilas (±30 menit).',                     'durasi_menit' => 30,  'harga' => 50000,  'ikon' => 'bi-droplet'],
+            ['nama' => 'Catok / Styling',           'kategori' => 'Hair',           'deskripsi' => 'Catok / styling rambut (±30 menit).',                  'durasi_menit' => 30,  'harga' => 50000,  'ikon' => 'bi-magic'],
+            ['nama' => 'Masker Steam',              'kategori' => 'Hair',           'deskripsi' => 'Masker rambut + steam (1 jam).',                       'durasi_menit' => 60,  'harga' => 80000,  'ikon' => 'bi-cloud'],
+            ['nama' => 'Creambath',                 'kategori' => 'Hair',           'deskripsi' => 'Creambath relax (90 menit).',                          'durasi_menit' => 90,  'harga' => 100000, 'ikon' => 'bi-stars'],
+            ['nama' => 'Hair Spa',                  'kategori' => 'Hair',           'deskripsi' => 'Hair spa premium (90 menit).',                         'durasi_menit' => 90,  'harga' => 150000, 'ikon' => 'bi-gem'],
+            ['nama' => 'Smoothing',                 'kategori' => 'Hair',           'deskripsi' => 'Smoothing rambut (3–6 jam).',                          'durasi_menit' => 240, 'harga' => 600000, 'ikon' => 'bi-scissors'],
+            ['nama' => 'Blow Permanent',            'kategori' => 'Hair',           'deskripsi' => 'Blow permanent (4–6 jam).',                            'durasi_menit' => 300, 'harga' => 700000, 'ikon' => 'bi-wind'],
+            ['nama' => 'Treatment Anti Ketombe',    'kategori' => 'Hair',           'deskripsi' => 'Treatment anti ketombe (90 menit).',                   'durasi_menit' => 90,  'harga' => 150000, 'ikon' => 'bi-shield-check'],
+            ['nama' => 'Treatment Rambut Rontok',   'kategori' => 'Hair',           'deskripsi' => 'Treatment rambut rontok (1 jam).',                     'durasi_menit' => 60,  'harga' => 150000, 'ikon' => 'bi-shield'],
+            ['nama' => 'Hair Filler Keratin',       'kategori' => 'Hair',           'deskripsi' => 'Hair filler keratin (±2 jam).',                        'durasi_menit' => 120, 'harga' => 450000, 'ikon' => 'bi-droplet-fill'],
+            ['nama' => 'Hair Color',                'kategori' => 'Hair',           'deskripsi' => 'Pewarnaan rambut sesuai konsultasi (1–4 jam).',         'durasi_menit' => 120, 'harga' => 350000, 'ikon' => 'bi-palette-fill'],
+
+            // — Make Up —
+            ['nama' => 'Make Up',                   'kategori' => 'Make Up',        'deskripsi' => 'Make up profesional untuk acara spesial (±90 menit).', 'durasi_menit' => 90,  'harga' => 300000, 'ikon' => 'bi-stars'],
+        ];
+
+        $rows = [];
+        foreach ($layanan as $l) {
+            $rows[] = $l + ['is_active' => 1, 'created_at' => $now, 'updated_at' => $now];
+        }
+        $this->db->table('layanan')->insertBatch($rows);
 
         $defaults = [
             'nama_salon' => 'SW Beauty Salon',
