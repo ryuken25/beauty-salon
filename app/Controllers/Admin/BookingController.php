@@ -6,7 +6,6 @@ use App\Controllers\BaseController;
 use App\Models\BookingLogModel;
 use App\Models\BookingModel;
 use App\Models\LayananModel;
-use App\Models\SettingModel;
 use App\Services\BookingService;
 use App\Services\SlotService;
 use App\Services\WhatsAppTemplateService;
@@ -80,9 +79,40 @@ class BookingController extends BaseController
 
     public function complete(int $id)
     {
+        $manualMode = (bool) $this->request->getPost('manual_mode');
+
+        if (! $manualMode) {
+            $rules = [
+                'additional_price' => 'permit_empty|numeric|greater_than_equal_to[0]|less_than[999999999]',
+                'metode_bayar'     => 'required|in_list[cash,transfer,qris]',
+                'note'             => 'permit_empty|max_length[500]',
+            ];
+            if (! $this->validate($rules)) {
+                return redirect()->back()->with('error', implode(' ', $this->validator->getErrors()));
+            }
+        }
+
+        $additionalPrice = (int) ($this->request->getPost('additional_price') ?? 0);
+        $note = trim((string) $this->request->getPost('note'));
+
+        // Cross-field rule: when additional_price > 0, note is required.
+        if (! $manualMode && $additionalPrice > 0 && $note === '') {
+            return redirect()->back()->with('error', 'Catatan wajib diisi ketika ada biaya tambahan.');
+        }
+
         try {
-            (new BookingService())->complete($id, (int) session('user_id'), $this->request->getPost('metode_bayar') ?? 'cash', $this->request->getPost('catatan'));
-            return redirect()->to('/admin/booking/' . $id)->with('success', 'Booking selesai dan transaksi otomatis dibuat.');
+            (new BookingService())->complete(
+                $id,
+                (int) session('user_id'),
+                (string) ($this->request->getPost('metode_bayar') ?: 'cash'),
+                $note !== '' ? $note : null,
+                $additionalPrice,
+                $manualMode
+            );
+            $msg = $manualMode
+                ? 'Booking diselesaikan secara manual (tanpa pencatatan transaksi).'
+                : 'Booking selesai dan transaksi otomatis dibuat.';
+            return redirect()->to('/admin/booking/' . $id)->with('success', $msg);
         } catch (RuntimeException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

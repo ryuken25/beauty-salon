@@ -12,7 +12,7 @@ class TransaksiController extends BaseController
         $start = (string) ($this->request->getGet('start') ?: date('Y-m-01'));
         $end = (string) ($this->request->getGet('end') ?: date('Y-m-d'));
         $rows = $db->table('transaksi t')
-            ->select('t.id, t.nominal, t.metode_bayar, t.tanggal_transaksi, t.catatan, b.kode_booking, b.nama_pelanggan, l.nama AS nama_layanan')
+            ->select('t.id, t.nominal, t.base_price, t.additional_price, t.metode_bayar, t.tanggal_transaksi, t.catatan, b.kode_booking, b.nama_pelanggan, l.nama AS nama_layanan')
             ->join('bookings b', 'b.id = t.booking_id')
             ->join('layanan l', 'l.id = b.layanan_id')
             ->where('DATE(t.tanggal_transaksi) >=', $start)

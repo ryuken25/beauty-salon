@@ -68,17 +68,9 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
         </form>
       <?php endif ?>
       <?php if ($booking['status'] === 'accepted'): ?>
-        <form method="post" action="<?= base_url('admin/booking/' . $booking['id'] . '/complete') ?>" class="mb-2">
-          <?= csrf_field() ?>
-          <label class="form-salon-label">Metode bayar</label>
-          <select class="form-salon-select mb-1" name="metode_bayar">
-            <option value="cash">Cash</option>
-            <option value="transfer">Transfer</option>
-            <option value="qris">QRIS</option>
-          </select>
-          <input class="form-salon-input mb-1" name="catatan" placeholder="Catatan (opsional)">
-          <button class="btn-salon-primary btn-salon--full" type="submit"><i class="bi bi-trophy"></i> Selesaikan + transaksi</button>
-        </form>
+        <button type="button" class="btn-salon-primary btn-salon--full mb-2" data-bs-toggle="modal" data-bs-target="#modalComplete">
+          <i class="bi bi-trophy"></i> Selesaikan + transaksi
+        </button>
       <?php endif ?>
       <?php if (in_array($booking['status'], ['pending_verification', 'accepted'], true)): ?>
         <form method="post" action="<?= base_url('admin/booking/' . $booking['id'] . '/cancel') ?>" onsubmit="return confirm('Batalkan booking ini?');">
@@ -92,5 +84,149 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
     </div>
   </div>
 </div>
+
+<?php if ($booking['status'] === 'accepted'): ?>
+<!-- Modal: Selesaikan booking + transaksi -->
+<div class="modal fade" id="modalComplete" tabindex="-1" aria-labelledby="modalCompleteLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="background:var(--card); border:1px solid var(--gold-border); color:var(--text-primary);">
+      <form id="formComplete" method="post" action="<?= base_url('admin/booking/' . $booking['id'] . '/complete') ?>">
+        <?= csrf_field() ?>
+        <div class="modal-header" style="border-bottom:1px solid var(--gold-border);">
+          <h5 class="modal-title" id="modalCompleteLabel" style="font-family:var(--font-display); color:var(--text-primary);">
+            <i class="bi bi-trophy" style="color:var(--gold);"></i> Selesaikan booking
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="filter:invert(1) sepia(1) saturate(2) hue-rotate(15deg);"></button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Ringkasan booking (read-only) -->
+          <div class="card-salon mb-3" style="background:var(--bg);">
+            <div class="label mb-1">Ringkasan</div>
+            <table style="width:100%; font-size:0.875rem;">
+              <tr><td class="label" style="padding:0.2rem 0;">Kode</td><td class="text-right"><?= esc($booking['kode_booking']) ?></td></tr>
+              <tr><td class="label" style="padding:0.2rem 0;">Pelanggan</td><td class="text-right"><?= esc($booking['nama_pelanggan']) ?></td></tr>
+              <tr><td class="label" style="padding:0.2rem 0;">Layanan</td><td class="text-right"><?= esc($booking['nama_layanan']) ?></td></tr>
+              <tr><td class="label" style="padding:0.2rem 0;">Tanggal</td><td class="text-right"><?= esc(date('d M Y', strtotime($booking['tanggal']))) ?> · <?= esc(substr($booking['slot_mulai'], 0, 5)) ?>–<?= esc(substr($booking['slot_selesai'], 0, 5)) ?></td></tr>
+            </table>
+          </div>
+
+          <!-- Manual mode checkbox -->
+          <label class="card-salon mb-3 flex items-center gap-1" style="cursor:pointer; background:var(--bg);">
+            <input type="checkbox" id="manualMode" name="manual_mode" value="1" style="margin-right:0.6rem; width:18px; height:18px; accent-color:var(--gold);">
+            <span>
+              <span style="font-weight:600;">Catat manual</span>
+              <span class="caption" style="display:block;">Centang kalau pembayaran sudah dicatat di luar sistem. Booking ditandai selesai tanpa membuat transaksi baru.</span>
+            </span>
+          </label>
+
+          <div id="priceFields">
+            <!-- Base price (read-only) -->
+            <div class="mb-2">
+              <label class="form-salon-label">Base Price (otomatis dari layanan)</label>
+              <div class="input-group">
+                <span class="input-group-text" style="background:var(--surface); color:var(--gold); border:1px solid rgba(201,166,107,0.2);">Rp</span>
+                <input type="text" id="basePriceDisplay" class="form-salon-input" value="<?= number_format((int) $booking['harga_layanan'], 0, ',', '.') ?>" readonly style="border-left:none; cursor:not-allowed;">
+              </div>
+            </div>
+
+            <!-- Additional price -->
+            <div class="mb-2">
+              <label class="form-salon-label">Biaya tambahan (opsional)</label>
+              <div class="input-group">
+                <span class="input-group-text" style="background:var(--surface); color:var(--gold); border:1px solid rgba(201,166,107,0.2);">Rp</span>
+                <input type="number" id="additionalPrice" name="additional_price" class="form-salon-input" value="0" min="0" max="999999998" step="1000" style="border-left:none;">
+              </div>
+              <div class="form-salon-help">Misal: jasa ekstra, produk tambahan, dll.</div>
+            </div>
+
+            <!-- Note (toggled) -->
+            <div class="mb-2" id="noteWrapper" style="display:none;">
+              <label class="form-salon-label">Catatan biaya tambahan <span style="color:var(--color-danger);">*</span></label>
+              <textarea id="noteField" name="note" class="form-salon-textarea" rows="2" maxlength="500" placeholder="Wajib diisi: rincian biaya tambahan"></textarea>
+              <div class="form-salon-help">Maks 500 karakter.</div>
+            </div>
+
+            <!-- Metode bayar -->
+            <div class="mb-2">
+              <label class="form-salon-label">Metode bayar</label>
+              <select class="form-salon-select" name="metode_bayar" id="metodeBayar">
+                <option value="cash">Cash</option>
+                <option value="transfer">Transfer</option>
+                <option value="qris">QRIS</option>
+              </select>
+            </div>
+
+            <!-- Total -->
+            <div class="card-salon" style="background:var(--bg); border-color:var(--gold);">
+              <div class="flex justify-between items-center">
+                <span class="label">Total</span>
+                <span id="totalDisplay" style="font-family:var(--font-display); font-size:1.71rem; font-weight:600; color:var(--gold);">Rp <?= number_format((int) $booking['harga_layanan'], 0, ',', '.') ?></span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer" style="border-top:1px solid var(--gold-border); gap:0.5rem;">
+          <button type="button" class="btn-salon-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-salon-primary" id="submitComplete">
+            <i class="bi bi-check2-circle"></i> Konfirmasi
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const BASE_PRICE = <?= (int) $booking['harga_layanan'] ?>;
+  const fmt = (n) => 'Rp ' + n.toLocaleString('id-ID');
+
+  const additional   = document.getElementById('additionalPrice');
+  const noteWrapper  = document.getElementById('noteWrapper');
+  const noteField    = document.getElementById('noteField');
+  const totalEl      = document.getElementById('totalDisplay');
+  const manualCb     = document.getElementById('manualMode');
+  const priceFields  = document.getElementById('priceFields');
+  const metode       = document.getElementById('metodeBayar');
+  const submitBtn    = document.getElementById('submitComplete');
+  const form         = document.getElementById('formComplete');
+
+  function recalc() {
+    const add = Math.max(0, parseInt(additional.value || '0', 10) || 0);
+    const showNote = add > 0;
+    noteWrapper.style.display = showNote ? '' : 'none';
+    noteField.required = showNote;
+    if (manualCb.checked) {
+      totalEl.textContent = fmt(0);
+    } else {
+      totalEl.textContent = fmt(BASE_PRICE + add);
+    }
+  }
+
+  function applyManualMode() {
+    const off = manualCb.checked;
+    [additional, noteField, metode].forEach((el) => {
+      el.disabled = off;
+      if (off) el.removeAttribute('required');
+    });
+    priceFields.style.opacity = off ? '0.45' : '1';
+    recalc();
+  }
+
+  additional.addEventListener('input', recalc);
+  manualCb.addEventListener('change', applyManualMode);
+
+  form.addEventListener('submit', () => {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Memproses...';
+  });
+
+  // Initial state
+  recalc();
+})();
+</script>
+<?php endif ?>
 
 <?= $this->endSection() ?>

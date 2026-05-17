@@ -27,16 +27,40 @@
     <div class="empty-state"><i class="bi bi-receipt empty-state__icon"></i><div class="empty-state__title">Belum ada transaksi</div></div>
   <?php else: ?>
     <table class="table-salon">
-      <thead><tr><th>Tanggal</th><th>Kode</th><th>Pelanggan</th><th>Layanan</th><th>Metode</th><th class="text-right">Nominal</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>Kode</th>
+          <th>Pelanggan</th>
+          <th>Layanan</th>
+          <th>Metode</th>
+          <th class="text-right">Base</th>
+          <th class="text-right">Tambahan</th>
+          <th class="text-right">Total</th>
+        </tr>
+      </thead>
       <tbody>
-        <?php foreach ($rows as $r): ?>
+        <?php foreach ($rows as $r):
+          $base = (int) ($r['base_price'] ?? 0);
+          $add  = (int) ($r['additional_price'] ?? 0);
+          $catatan = trim((string) ($r['catatan'] ?? ''));
+        ?>
           <tr>
             <td><?= esc(date('d M Y H:i', strtotime($r['tanggal_transaksi']))) ?></td>
             <td><?= esc($r['kode_booking']) ?></td>
-            <td><?= esc($r['nama_pelanggan']) ?></td>
+            <td>
+              <?= esc($r['nama_pelanggan']) ?>
+              <?php if ($catatan !== ''): ?>
+                <div class="caption" style="margin-top:0.2rem;"><i class="bi bi-chat-left-text"></i> <?= esc($catatan) ?></div>
+              <?php endif ?>
+            </td>
             <td><?= esc($r['nama_layanan']) ?></td>
             <td><?= esc(ucfirst($r['metode_bayar'])) ?></td>
-            <td class="text-right">Rp <?= number_format((int) $r['nominal'], 0, ',', '.') ?></td>
+            <td class="text-right">Rp <?= number_format($base, 0, ',', '.') ?></td>
+            <td class="text-right" style="color:<?= $add > 0 ? 'var(--gold)' : 'var(--text-muted)' ?>;">
+              <?= $add > 0 ? '+ Rp ' . number_format($add, 0, ',', '.') : '—' ?>
+            </td>
+            <td class="text-right" style="font-weight:600; color:var(--gold);">Rp <?= number_format((int) $r['nominal'], 0, ',', '.') ?></td>
           </tr>
         <?php endforeach ?>
       </tbody>

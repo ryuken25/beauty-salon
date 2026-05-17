@@ -87,6 +87,23 @@ Pengujian sesuai Bab III Section 3.6 proposal SEMPRO: metode Black Box, fokus in
 | BB-83 | Top layanan | Beberapa booking completed bulan ini | List layanan terpopuler + bar gold proporsional | |
 | BB-84 | Admin dashboard limited | Login sebagai admin | Tidak tampil card Pendapatan & Stylist aktif, tidak ada chart pendapatan | |
 
+## E. Penyelesaian booking & pencatatan transaksi (modal)
+
+| ID | Skenario | Input | Output diharapkan | Hasil |
+|---|---|---|---|---|
+| BB-100 | Buka modal | Booking `accepted`, klik tombol "Selesaikan + transaksi" di /admin/booking/{id} | Modal Bootstrap muncul, base price ter-display otomatis dari `harga_layanan`, additional = 0, total = base, note tersembunyi | |
+| BB-101 | Additional > 0 → note muncul | Isi `additional_price = 50000` | Field note ter-show, atribut `required`, total live = base + 50.000 | |
+| BB-102 | Submit additional tanpa note | additional = 50000, note kosong, submit | Validasi gagal, flash "Catatan wajib diisi ketika ada biaya tambahan." Booking tetap `accepted` (tidak berubah) | |
+| BB-103 | Additional 0 happy path | additional = 0, submit | Booking → `completed`, baris `transaksi` dibuat dengan `base_price = harga_layanan`, `additional_price = 0`, `nominal = base`, note kosong | |
+| BB-104 | Additional + note happy path | additional = 75000, note = "Hair tonic", submit | Booking → `completed`, transaksi dengan `base_price`, `additional_price = 75000`, `nominal = base+75000`, `catatan = "Hair tonic"` | |
+| BB-105 | Mode manual (catat manual) | Centang checkbox "Catat manual", submit | Booking → `completed`, **tidak ada baris transaksi baru**, flash "Booking diselesaikan secara manual (tanpa pencatatan transaksi)." Booking log payload berisi `manual: true` | |
+| BB-106 | Manual disable fields | Centang manual mode di modal | Additional + note + metode_bayar ter-disable, opacity berkurang, total display = Rp 0 | |
+| BB-107 | Idempotency double-click | Klik "Konfirmasi" cepat 2× | Tombol disable saat submit. Permintaan kedua dapat flash "Booking sudah berubah status…" — hanya 1 baris transaksi tercatat | |
+| BB-108 | Breakdown di /admin/transaksi | Buka /admin/transaksi setelah BB-104 | Tabel menampilkan kolom Base · Tambahan (+ Rp 75.000 warna gold) · Total · note di bawah nama pelanggan | |
+| BB-109 | Dashboard pendapatan akurat | Booking BB-104 dengan total Rp 255.000 | `/admin/dashboard` Pendapatan hari ini = Rp 255.000 (chart pakai `nominal`) | |
+| BB-110 | Validation max additional | additional = 999999999 | Validasi gagal `less_than[999999999]` | |
+| BB-111 | Validation negative additional | additional = -1000 | Field number HTML5 blok input; kalaupun via API, server tolak `greater_than_equal_to[0]` | |
+
 ## G. Operasional
 
 | ID | Skenario | Input | Output diharapkan | Hasil |

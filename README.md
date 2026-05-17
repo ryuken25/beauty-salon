@@ -88,7 +88,7 @@ Jika MySQL lokal memakai password, isi `database.default.password` di file `.env
 - Fixed time slot 30 menit dengan validasi ketersediaan slot berurutan.
 - Booking `pending_verification`, `accepted`, dan `completed` dianggap menahan slot.
 - Admin/pemilik dapat menerima, menolak, membatalkan, dan menyelesaikan booking.
-- Transaksi otomatis dibuat satu kali saat booking selesai.
+- Transaksi otomatis dengan input biaya tambahan opsional + catatan saat booking diselesaikan, dengan opsi mode pencatatan manual.
 - Dashboard pendapatan harian, mingguan, bulanan, grafik pendapatan, status booking, dan layanan terpopuler.
 - Input booking walk-in/offline.
 - Manajemen layanan, stylist, jam kerja stylist, dan pengaturan dasar.
