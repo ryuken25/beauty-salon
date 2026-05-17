@@ -96,7 +96,7 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
           <h5 class="modal-title" id="modalCompleteLabel" style="font-family:var(--font-display); color:var(--text-primary);">
             <i class="bi bi-trophy" style="color:var(--gold);"></i> Selesaikan booking
           </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="filter:invert(1) sepia(1) saturate(2) hue-rotate(15deg);"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
 
@@ -125,8 +125,8 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
             <div class="mb-2">
               <label class="form-salon-label">Base Price (otomatis dari layanan)</label>
               <div class="input-group">
-                <span class="input-group-text" style="background:var(--surface); color:var(--gold); border:1px solid rgba(201,166,107,0.2);">Rp</span>
-                <input type="text" id="basePriceDisplay" class="form-salon-input" value="<?= number_format((int) $booking['harga_layanan'], 0, ',', '.') ?>" readonly style="border-left:none; cursor:not-allowed;">
+                <span class="input-group-text" style="background:var(--surface); color:var(--gold); border:1px solid rgba(201,166,107,0.2); border-right:none; border-top-right-radius:0; border-bottom-right-radius:0;">Rp</span>
+                <input type="text" id="basePriceDisplay" class="form-salon-input" value="<?= number_format((int) $booking['harga_layanan'], 0, ',', '.') ?>" readonly style="border-top-left-radius:0; border-bottom-left-radius:0; cursor:not-allowed;">
               </div>
             </div>
 
@@ -134,8 +134,8 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
             <div class="mb-2">
               <label class="form-salon-label">Biaya tambahan (opsional)</label>
               <div class="input-group">
-                <span class="input-group-text" style="background:var(--surface); color:var(--gold); border:1px solid rgba(201,166,107,0.2);">Rp</span>
-                <input type="number" id="additionalPrice" name="additional_price" class="form-salon-input" value="0" min="0" max="999999998" step="1000" style="border-left:none;">
+                <span class="input-group-text" style="background:var(--surface); color:var(--gold); border:1px solid rgba(201,166,107,0.2); border-right:none; border-top-right-radius:0; border-bottom-right-radius:0;">Rp</span>
+                <input type="number" id="additionalPrice" name="additional_price" class="form-salon-input" value="0" min="0" max="999999998" step="1000" style="border-top-left-radius:0; border-bottom-left-radius:0;">
               </div>
               <div class="form-salon-help">Misal: jasa ekstra, produk tambahan, dll.</div>
             </div>
@@ -195,14 +195,11 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
 
   function recalc() {
     const add = Math.max(0, parseInt(additional.value || '0', 10) || 0);
-    const showNote = add > 0;
+    const manual = manualCb.checked;
+    const showNote = !manual && add > 0;
     noteWrapper.style.display = showNote ? '' : 'none';
     noteField.required = showNote;
-    if (manualCb.checked) {
-      totalEl.textContent = fmt(0);
-    } else {
-      totalEl.textContent = fmt(BASE_PRICE + add);
-    }
+    totalEl.textContent = fmt(manual ? 0 : BASE_PRICE + add);
   }
 
   function applyManualMode() {
