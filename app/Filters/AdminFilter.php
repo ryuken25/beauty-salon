@@ -11,11 +11,13 @@ class AdminFilter implements FilterInterface
     public function before(RequestInterface $request, $arguments = null)
     {
         if (! session('is_logged_in')) {
-            return redirect()->to('/admin/login')->with('error', 'Silakan login terlebih dahulu.');
+            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu.');
         }
-        if (! in_array(session('user_role'), ['admin', 'pemilik'], true)) {
-            session()->destroy();
-            return redirect()->to('/admin/login')->with('error', 'Akses tidak diizinkan.');
+        $role = session('user_role');
+        if (! in_array($role, ['admin', 'pemilik'], true)) {
+            // Soft reject — keep the session, just bounce them to their own area.
+            $target = $role === 'pelanggan' ? '/pelanggan/dashboard' : '/';
+            return redirect()->to($target)->with('error', 'Area admin hanya untuk staff & pemilik.');
         }
     }
 

@@ -29,13 +29,13 @@ if (! function_exists('active_owner')) {
     <a class="sidebar-admin__item <?= active_owner('dashboard', $uri) ?>" href="<?= base_url('owner/dashboard') ?>"><i class="bi bi-bar-chart-line"></i><span>Dashboard</span></a>
     <a class="sidebar-admin__item <?= active_owner('layanan', $uri) ?>" href="<?= base_url('owner/layanan') ?>"><i class="bi bi-scissors"></i><span>Layanan</span></a>
     <a class="sidebar-admin__item <?= active_owner('transaksi', $uri) ?>" href="<?= base_url('owner/transaksi') ?>"><i class="bi bi-cash-coin"></i><span>Transaksi</span></a>
+    <a class="sidebar-admin__item <?= active_owner('pengaturan', $uri) ?>" href="<?= base_url('owner/pengaturan') ?>"><i class="bi bi-gear"></i><span>Pengaturan</span></a>
 
     <div class="sidebar-admin__spacer"></div>
 
     <a class="sidebar-admin__item" href="<?= base_url('admin/dashboard') ?>" style="border:1px dashed var(--gold-border);">
       <i class="bi bi-calendar2-check"></i><span>Panel Admin →</span>
     </a>
-    <a class="sidebar-admin__item <?= active_owner('pengaturan', $uri) ?>" href="<?= base_url('owner/pengaturan') ?>"><i class="bi bi-gear"></i><span>Pengaturan</span></a>
     <form method="post" action="<?= base_url('logout') ?>" style="padding: 0 0.5rem;">
       <?= csrf_field() ?>
       <button class="sidebar-admin__item" type="submit" style="background:none; border:none; width:100%; text-align:left;"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>

@@ -90,7 +90,7 @@ $statusLabels = [
 <!-- Status distribution -->
 <div class="card-salon">
   <div class="h2 mb-2">Status booking bulan ini</div>
-  <div class="row-salon cols-4">
+  <div class="row-salon cols-5">
     <?php foreach ($status_map as $st => $jumlah):
       $cls = 'badge-salon--' . ($st === 'pending_verification' ? 'pending' : str_replace('_', '-', $st));
     ?>

@@ -650,9 +650,10 @@ a:hover { color: var(--text-primary); text-decoration: underline; text-underline
 .cols-2 { grid-template-columns: 1fr; }
 .cols-3 { grid-template-columns: 1fr; }
 .cols-4 { grid-template-columns: 1fr; }
+.cols-5 { grid-template-columns: repeat(2, 1fr); }
 @media (min-width: 576px) { .cols-2 { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 768px) { .cols-3 { grid-template-columns: repeat(3, 1fr); } .cols-4 { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 992px) { .cols-4 { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 768px) { .cols-3 { grid-template-columns: repeat(3, 1fr); } .cols-4 { grid-template-columns: repeat(2, 1fr); } .cols-5 { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 992px) { .cols-4 { grid-template-columns: repeat(4, 1fr); } .cols-5 { grid-template-columns: repeat(5, 1fr); } }
 .split-60-40 { display: grid; grid-template-columns: 1fr; gap: 1rem; }
 @media (min-width: 992px) { .split-60-40 { grid-template-columns: 3fr 2fr; } }
 
