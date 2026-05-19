@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/admin') ?>
+<?= $this->extend('layouts/owner') ?>
 <?= $this->section('content') ?>
 <?php
 $ikonList = ['bi-stars', 'bi-scissors', 'bi-flower1', 'bi-droplet', 'bi-hand-index', 'bi-palette', 'bi-gem', 'bi-eye', 'bi-heart', 'bi-magic'];
@@ -13,7 +13,7 @@ $ikonList = ['bi-stars', 'bi-scissors', 'bi-flower1', 'bi-droplet', 'bi-hand-ind
 </div>
 
 <div class="collapse mb-3" id="newForm">
-  <form class="card-salon" method="post" action="<?= base_url('admin/layanan') ?>">
+  <form class="card-salon" method="post" action="<?= base_url('owner/layanan') ?>">
     <?= csrf_field() ?>
     <div class="h2 mb-2">Layanan baru</div>
     <div class="row-salon cols-2">
@@ -41,7 +41,7 @@ $ikonList = ['bi-stars', 'bi-scissors', 'bi-flower1', 'bi-droplet', 'bi-hand-ind
         <div class="h3 mb-2">Rp <?= number_format((int) $r['harga'], 0, ',', '.') ?></div>
         <details>
           <summary class="btn-salon-ghost btn-salon--sm" style="cursor:pointer;">Edit</summary>
-          <form method="post" action="<?= base_url('admin/layanan/' . $r['id'] . '/update') ?>" class="mt-2">
+          <form method="post" action="<?= base_url('owner/layanan/' . $r['id'] . '/update') ?>" class="mt-2">
             <?= csrf_field() ?>
             <input class="form-salon-input mb-1" name="nama" value="<?= esc($r['nama']) ?>" required>
             <input class="form-salon-input mb-1" name="kategori" value="<?= esc($r['kategori']) ?>" required>

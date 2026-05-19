@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Filters\AdminFilter;
+use App\Filters\OwnerFilter;
 use App\Filters\PelangganFilter;
 use App\Filters\PemilikFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
@@ -29,6 +30,7 @@ class Filters extends BaseFilters
      */
     public array $aliases = [
         'admin'         => AdminFilter::class,
+        'owner'         => OwnerFilter::class,
         'pemilik'       => PemilikFilter::class,
         'pelanggan'     => PelangganFilter::class,
         'csrf'          => CSRF::class,

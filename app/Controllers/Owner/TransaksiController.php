@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Admin;
+namespace App\Controllers\Owner;
 
 use App\Controllers\BaseController;
 
@@ -22,6 +22,6 @@ class TransaksiController extends BaseController
         $total = array_sum(array_column($rows, 'nominal'));
         $count = count($rows);
         $avg = $count > 0 ? (int) round($total / $count) : 0;
-        return view('admin/transaksi/index', ['rows' => $rows, 'start' => $start, 'end' => $end, 'total' => $total, 'count' => $count, 'avg' => $avg]);
+        return view('owner/transaksi/index', ['rows' => $rows, 'start' => $start, 'end' => $end, 'total' => $total, 'count' => $count, 'avg' => $avg]);
     }
 }

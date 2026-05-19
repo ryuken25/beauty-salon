@@ -4,6 +4,7 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
+// ── Public ────────────────────────────────────────────────
 $routes->get('/', 'Home::index');
 $routes->get('layanan', 'Home::layanan');
 
@@ -16,17 +17,27 @@ $routes->post('booking/(:segment)/batal', 'Booking::batal/$1');
 
 $routes->get('api/slots', 'Api::slots');
 
+// ── Auth ──────────────────────────────────────────────────
 $routes->match(['get', 'post'], 'login', 'Auth::login');
 $routes->match(['get', 'post'], 'register', 'Auth::register');
 $routes->post('logout', 'Auth::logout');
+// Back-compat: keep /admin/login + /admin pointing to the unified login.
 $routes->match(['get', 'post'], 'admin/login', 'Auth::login');
 $routes->get('admin', 'Auth::login');
 $routes->post('admin/logout', 'Auth::logout');
-
-$routes->group('pelanggan', ['filter' => 'pelanggan'], static function ($routes) {
-    $routes->get('dashboard', 'Pelanggan::dashboard');
+// Pemilik shortcut to /owner via /owner GET if not logged in.
+$routes->get('owner', static function () {
+    return redirect()->to(session('user_role') === 'pemilik' ? '/owner/dashboard' : '/login');
 });
 
+// ── Pelanggan area ────────────────────────────────────────
+$routes->group('pelanggan', ['filter' => 'pelanggan'], static function ($routes) {
+    $routes->get('dashboard', 'Pelanggan::dashboard');
+    $routes->post('booking/(:num)/cancel', 'Pelanggan::cancel/$1');
+});
+
+// ── Admin area (operational) ──────────────────────────────
+// Allowed for admin AND pemilik (pemilik has read access to admin views).
 $routes->group('admin', ['filter' => 'admin'], static function ($routes) {
     $routes->get('dashboard', 'Admin\Dashboard::index');
 
@@ -39,16 +50,21 @@ $routes->group('admin', ['filter' => 'admin'], static function ($routes) {
     $routes->post('booking/(:num)/cancel', 'Admin\BookingController::cancel/$1');
     $routes->post('booking/(:num)/complete', 'Admin\BookingController::complete/$1');
     $routes->post('booking/(:num)/wa-sent', 'Admin\BookingController::waSent/$1');
+
+    $routes->get('pelanggan', 'Admin\PelangganController::index');
 });
 
-$routes->group('admin', ['filter' => 'pemilik'], static function ($routes) {
-    $routes->get('layanan', 'Admin\LayananController::index');
-    $routes->post('layanan', 'Admin\LayananController::store');
-    $routes->post('layanan/(:num)/update', 'Admin\LayananController::update/$1');
-    $routes->post('layanan/(:num)/delete', 'Admin\LayananController::delete/$1');
+// ── Owner area (analytical / managerial — pemilik only) ───
+$routes->group('owner', ['filter' => 'owner'], static function ($routes) {
+    $routes->get('dashboard', 'Owner\Dashboard::index');
 
-    $routes->get('transaksi', 'Admin\TransaksiController::index');
+    $routes->get('layanan', 'Owner\LayananController::index');
+    $routes->post('layanan', 'Owner\LayananController::store');
+    $routes->post('layanan/(:num)/update', 'Owner\LayananController::update/$1');
+    $routes->post('layanan/(:num)/delete', 'Owner\LayananController::delete/$1');
 
-    $routes->match(['get', 'post'], 'pengaturan', 'Admin\PengaturanController::index');
-    $routes->post('pengaturan/ganti-password', 'Admin\PengaturanController::gantiPassword');
+    $routes->get('transaksi', 'Owner\TransaksiController::index');
+
+    $routes->match(['get', 'post'], 'pengaturan', 'Owner\PengaturanController::index');
+    $routes->post('pengaturan/ganti-password', 'Owner\PengaturanController::gantiPassword');
 });

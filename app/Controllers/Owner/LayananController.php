@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Admin;
+namespace App\Controllers\Owner;
 
 use App\Controllers\BaseController;
 use App\Models\LayananModel;
@@ -10,7 +10,7 @@ class LayananController extends BaseController
     public function index()
     {
         $rows = (new LayananModel())->orderBy('kategori')->orderBy('nama')->find();
-        return view('admin/layanan/index', ['rows' => $rows]);
+        return view('owner/layanan/index', ['rows' => $rows]);
     }
 
     public function store()
@@ -31,13 +31,13 @@ class LayananController extends BaseController
             'ikon' => $this->request->getPost('ikon') ?: 'bi-stars',
             'is_active' => $this->request->getPost('is_active') ? 1 : 0,
         ]);
-        return redirect()->to('/admin/layanan')->with('success', 'Layanan ditambahkan.');
+        return redirect()->to('/owner/layanan')->with('success', 'Layanan ditambahkan.');
     }
 
     public function update(int $id)
     {
         $model = new LayananModel();
-        if (! $model->find($id)) return redirect()->to('/admin/layanan')->with('error', 'Layanan tidak ditemukan.');
+        if (! $model->find($id)) return redirect()->to('/owner/layanan')->with('error', 'Layanan tidak ditemukan.');
         $model->update($id, [
             'nama' => $this->request->getPost('nama'),
             'kategori' => $this->request->getPost('kategori'),
@@ -47,12 +47,12 @@ class LayananController extends BaseController
             'ikon' => $this->request->getPost('ikon') ?: 'bi-stars',
             'is_active' => $this->request->getPost('is_active') ? 1 : 0,
         ]);
-        return redirect()->to('/admin/layanan')->with('success', 'Layanan diperbarui.');
+        return redirect()->to('/owner/layanan')->with('success', 'Layanan diperbarui.');
     }
 
     public function delete(int $id)
     {
         (new LayananModel())->update($id, ['is_active' => 0]);
-        return redirect()->to('/admin/layanan')->with('success', 'Layanan dinon-aktifkan.');
+        return redirect()->to('/owner/layanan')->with('success', 'Layanan dinon-aktifkan.');
     }
 }

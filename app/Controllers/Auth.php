@@ -88,7 +88,10 @@ class Auth extends BaseController
 
     private function redirectByRole(?string $role)
     {
-        if (in_array($role, ['admin', 'pemilik'], true)) {
+        if ($role === 'pemilik') {
+            return redirect()->to('/owner/dashboard');
+        }
+        if ($role === 'admin') {
             return redirect()->to('/admin/dashboard');
         }
         if ($role === 'pelanggan') {

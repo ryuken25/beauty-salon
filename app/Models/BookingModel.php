@@ -6,7 +6,7 @@ class BookingModel extends BaseAppModel {
         'kode_booking','user_id','nama_pelanggan','nomor_hp_pelanggan','layanan_id',
         'tanggal','slot_mulai','slot_selesai','jumlah_slot','harga_layanan','status','sumber','catatan',
         'wa_sent','verified_via','verified_at','completed_at','cancelled_at','cancelled_by',
-        'rejection_reason',
+        'rejection_reason','cancellation_reason',
     ];
 
     public function detail(int $id): ?array

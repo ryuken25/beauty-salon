@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/admin') ?>
+<?= $this->extend('layouts/owner') ?>
 <?= $this->section('content') ?>
 
 <div class="page-header-salon">
@@ -47,7 +47,7 @@
   </div>
 
   <div class="tab-pane fade" id="tabAkun">
-    <form class="card-salon mb-2" method="post" action="<?= base_url('admin/pengaturan/ganti-password') ?>">
+    <form class="card-salon mb-2" method="post" action="<?= base_url('owner/pengaturan/ganti-password') ?>">
       <?= csrf_field() ?>
       <div class="h2 mb-2">Ganti password</div>
       <div><label class="form-salon-label">Password lama</label><input class="form-salon-input" type="password" name="current_password" required></div>

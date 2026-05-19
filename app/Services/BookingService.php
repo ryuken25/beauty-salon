@@ -110,7 +110,7 @@ class BookingService
         $this->transitionPending($bookingId, 'rejected', $userId, $reason);
     }
 
-    public function cancel(int $bookingId, string $by, ?int $userId = null): void
+    public function cancel(int $bookingId, string $by, ?int $userId = null, ?string $reason = null): void
     {
         $db = db_connect();
         $db->transBegin();
@@ -126,13 +126,17 @@ class BookingService
                 throw new RuntimeException('Pembatalan dari pelanggan harus dilakukan minimal 2 jam sebelum jam booking.');
             }
         }
-        $cancelledBy = $by === 'pelanggan' ? 'pelanggan' : ('dashboard:' . ($userId ?? 'unknown'));
-        $db->table('bookings')->where('id', $bookingId)->whereIn('status', ['pending_verification', 'accepted'])->update([
+        $cancelledBy = $by === 'pelanggan' ? 'pelanggan' : ($by === 'pemilik' ? ('owner:' . ($userId ?? 'unknown')) : ('dashboard:' . ($userId ?? 'unknown')));
+        $cleanReason = $reason !== null ? trim($reason) : null;
+        $cleanReason = ($cleanReason === '') ? null : $cleanReason;
+        $update = [
             'status' => 'cancelled',
             'cancelled_at' => date('Y-m-d H:i:s'),
             'cancelled_by' => $cancelledBy,
+            'cancellation_reason' => $cleanReason,
             'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+        ];
+        $db->table('bookings')->where('id', $bookingId)->whereIn('status', ['pending_verification', 'accepted'])->update($update);
         if ($db->affectedRows() !== 1) {
             $db->transRollback();
             throw new RuntimeException('Booking sudah berubah status.');
@@ -140,7 +144,10 @@ class BookingService
         $db->table('booking_slots')->where('booking_id', $bookingId)->delete();
         $db->transCommit();
 
-        $this->logEvent($bookingId, 'cancelled', $cancelledBy, $by === 'pelanggan' ? 'pelanggan' : 'admin', []);
+        $actorRole = $by === 'pelanggan' ? 'pelanggan' : ($by === 'pemilik' ? 'pemilik' : 'admin');
+        $this->logEvent($bookingId, 'cancelled', $cancelledBy, $actorRole, [
+            'reason' => $cleanReason,
+        ]);
     }
 
     public function complete(

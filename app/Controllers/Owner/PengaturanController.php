@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Admin;
+namespace App\Controllers\Owner;
 
 use App\Controllers\BaseController;
 use App\Models\SettingModel;
@@ -23,10 +23,10 @@ class PengaturanController extends BaseController
                 if (in_array($k, ['jam_buka', 'jam_tutup'], true) && $v !== '' && ! preg_match('/^\d{1,2}:\d{2}$/', $v)) continue;
                 $set->setValue($k, $v);
             }
-            return redirect()->to('/admin/pengaturan')->with('success', 'Pengaturan disimpan.');
+            return redirect()->to('/owner/pengaturan')->with('success', 'Pengaturan disimpan.');
         }
         $users = (new UserModel())->orderBy('role')->orderBy('nama')->find();
-        return view('admin/pengaturan/index', ['s' => $set->all(), 'users' => $users]);
+        return view('owner/pengaturan/index', ['s' => $set->all(), 'users' => $users]);
     }
 
     public function gantiPassword()
@@ -40,6 +40,6 @@ class PengaturanController extends BaseController
             return redirect()->back()->with('error', 'Password lama salah.');
         }
         (new UserModel())->update($userId, ['password_hash' => password_hash($new, PASSWORD_BCRYPT)]);
-        return redirect()->to('/admin/pengaturan')->with('success', 'Password diperbarui.');
+        return redirect()->to('/owner/pengaturan')->with('success', 'Password diperbarui.');
     }
 }
