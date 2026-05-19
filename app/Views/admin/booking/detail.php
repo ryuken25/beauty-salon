@@ -133,7 +133,7 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
               <label class="form-salon-label">Biaya tambahan (opsional)</label>
               <div class="input-group">
                 <span class="input-group-text" style="background:var(--surface); color:var(--gold); border:1px solid rgba(201,166,107,0.2); border-right:none; border-top-right-radius:0; border-bottom-right-radius:0;">Rp</span>
-                <input type="number" id="additionalPrice" name="additional_price" class="form-salon-input" value="0" min="0" max="999999998" step="1000" style="border-top-left-radius:0; border-bottom-left-radius:0;">
+                <input type="number" id="additionalPrice" name="additional_price" class="form-salon-input" value="0" min="0" max="999999998" step="1" style="border-top-left-radius:0; border-bottom-left-radius:0;">
               </div>
               <div class="form-salon-help">Jasa ekstra, produk tambahan, dll. Wajib isi catatan jika diisi.</div>
             </div>
@@ -145,7 +145,7 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
               <label class="form-salon-label">Nominal manual <span style="color:var(--color-danger);">*</span></label>
               <div class="input-group">
                 <span class="input-group-text" style="background:var(--surface); color:var(--gold); border:1px solid rgba(201,166,107,0.2); border-right:none; border-top-right-radius:0; border-bottom-right-radius:0;">Rp</span>
-                <input type="number" id="manualNominal" name="manual_nominal" class="form-salon-input" placeholder="0" min="1" max="999999998" step="1000" disabled style="border-top-left-radius:0; border-bottom-left-radius:0;">
+                <input type="number" id="manualNominal" name="manual_nominal" class="form-salon-input" placeholder="Contoh: 400000" min="1" max="999999998" step="1" disabled style="border-top-left-radius:0; border-bottom-left-radius:0;">
               </div>
               <div class="form-salon-help">Nominal yang ditagih ke pelanggan (paket / harga khusus).</div>
             </div>

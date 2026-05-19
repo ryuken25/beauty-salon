@@ -4,11 +4,12 @@
 $hariId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 $bulanId = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 $tgl = $hariId[(int) date('w')] . ', ' . date('j') . ' ' . $bulanId[(int) date('n') - 1] . ' ' . date('Y');
+$isPemilik = $role === 'pemilik';
 ?>
 
 <div class="page-header-salon">
   <div>
-    <div class="h1">Dashboard</div>
+    <div class="h1">Dashboard <?= $isPemilik ? '' : '· Admin' ?></div>
     <div class="tagline"><?= esc($tgl) ?></div>
   </div>
   <?php if ($pending > 0): ?>
@@ -16,18 +17,26 @@ $tgl = $hariId[(int) date('w')] . ', ' . date('j') . ' ' . $bulanId[(int) date('
   <?php endif ?>
 </div>
 
-<div class="row-salon cols-4 mb-3">
-  <?php if ($role === 'pemilik'): ?>
+<!-- Metric cards: pemilik dapat 3, admin dapat 2 -->
+<div class="row-salon <?= $isPemilik ? 'cols-3' : 'cols-2' ?> mb-3">
+
+  <?php if ($isPemilik): ?>
     <div class="card-salon card-salon--featured">
       <div class="metric">
         <span class="label">Pendapatan hari ini</span>
         <span class="metric__value">Rp <?= number_format($pendapatan_hari_ini, 0, ',', '.') ?></span>
-        <span class="metric__caption" style="color: <?= $trend >= 0 ? 'var(--color-completed-fg)' : 'var(--color-danger)' ?>;">
-          <i class="bi bi-arrow-<?= $trend >= 0 ? 'up' : 'down' ?>"></i> <?= esc($trend) ?>% vs kemarin
+        <span class="metric__caption" style="color:rgba(20,17,15,0.7);">
+          <?php if ($trend === null): ?>
+            Belum ada pembanding kemarin
+          <?php else: ?>
+            <i class="bi bi-arrow-<?= $trend >= 0 ? 'up' : 'down' ?>"></i>
+            <?= esc($trend) ?>% vs kemarin
+          <?php endif ?>
         </span>
       </div>
     </div>
   <?php endif ?>
+
   <div class="card-salon">
     <div class="metric">
       <span class="label">Booking hari ini</span>
@@ -35,16 +44,20 @@ $tgl = $hariId[(int) date('w')] . ', ' . date('j') . ' ' . $bulanId[(int) date('
       <span class="metric__caption"><?= esc($booking_hari_ini_selesai) ?> selesai</span>
     </div>
   </div>
+
   <div class="card-salon <?= $pending > 0 ? 'card-salon--pending' : '' ?>">
     <div class="metric">
       <span class="label">Pending verifikasi</span>
       <span class="metric__value"><?= esc($pending) ?></span>
-      <span class="metric__caption" style="<?= $pending > 0 ? 'color:var(--color-pending);' : '' ?>"><?= $pending > 0 ? 'Perlu aksi' : 'Aman' ?></span>
+      <span class="metric__caption" style="<?= $pending > 0 ? 'color:var(--color-pending);' : '' ?>">
+        <?= $pending > 0 ? 'Perlu aksi' : 'Aman' ?>
+      </span>
     </div>
   </div>
 </div>
 
-<?php if ($role === 'pemilik'): ?>
+<?php if ($isPemilik): ?>
+  <!-- Pemilik-only: chart + layanan terpopuler -->
   <div class="split-60-40 mb-3">
     <div class="card-salon">
       <div class="flex justify-between items-center mb-1">
@@ -56,6 +69,7 @@ $tgl = $hariId[(int) date('w')] . ', ' . date('j') . ' ' . $bulanId[(int) date('
       </div>
       <canvas id="chart7days" height="120"></canvas>
     </div>
+
     <div class="card-salon">
       <span class="label">Layanan terpopuler</span>
       <div class="tagline mb-2">Bulan ini</div>
@@ -63,19 +77,30 @@ $tgl = $hariId[(int) date('w')] . ', ' . date('j') . ' ' . $bulanId[(int) date('
         <div class="caption">Belum ada data bulan ini.</div>
       <?php else: ?>
         <?php foreach ($top_services as $s):
-          $pct = round($s['jumlah'] / $total_top * 100);
+          $pct = (int) round($s['jumlah'] / $total_top * 100);
         ?>
           <div class="mb-2">
-            <div class="flex justify-between items-center">
-              <span class="caption" style="color:var(--color-charcoal);"><?= esc($s['nama']) ?></span>
-              <span class="caption"><?= esc($pct) ?>%</span>
+            <div class="flex justify-between items-center mb-1">
+              <span style="color:var(--text-primary); font-size:0.875rem; font-weight:500;"><?= esc($s['nama']) ?></span>
+              <span class="caption" style="color:var(--gold); font-weight:600;"><?= esc($pct) ?>%</span>
             </div>
-            <div style="background:var(--color-ivory-warm); height:8px; border-radius:4px; overflow:hidden;">
-              <div style="background:var(--color-gold); height:100%; width:<?= esc($pct) ?>%;"></div>
+            <div style="background:rgba(201,166,107,0.12); height:6px; border-radius:3px; overflow:hidden;">
+              <div style="background:var(--gold); height:100%; width:<?= esc($pct) ?>%;"></div>
             </div>
           </div>
         <?php endforeach ?>
       <?php endif ?>
+    </div>
+  </div>
+<?php else: ?>
+  <!-- Admin: panel ringkas -->
+  <div class="card-salon mb-3" style="background:var(--gold-soft); border-color:var(--gold-border);">
+    <div class="flex items-center gap-2">
+      <i class="bi bi-shield-check" style="font-size:1.5rem; color:var(--gold);"></i>
+      <div>
+        <div style="font-family:var(--font-display); font-size:1.125rem; color:var(--text-primary);">Selamat datang, <?= esc(session('user_nama')) ?></div>
+        <div class="caption">Akses admin: verifikasi booking, walk-in, dan jadwal harian. Untuk laporan pendapatan & pengaturan, hubungi pemilik.</div>
+      </div>
     </div>
   </div>
 <?php endif ?>
@@ -108,24 +133,51 @@ $tgl = $hariId[(int) date('w')] . ', ' . date('j') . ' ' . $bulanId[(int) date('
   <?php endif ?>
 </div>
 
-<?php if ($role === 'pemilik'): ?>
+<?php if ($isPemilik): ?>
 <script>
-const ctx = document.getElementById('chart7days').getContext('2d');
-new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: <?= json_encode($chart_labels) ?>,
-    datasets: [{
-      data: <?= json_encode($chart_values) ?>,
-      backgroundColor: <?= json_encode($chart_values) ?>.map((_, i, arr) => i === arr.length - 1 ? '#B8924A' : 'rgba(184,146,74,0.45)'),
-      borderRadius: 6,
-    }]
-  },
-  options: {
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => 'Rp ' + Number(c.raw).toLocaleString('id-ID') } } },
-    scales: { y: { ticks: { callback: (v) => 'Rp ' + Number(v / 1000).toFixed(0) + 'k' } } }
-  }
-});
+(function () {
+  const ctx = document.getElementById('chart7days').getContext('2d');
+  const values = <?= json_encode($chart_values) ?>;
+  const lastIdx = values.length - 1;
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: <?= json_encode($chart_labels) ?>,
+      datasets: [{
+        data: values,
+        backgroundColor: values.map((_, i) => i === lastIdx ? '#C9A66B' : 'rgba(201,166,107,0.35)'),
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1F1B18',
+          titleColor: '#F5EBDC',
+          bodyColor: '#F5EBDC',
+          borderColor: 'rgba(201,166,107,0.35)',
+          borderWidth: 1,
+          callbacks: { label: (c) => 'Rp ' + Number(c.raw).toLocaleString('id-ID') },
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: '#9D9180' },
+          grid: { color: 'rgba(201,166,107,0.08)' },
+        },
+        y: {
+          ticks: {
+            color: '#9D9180',
+            callback: (v) => 'Rp ' + Number(v / 1000).toFixed(0) + 'k',
+          },
+          grid: { color: 'rgba(201,166,107,0.08)' },
+        },
+      },
+    },
+  });
+})();
 </script>
 <?php endif ?>
 

@@ -14,20 +14,18 @@ class Dashboard extends BaseController
 
         $pendapatanHariIni = (int) ($db->table('transaksi')->selectSum('nominal')->where('DATE(tanggal_transaksi)', $today)->get()->getRow()->nominal ?? 0);
         $pendapatanKemarin = (int) ($db->table('transaksi')->selectSum('nominal')->where('DATE(tanggal_transaksi)', date('Y-m-d', strtotime('-1 day')))->get()->getRow()->nominal ?? 0);
-        $trend = $pendapatanKemarin > 0 ? round((($pendapatanHariIni - $pendapatanKemarin) / $pendapatanKemarin) * 100) : 0;
+        $trend = $pendapatanKemarin > 0 ? (int) round((($pendapatanHariIni - $pendapatanKemarin) / $pendapatanKemarin) * 100) : null;
 
         $bookingHariIni = $db->table('bookings')->where('tanggal', $today)->whereNotIn('status', ['rejected', 'cancelled'])->countAllResults();
         $bookingHariIniSelesai = $db->table('bookings')->where('tanggal', $today)->where('status', 'completed')->countAllResults();
         $pending = $db->table('bookings')->where('status', 'pending_verification')->countAllResults();
 
-        $last7days = [];
         $chartLabels = [];
         $chartValues = [];
         $hariShort = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
         for ($i = 6; $i >= 0; $i--) {
             $d = date('Y-m-d', strtotime("-{$i} days"));
             $sum = (int) ($db->table('transaksi')->selectSum('nominal')->where('DATE(tanggal_transaksi)', $d)->get()->getRow()->nominal ?? 0);
-            $last7days[] = ['tanggal' => $d, 'nominal' => $sum];
             $chartLabels[] = $hariShort[(int) date('w', strtotime($d))];
             $chartValues[] = $sum;
         }
