@@ -31,6 +31,9 @@ $canCancel = in_array($booking['status'], ['pending_verification', 'accepted'], 
       <?php if (! empty($booking['rejection_reason'])): ?>
         <tr><td class="label">Alasan ditolak</td><td class="text-right"><?= esc($booking['rejection_reason']) ?></td></tr>
       <?php endif ?>
+      <?php if (! empty($booking['cancellation_reason'])): ?>
+        <tr><td class="label">Alasan batal</td><td class="text-right"><?= esc($booking['cancellation_reason']) ?></td></tr>
+      <?php endif ?>
     </table>
   </div>
 

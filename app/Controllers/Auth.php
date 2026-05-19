@@ -9,9 +9,6 @@ class Auth extends BaseController
 {
     public function login()
     {
-        if (session('is_logged_in')) {
-            return $this->redirectByRole(session('user_role'));
-        }
         if ($this->request->getMethod() === 'POST') {
             $throttler = service('throttler');
             $key = 'login-' . md5($this->request->getIPAddress());
@@ -22,6 +19,8 @@ class Auth extends BaseController
             $password = (string) $this->request->getPost('password');
             $user = (new UserModel())->where('email', $email)->where('is_active', 1)->first();
             if ($user && password_verify($password, $user['password_hash'])) {
+                // Clear any prior session (e.g. admin → owner switch) before issuing the new one.
+                session()->destroy();
                 session()->regenerate();
                 session()->set([
                     'is_logged_in' => true,
@@ -40,7 +39,10 @@ class Auth extends BaseController
 
     public function register()
     {
-        if (session('is_logged_in')) {
+        // If a non-pelanggan account is already logged in, send them to their dashboard —
+        // they don't need to register. Pelanggan can re-visit the page but the view
+        // shows a "Anda sudah login" banner.
+        if (session('is_logged_in') && in_array(session('user_role'), ['admin', 'pemilik'], true)) {
             return $this->redirectByRole(session('user_role'));
         }
         if ($this->request->getMethod() === 'POST') {
@@ -83,7 +85,8 @@ class Auth extends BaseController
     public function logout()
     {
         session()->destroy();
-        return redirect()->to('/')->with('success', 'Anda telah logout.');
+        // After logout always land on the login form so switching accounts is one step.
+        return redirect()->to('/login')->with('success', 'Anda telah logout. Silakan login dengan akun lain.');
     }
 
     private function redirectByRole(?string $role)

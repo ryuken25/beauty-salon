@@ -20,11 +20,11 @@ $routes->get('api/slots', 'Api::slots');
 // ── Auth ──────────────────────────────────────────────────
 $routes->match(['get', 'post'], 'login', 'Auth::login');
 $routes->match(['get', 'post'], 'register', 'Auth::register');
-$routes->post('logout', 'Auth::logout');
+$routes->match(['get', 'post'], 'logout', 'Auth::logout');
 // Back-compat: keep /admin/login + /admin pointing to the unified login.
 $routes->match(['get', 'post'], 'admin/login', 'Auth::login');
 $routes->get('admin', 'Auth::login');
-$routes->post('admin/logout', 'Auth::logout');
+$routes->match(['get', 'post'], 'admin/logout', 'Auth::logout');
 // Pemilik shortcut to /owner via /owner GET if not logged in.
 $routes->get('owner', static function () {
     return redirect()->to(session('user_role') === 'pemilik' ? '/owner/dashboard' : '/login');

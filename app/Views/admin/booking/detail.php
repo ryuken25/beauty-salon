@@ -29,6 +29,7 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
         <tr><td class="label">Harga</td><td class="text-right" style="font-weight:500;">Rp <?= number_format((int) $booking['harga_layanan'], 0, ',', '.') ?></td></tr>
         <?php if ($booking['catatan']): ?><tr><td class="label">Catatan</td><td class="text-right"><?= esc($booking['catatan']) ?></td></tr><?php endif ?>
         <?php if ($booking['rejection_reason']): ?><tr><td class="label">Alasan tolak</td><td class="text-right"><?= esc($booking['rejection_reason']) ?></td></tr><?php endif ?>
+        <?php if (! empty($booking['cancellation_reason'])): ?><tr><td class="label">Alasan batal</td><td class="text-right"><?= esc($booking['cancellation_reason']) ?></td></tr><?php endif ?>
         <?php if ($booking['verified_via']): ?><tr><td class="label">Verifikasi via</td><td class="text-right"><?= esc($booking['verified_via']) ?></td></tr><?php endif ?>
       </table>
     </div>
