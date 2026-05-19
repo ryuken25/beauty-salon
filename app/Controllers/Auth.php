@@ -10,15 +10,19 @@ class Auth extends BaseController
     public function login()
     {
         if ($this->request->getMethod() === 'POST') {
-            $throttler = service('throttler');
-            $key = 'login-' . md5($this->request->getIPAddress());
-            if (! $throttler->check($key, 8, MINUTE * 15)) {
-                return redirect()->back()->withInput()->with('error', 'Terlalu banyak percobaan. Coba lagi dalam 15 menit.');
+            // Rate-limit FAILED attempts only — successful logins reset the
+            // counter. This way a single typo doesn't lock the user out, and
+            // a real burst of bad passwords still hits the 8/15min ceiling.
+            $failKey = 'login_fail_' . md5($this->request->getIPAddress());
+            $fails = (int) (cache($failKey) ?? 0);
+            if ($fails >= 8) {
+                return redirect()->back()->withInput()->with('error', 'Terlalu banyak percobaan gagal. Coba lagi dalam 15 menit.');
             }
             $email = trim((string) $this->request->getPost('email'));
             $password = (string) $this->request->getPost('password');
             $user = (new UserModel())->where('email', $email)->where('is_active', 1)->first();
             if ($user && password_verify($password, $user['password_hash'])) {
+                cache()->delete($failKey);
                 // Regenerate session ID AND drop the old session data atomically.
                 // Calling destroy() then regenerate() throws because session_regenerate_id
                 // refuses to run without an active session — regenerate(true) is the
@@ -34,6 +38,7 @@ class Auth extends BaseController
                 ]);
                 return $this->redirectByRole($user['role']);
             }
+            cache()->save($failKey, $fails + 1, MINUTE * 15);
             return redirect()->back()->withInput()->with('error', 'Email atau password salah.');
         }
         return view('auth/login');
