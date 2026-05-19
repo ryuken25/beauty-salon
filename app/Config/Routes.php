@@ -8,23 +8,23 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('layanan', 'Home::layanan');
 
-$routes->match(['get', 'post'], 'booking', 'Booking::form');
+$routes->match(['GET', 'POST'], 'booking', 'Booking::form');
 $routes->get('booking/sukses/(:any)', 'Booking::sukses/$1');
 $routes->get('booking/cek-saya', 'Booking::redirectCek');
-$routes->match(['get', 'post'], 'cek-booking', 'Booking::cek');
+$routes->match(['GET', 'POST'], 'cek-booking', 'Booking::cek');
 $routes->get('booking/(:segment)', 'Booking::detail/$1');
 $routes->post('booking/(:segment)/batal', 'Booking::batal/$1');
 
 $routes->get('api/slots', 'Api::slots');
 
 // ── Auth ──────────────────────────────────────────────────
-$routes->match(['get', 'post'], 'login', 'Auth::login');
-$routes->match(['get', 'post'], 'register', 'Auth::register');
-$routes->match(['get', 'post'], 'logout', 'Auth::logout');
+$routes->match(['GET', 'POST'], 'login', 'Auth::login');
+$routes->match(['GET', 'POST'], 'register', 'Auth::register');
+$routes->match(['GET', 'POST'], 'logout', 'Auth::logout');
 // Back-compat: keep /admin/login + /admin pointing to the unified login.
-$routes->match(['get', 'post'], 'admin/login', 'Auth::login');
+$routes->match(['GET', 'POST'], 'admin/login', 'Auth::login');
 $routes->get('admin', 'Auth::login');
-$routes->match(['get', 'post'], 'admin/logout', 'Auth::logout');
+$routes->match(['GET', 'POST'], 'admin/logout', 'Auth::logout');
 // Pemilik shortcut to /owner via /owner GET if not logged in.
 $routes->get('owner', static function () {
     return redirect()->to(session('user_role') === 'pemilik' ? '/owner/dashboard' : '/login');
@@ -43,7 +43,7 @@ $routes->group('admin', ['filter' => 'admin'], static function ($routes) {
 
     $routes->get('booking', 'Admin\BookingController::index');
     $routes->get('booking/jadwal', 'Admin\BookingController::jadwal');
-    $routes->match(['get', 'post'], 'booking/walkin', 'Admin\BookingController::walkin');
+    $routes->match(['GET', 'POST'], 'booking/walkin', 'Admin\BookingController::walkin');
     $routes->get('booking/(:num)', 'Admin\BookingController::detail/$1');
     $routes->post('booking/(:num)/verify', 'Admin\BookingController::verify/$1');
     $routes->post('booking/(:num)/reject', 'Admin\BookingController::reject/$1');
@@ -65,6 +65,6 @@ $routes->group('owner', ['filter' => 'owner'], static function ($routes) {
 
     $routes->get('transaksi', 'Owner\TransaksiController::index');
 
-    $routes->match(['get', 'post'], 'pengaturan', 'Owner\PengaturanController::index');
+    $routes->match(['GET', 'POST'], 'pengaturan', 'Owner\PengaturanController::index');
     $routes->post('pengaturan/ganti-password', 'Owner\PengaturanController::gantiPassword');
 });

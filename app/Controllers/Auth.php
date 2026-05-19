@@ -19,9 +19,11 @@ class Auth extends BaseController
             $password = (string) $this->request->getPost('password');
             $user = (new UserModel())->where('email', $email)->where('is_active', 1)->first();
             if ($user && password_verify($password, $user['password_hash'])) {
-                // Clear any prior session (e.g. admin → owner switch) before issuing the new one.
-                session()->destroy();
-                session()->regenerate();
+                // Regenerate session ID AND drop the old session data atomically.
+                // Calling destroy() then regenerate() throws because session_regenerate_id
+                // refuses to run without an active session — regenerate(true) is the
+                // CI4 idiomatic way to nuke prior session data while keeping the session live.
+                session()->regenerate(true);
                 session()->set([
                     'is_logged_in' => true,
                     'user_id' => $user['id'],
