@@ -107,9 +107,8 @@ class Booking extends BaseController
             return redirect()->to('/cek-booking')->with('error', 'Kode booking dan nomor HP tidak cocok.');
         }
         $logs = (new BookingLogModel())->forBooking((int) $row['id']);
-        $owner = (new SettingModel())->getValue('nomor_hp_owner', '');
-        $waText = view('public/_template_wa_owner', ['booking' => $row], ['saveData' => true]);
-        $waLink = $owner ? 'https://wa.me/' . preg_replace('/\D+/', '', $owner) . '?text=' . rawurlencode($waText) : '';
+        $waText = (new WhatsAppTemplateService())->ownerConfirmationMessage($row);
+        $waLink = (new WhatsAppTemplateService())->ownerLink($waText);
         return view('public/booking_detail', ['booking' => $row, 'logs' => $logs, 'wa_link' => $waLink, 'phone' => $phone]);
     }
 

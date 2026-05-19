@@ -100,7 +100,7 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
         </div>
         <div class="modal-body">
 
-          <!-- Ringkasan booking (read-only) -->
+          <!-- Ringkasan booking -->
           <div class="card-salon mb-3" style="background:var(--bg);">
             <div class="label mb-1">Ringkasan</div>
             <table style="width:100%; font-size:0.875rem;">
@@ -111,17 +111,17 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
             </table>
           </div>
 
-          <!-- Manual mode checkbox -->
+          <!-- Toggle: Catat manual -->
           <label class="card-salon mb-3 flex items-center gap-1" style="cursor:pointer; background:var(--bg);">
             <input type="checkbox" id="manualMode" name="manual_mode" value="1" style="margin-right:0.6rem; width:18px; height:18px; accent-color:var(--gold);">
             <span>
               <span style="font-weight:600;">Catat manual</span>
-              <span class="caption" style="display:block;">Centang kalau pembayaran sudah dicatat di luar sistem. Booking ditandai selesai tanpa membuat transaksi baru.</span>
+              <span class="caption" style="display:block;">Centang kalau ingin memasukkan nominal sendiri (paket khusus, harga negosiasi, dll). Catatan wajib diisi.</span>
             </span>
           </label>
 
-          <div id="priceFields">
-            <!-- Base price (read-only) -->
+          <!-- === Mode otomatis === -->
+          <div id="autoBlock">
             <div class="mb-2">
               <label class="form-salon-label">Base Price (otomatis dari layanan)</label>
               <div class="input-group">
@@ -130,39 +130,50 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
               </div>
             </div>
 
-            <!-- Additional price -->
             <div class="mb-2">
               <label class="form-salon-label">Biaya tambahan (opsional)</label>
               <div class="input-group">
                 <span class="input-group-text" style="background:var(--surface); color:var(--gold); border:1px solid rgba(201,166,107,0.2); border-right:none; border-top-right-radius:0; border-bottom-right-radius:0;">Rp</span>
                 <input type="number" id="additionalPrice" name="additional_price" class="form-salon-input" value="0" min="0" max="999999998" step="1000" style="border-top-left-radius:0; border-bottom-left-radius:0;">
               </div>
-              <div class="form-salon-help">Misal: jasa ekstra, produk tambahan, dll.</div>
+              <div class="form-salon-help">Jasa ekstra, produk tambahan, dll. Wajib isi catatan jika diisi.</div>
             </div>
+          </div>
 
-            <!-- Note (toggled) -->
-            <div class="mb-2" id="noteWrapper" style="display:none;">
-              <label class="form-salon-label">Catatan biaya tambahan <span style="color:var(--color-danger);">*</span></label>
-              <textarea id="noteField" name="note" class="form-salon-textarea" rows="2" maxlength="500" placeholder="Wajib diisi: rincian biaya tambahan"></textarea>
-              <div class="form-salon-help">Maks 500 karakter.</div>
-            </div>
-
-            <!-- Metode bayar -->
+          <!-- === Mode manual === -->
+          <div id="manualBlock" style="display:none;">
             <div class="mb-2">
-              <label class="form-salon-label">Metode bayar</label>
-              <select class="form-salon-select" name="metode_bayar" id="metodeBayar">
-                <option value="cash">Cash</option>
-                <option value="transfer">Transfer</option>
-                <option value="qris">QRIS</option>
-              </select>
-            </div>
-
-            <!-- Total -->
-            <div class="card-salon" style="background:var(--bg); border-color:var(--gold);">
-              <div class="flex justify-between items-center">
-                <span class="label">Total</span>
-                <span id="totalDisplay" style="font-family:var(--font-display); font-size:1.71rem; font-weight:600; color:var(--gold);">Rp <?= number_format((int) $booking['harga_layanan'], 0, ',', '.') ?></span>
+              <label class="form-salon-label">Nominal manual <span style="color:var(--color-danger);">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text" style="background:var(--surface); color:var(--gold); border:1px solid rgba(201,166,107,0.2); border-right:none; border-top-right-radius:0; border-bottom-right-radius:0;">Rp</span>
+                <input type="number" id="manualNominal" name="manual_nominal" class="form-salon-input" placeholder="0" min="1" max="999999998" step="1000" disabled style="border-top-left-radius:0; border-bottom-left-radius:0;">
               </div>
+              <div class="form-salon-help">Nominal yang ditagih ke pelanggan (paket / harga khusus).</div>
+            </div>
+          </div>
+
+          <!-- Catatan (shared, tampil saat manual, atau saat additional > 0) -->
+          <div class="mb-2" id="noteWrapper" style="display:none;">
+            <label class="form-salon-label" id="noteLabel">Catatan <span style="color:var(--color-danger);">*</span></label>
+            <textarea id="noteField" name="note" class="form-salon-textarea" rows="2" maxlength="500" placeholder=""></textarea>
+            <div class="form-salon-help">Maks 500 karakter.</div>
+          </div>
+
+          <!-- Metode bayar (shared) -->
+          <div class="mb-2">
+            <label class="form-salon-label">Metode bayar</label>
+            <select class="form-salon-select" name="metode_bayar" id="metodeBayar">
+              <option value="cash">Cash</option>
+              <option value="transfer">Transfer</option>
+              <option value="qris">QRIS</option>
+            </select>
+          </div>
+
+          <!-- Total (live) -->
+          <div class="card-salon" style="background:var(--bg); border-color:var(--gold);">
+            <div class="flex justify-between items-center">
+              <span class="label" id="totalLabel">Total</span>
+              <span id="totalDisplay" style="font-family:var(--font-display); font-size:1.71rem; font-weight:600; color:var(--gold);">Rp <?= number_format((int) $booking['harga_layanan'], 0, ',', '.') ?></span>
             </div>
           </div>
 
@@ -183,45 +194,77 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
   const BASE_PRICE = <?= (int) $booking['harga_layanan'] ?>;
   const fmt = (n) => 'Rp ' + n.toLocaleString('id-ID');
 
-  const additional   = document.getElementById('additionalPrice');
-  const noteWrapper  = document.getElementById('noteWrapper');
-  const noteField    = document.getElementById('noteField');
-  const totalEl      = document.getElementById('totalDisplay');
   const manualCb     = document.getElementById('manualMode');
-  const priceFields  = document.getElementById('priceFields');
-  const metode       = document.getElementById('metodeBayar');
+  const autoBlock    = document.getElementById('autoBlock');
+  const manualBlock  = document.getElementById('manualBlock');
+  const additional   = document.getElementById('additionalPrice');
+  const manualInput  = document.getElementById('manualNominal');
+  const noteWrapper  = document.getElementById('noteWrapper');
+  const noteLabel    = document.getElementById('noteLabel');
+  const noteField    = document.getElementById('noteField');
+  const totalLabel   = document.getElementById('totalLabel');
+  const totalEl      = document.getElementById('totalDisplay');
   const submitBtn    = document.getElementById('submitComplete');
   const form         = document.getElementById('formComplete');
 
   function recalc() {
-    const add = Math.max(0, parseInt(additional.value || '0', 10) || 0);
-    const manual = manualCb.checked;
-    const showNote = !manual && add > 0;
-    noteWrapper.style.display = showNote ? '' : 'none';
-    noteField.required = showNote;
-    totalEl.textContent = fmt(manual ? 0 : BASE_PRICE + add);
+    if (manualCb.checked) {
+      const v = Math.max(0, parseInt(manualInput.value || '0', 10) || 0);
+      totalEl.textContent = fmt(v);
+    } else {
+      const add = Math.max(0, parseInt(additional.value || '0', 10) || 0);
+      totalEl.textContent = fmt(BASE_PRICE + add);
+    }
   }
 
-  function applyManualMode() {
-    const off = manualCb.checked;
-    [additional, noteField, metode].forEach((el) => {
-      el.disabled = off;
-      if (off) el.removeAttribute('required');
-    });
-    priceFields.style.opacity = off ? '0.45' : '1';
+  function syncMode() {
+    const manual = manualCb.checked;
+
+    // Toggle block visibility
+    autoBlock.style.display    = manual ? 'none' : '';
+    manualBlock.style.display  = manual ? '' : 'none';
+
+    // Enable/disable so disabled-fields are not submitted (avoid stray data)
+    additional.disabled  = manual;
+    manualInput.disabled = !manual;
+
+    // Note visibility + required-state
+    if (manual) {
+      noteWrapper.style.display = '';
+      noteLabel.innerHTML = 'Catatan manual <span style="color:var(--color-danger);">*</span>';
+      noteField.placeholder = 'Wajib diisi: deskripsi paket / alasan harga khusus';
+      noteField.required = true;
+      manualInput.required = true;
+      totalLabel.textContent = 'Total (manual)';
+    } else {
+      const add = Math.max(0, parseInt(additional.value || '0', 10) || 0);
+      const showNote = add > 0;
+      noteWrapper.style.display = showNote ? '' : 'none';
+      noteLabel.innerHTML = 'Catatan biaya tambahan <span style="color:var(--color-danger);">*</span>';
+      noteField.placeholder = 'Wajib diisi: rincian biaya tambahan';
+      noteField.required = showNote;
+      manualInput.required = false;
+      totalLabel.textContent = 'Total';
+    }
+
     recalc();
   }
 
-  additional.addEventListener('input', recalc);
-  manualCb.addEventListener('change', applyManualMode);
+  additional.addEventListener('input', syncMode);
+  manualInput.addEventListener('input', recalc);
+  manualCb.addEventListener('change', syncMode);
 
   form.addEventListener('submit', () => {
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Memproses...';
+    // Use setTimeout so the form fires its submit before we disable the button
+    // (avoids the rare browser quirk where disabling the submitter cancels it).
+    setTimeout(() => {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Memproses...';
+    }, 0);
   });
 
   // Initial state
-  recalc();
+  syncMode();
 })();
 </script>
 <?php endif ?>

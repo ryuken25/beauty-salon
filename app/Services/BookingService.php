@@ -160,7 +160,8 @@ class BookingService
         string $metodeBayar = 'cash',
         ?string $catatan = null,
         int $additionalPrice = 0,
-        bool $manualMode = false
+        bool $manualMode = false,
+        int $manualNominal = 0
     ): void {
         $db = db_connect();
         $db->transBegin();
@@ -180,34 +181,39 @@ class BookingService
             throw new RuntimeException('Booking sudah berubah status dan tidak dapat ditandai selesai.');
         }
 
-        $basePrice = (int) $booking['harga_layanan'];
-        $additional = max(0, $additionalPrice);
+        if ($manualMode) {
+            // Admin sets the nominal manually. Stored as base_price so reports
+            // (which sum nominal = base + additional) stay consistent.
+            $basePrice = max(0, $manualNominal);
+            $additional = 0;
+        } else {
+            $basePrice = (int) $booking['harga_layanan'];
+            $additional = max(0, $additionalPrice);
+        }
         $total = $basePrice + $additional;
 
-        if (! $manualMode) {
-            $existing = $db->table('transaksi')->where('booking_id', $bookingId)->countAllResults();
-            if ($existing === 0) {
-                $db->table('transaksi')->insert([
-                    'booking_id' => $bookingId,
-                    'nominal' => $total,
-                    'base_price' => $basePrice,
-                    'additional_price' => $additional,
-                    'metode_bayar' => $metodeBayar,
-                    'tanggal_transaksi' => $now,
-                    'catatan' => $catatan,
-                    'created_at' => $now,
-                ]);
-            }
+        $existing = $db->table('transaksi')->where('booking_id', $bookingId)->countAllResults();
+        if ($existing === 0) {
+            $db->table('transaksi')->insert([
+                'booking_id' => $bookingId,
+                'nominal' => $total,
+                'base_price' => $basePrice,
+                'additional_price' => $additional,
+                'metode_bayar' => $metodeBayar,
+                'tanggal_transaksi' => $now,
+                'catatan' => $catatan,
+                'created_at' => $now,
+            ]);
         }
 
         $db->transCommit();
 
         $this->logEvent($bookingId, 'completed', 'dashboard:' . ($userId ?? 'unknown'), 'admin', [
             'manual' => $manualMode,
-            'metode_bayar' => $manualMode ? null : $metodeBayar,
-            'base_price' => $manualMode ? 0 : $basePrice,
-            'additional_price' => $manualMode ? 0 : $additional,
-            'nominal' => $manualMode ? 0 : $total,
+            'metode_bayar' => $metodeBayar,
+            'base_price' => $basePrice,
+            'additional_price' => $additional,
+            'nominal' => $total,
         ]);
     }
 

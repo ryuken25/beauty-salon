@@ -756,3 +756,48 @@ a:hover { color: var(--text-primary); text-decoration: underline; text-underline
 .table { color: var(--text-primary); }
 .table > :not(caption) > * > * { background-color: transparent; color: var(--text-primary); border-color: rgba(201,166,107,0.12); }
 .table-hover > tbody > tr:hover > * { background-color: rgba(201,166,107,0.05); }
+
+/* Bootstrap nav-tabs — dark theme override (was defaulting to Bootstrap blue) */
+.nav-tabs {
+  border-bottom: 1px solid var(--gold-border);
+}
+.nav-tabs .nav-link {
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9286rem;
+  padding: 0.571rem 1.143rem;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+  color: var(--gold);
+  background: var(--gold-soft);
+  border-color: transparent;
+  isolation: auto;
+}
+.nav-tabs .nav-link.active {
+  color: var(--gold);
+  background: var(--card);
+  border-color: var(--gold-border) var(--gold-border) var(--card);
+}
+
+/* Bootstrap modal — ensure background inherits dark theme */
+.modal-content { color: var(--text-primary); }
+.modal-backdrop.show { opacity: 0.7; }
+
+/* Bootstrap form-check (used for checkboxes in modal) */
+.form-check-input { background-color: var(--surface); border-color: var(--gold-border); }
+.form-check-input:checked { background-color: var(--gold); border-color: var(--gold); }
+.form-check-input:focus { border-color: var(--gold); box-shadow: 0 0 0 0.2rem rgba(201,166,107,0.2); }
+
+/* Bootstrap input-group-text fallback (when used without inline override) */
+.input-group-text {
+  background: var(--surface);
+  color: var(--gold);
+  border-color: rgba(201,166,107,0.2);
+}
