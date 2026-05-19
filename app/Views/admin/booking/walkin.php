@@ -75,8 +75,8 @@ async function refreshSlots() {
   const data = await r.json();
   if (data.error) { grid.innerHTML = '<span class="caption" style="color:var(--color-danger);">' + data.error + '</span>'; return; }
   state.booked = data.booked || []; state.durasi = data.durasi_menit;
-  state.openMin = data.stylist_open ? toMin(data.stylist_open) : toMin(allSlots[0]);
-  state.closeMin = data.stylist_close ? toMin(data.stylist_close) : (toMin(allSlots[allSlots.length-1])+30);
+  state.openMin = toMin(allSlots[0]);
+  state.closeMin = toMin(allSlots[allSlots.length-1]) + 30;
   render();
 }
 function n(){return Math.ceil(state.durasi/30);} function insuf(s){const sm=toMin(s);const em=sm+state.durasi;if(em>state.closeMin) return true;for(let i=1;i<n();i++){if(state.booked.includes(fromMin(sm+i*30))) return true;}return false;} function held(s){if(!state.slot) return false;const sm=toMin(state.slot);const m=toMin(s);return m>sm && m<sm+state.durasi;}

@@ -33,7 +33,7 @@ Demo accounts (password `Password123!`):
 ### Roles & access
 - Customer flow is **fully public** (no auth). Booking by name + WhatsApp number; lookup status at `/cek-booking` by HP number; cancel from booking detail using HP + kode.
 - Admin login lives at `/admin/login` (or `/admin`) and is **not linked** from the public navbar.
-- Roles: `admin` and `pemilik`. Filters: [AdminFilter](app/Filters/AdminFilter.php), [PemilikFilter](app/Filters/PemilikFilter.php). Pemilik-only routes: CRUD layanan/stylist, transaksi, pengaturan.
+- Roles: `admin` and `pemilik`. Filters: [AdminFilter](app/Filters/AdminFilter.php), [PemilikFilter](app/Filters/PemilikFilter.php). Pemilik-only routes: CRUD layanan, transaksi, pengaturan.
 
 ### Fixed-slot domain (load-bearing)
 - All times are 30-minute slots from `jam_buka` to `jam_tutup` (default 08:00–19:00, settable in `/admin/pengaturan`).
@@ -47,7 +47,7 @@ Demo accounts (password `Password123!`):
 - [WhatsAppTemplateService](app/Services/WhatsAppTemplateService.php) — renders templates from settings, builds `wa.me` links. Manual-only — never integrate a paid WhatsApp API.
 
 ### Schema (Indonesian column names)
-- `users` (admin, pemilik, pelanggan — `nomor_hp` optional), `stylists` + `stylist_schedules`, `layanan`, `bookings` (`kode_booking`, `user_id` nullable, `nama_pelanggan`, `nomor_hp_pelanggan`, `slot_mulai`, `slot_selesai`, `jumlah_slot`, status, …), `booking_slots`, `transaksi`, `settings` (key/value), `booking_logs`.
+- `users` (admin, pemilik, pelanggan — `nomor_hp` optional), `layanan`, `bookings` (`kode_booking`, `user_id` nullable, `nama_pelanggan`, `nomor_hp_pelanggan`, `slot_mulai`, `slot_selesai`, `jumlah_slot`, status, …), `booking_slots`, `transaksi`, `settings` (key/value), `booking_logs`. **Owner all-in-one — no stylist table.**
 - Baseline migration: `2026-05-12-100000_ResetAndCreateSalonSchema.php`. Subsequent: `2026-05-14_AddPelangganRoleAndUserBookings`, `2026-05-15_DropTelegramArtifacts`. Add NEW dated migrations for any further schema change.
 
 ### Booking status vocabulary

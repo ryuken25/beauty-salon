@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\BookingModel;
 use App\Models\LayananModel;
-use App\Models\StylistModel;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use RuntimeException;
 
@@ -24,14 +23,6 @@ class BookingService
                 throw new RuntimeException('Data booking belum lengkap.');
             }
         }
-        $stylistId = isset($data['stylist_id']) && $data['stylist_id'] ? (int) $data['stylist_id'] : null;
-        if (! $stylistId) {
-            $stylist = (new StylistModel())->defaultActive();
-            if (! $stylist) {
-                throw new RuntimeException('Belum ada stylist default. Hubungi pemilik.');
-            }
-            $stylistId = (int) $stylist['id'];
-        }
 
         $phone = $this->normalizePhone((string) $data['nomor_hp_pelanggan']);
         $layanan = (new LayananModel())->where('is_active', 1)->find((int) $data['layanan_id']);
@@ -42,7 +33,7 @@ class BookingService
         $db = db_connect();
         $db->transBegin();
         try {
-            $validation = $this->slotService->validateBookingSlot((int) $data['layanan_id'], $stylistId, $data['tanggal'], $data['slot_mulai']);
+            $validation = $this->slotService->validateBookingSlot((int) $data['layanan_id'], $data['tanggal'], $data['slot_mulai']);
             $sumber = ($data['sumber'] ?? 'online') === 'walkin' ? 'walkin' : 'online';
             $statusInitial = $sumber === 'walkin' ? ($data['initial_status'] ?? 'accepted') : 'pending_verification';
             $kode = $this->generateKodeBooking();
@@ -54,7 +45,6 @@ class BookingService
                 'nama_pelanggan' => trim((string) $data['nama_pelanggan']),
                 'nomor_hp_pelanggan' => $phone,
                 'layanan_id' => (int) $layanan['id'],
-                'stylist_id' => $stylistId,
                 'tanggal' => $data['tanggal'],
                 'slot_mulai' => $validation['slot_mulai'] . ':00',
                 'slot_selesai' => $validation['slot_selesai'] . ':00',
@@ -77,7 +67,6 @@ class BookingService
             foreach ($validation['slots_needed'] as $slot) {
                 $db->table('booking_slots')->insert([
                     'booking_id' => $bookingId,
-                    'stylist_id' => $stylistId,
                     'tanggal' => $data['tanggal'],
                     'slot_waktu' => $slot . ':00',
                     'status' => 'held',

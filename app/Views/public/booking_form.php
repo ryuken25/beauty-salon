@@ -137,8 +137,8 @@ async function refreshSlots() {
     if (data.error) { grid.innerHTML = '<span class="caption" style="color:var(--color-danger);">' + data.error + '</span>'; return; }
     state.booked = data.booked || [];
     state.durasi = data.durasi_menit;
-    state.openMin = data.stylist_open ? toMin(data.stylist_open) : toMin(allSlots[0]);
-    state.closeMin = data.stylist_close ? toMin(data.stylist_close) : (toMin(allSlots[allSlots.length-1]) + 30);
+    state.openMin = toMin(allSlots[0]);
+    state.closeMin = toMin(allSlots[allSlots.length-1]) + 30;
     renderGrid();
   } catch (e) {
     grid.innerHTML = '<span class="caption" style="color:var(--color-danger);">Gagal memuat slot.</span>';

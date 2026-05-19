@@ -18,50 +18,43 @@ $nextDay = date('Y-m-d', strtotime("{$tanggal} +1 day"));
 </div>
 
 <div class="card-salon">
-  <?php if (empty($stylists)): ?>
-    <div class="caption">Belum ada stylist aktif.</div>
+  <?php if (empty($all_slots)): ?>
+    <div class="caption">Belum ada slot tersedia. Periksa pengaturan jam buka/tutup.</div>
   <?php else: ?>
     <div style="overflow-x:auto;">
       <table class="table-salon" style="min-width:600px;">
-        <thead><tr><th>Stylist</th><?php foreach ($all_slots as $s): ?><th style="font-size:0.6rem; text-align:center;"><?= esc($s) ?></th><?php endforeach ?></tr></thead>
+        <thead>
+          <tr>
+            <th>Jam</th>
+            <th>Booking</th>
+            <th>Pelanggan</th>
+            <th>Layanan</th>
+            <th>Status</th>
+          </tr>
+        </thead>
         <tbody>
-          <?php foreach ($stylists as $st): ?>
-            <tr>
-              <td style="font-weight:500;"><?= esc($st['nama']) ?></td>
-              <?php foreach ($all_slots as $s):
-                $key = $st['id'] . '|' . $s;
-                $cell = $slot_map[$key] ?? null;
-                $bg = '#fff'; $text = '';
-                if ($cell) {
-                  $b = $cell['booking'];
-                  $bg = match ($b['status']) {
-                    'pending_verification' => 'var(--color-pending-bg)',
-                    'accepted' => 'rgba(184,146,74,0.3)',
-                    'completed' => 'var(--color-completed-bg)',
-                    default => '#fff',
-                  };
-                  $text = $cell['is_start'] ? esc($b['nama_pelanggan'] . ' · ' . $b['nama_layanan']) : '↳';
-                }
-              ?>
-                <td style="background:<?= $bg ?>; text-align:center; font-size:0.7rem; padding:0.25rem;">
-                  <?php if ($cell && $cell['is_start']): ?>
-                    <a href="<?= base_url('admin/booking/' . $cell['booking']['id']) ?>" style="color:inherit; text-decoration:none;" title="<?= $text ?>"><?= esc($cell['booking']['kode_booking']) ?></a>
-                  <?php elseif ($cell): ?>
-                    <span style="color:var(--color-gold-dark);">↳</span>
-                  <?php else: ?>
-                    <span style="color:#ccc;">·</span>
-                  <?php endif ?>
-                </td>
-              <?php endforeach ?>
+          <?php foreach ($all_slots as $s):
+            $cell = $slot_map[$s] ?? null;
+            $b = $cell['booking'] ?? null;
+            $cls = $b ? 'badge-salon--' . ($b['status'] === 'pending_verification' ? 'pending' : str_replace('_', '-', $b['status'])) : '';
+            $lbl = $b ? ['pending_verification' => 'Pending', 'accepted' => 'Diterima', 'completed' => 'Selesai'][$b['status']] : '';
+          ?>
+            <tr style="<?= $b ? '' : 'opacity:0.55;' ?>">
+              <td style="font-family:var(--font-display); font-weight:500;"><?= esc($s) ?></td>
+              <?php if ($b && $cell['is_start']): ?>
+                <td><a href="<?= base_url('admin/booking/' . $b['id']) ?>" style="color:var(--gold); font-weight:600;"><?= esc($b['kode_booking']) ?></a></td>
+                <td><?= esc($b['nama_pelanggan']) ?></td>
+                <td><?= esc($b['nama_layanan']) ?><div class="caption"><?= esc(substr($b['slot_mulai'], 0, 5)) ?>–<?= esc(substr($b['slot_selesai'], 0, 5)) ?></div></td>
+                <td><span class="badge-salon <?= $cls ?>"><?= esc($lbl) ?></span></td>
+              <?php elseif ($b): ?>
+                <td colspan="4" class="caption"><i class="bi bi-arrow-return-right" style="color:var(--gold);"></i> lanjutan <?= esc($b['kode_booking']) ?></td>
+              <?php else: ?>
+                <td colspan="4" class="caption">—</td>
+              <?php endif ?>
             </tr>
           <?php endforeach ?>
         </tbody>
       </table>
-    </div>
-    <div class="caption mt-2">
-      <span style="background:var(--color-pending-bg); padding:2px 8px; border-radius:4px;">Pending</span>
-      <span style="background:rgba(184,146,74,0.3); padding:2px 8px; border-radius:4px;">Diterima</span>
-      <span style="background:var(--color-completed-bg); padding:2px 8px; border-radius:4px;">Selesai</span>
     </div>
   <?php endif ?>
 </div>

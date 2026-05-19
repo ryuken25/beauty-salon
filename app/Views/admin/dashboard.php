@@ -42,15 +42,6 @@ $tgl = $hariId[(int) date('w')] . ', ' . date('j') . ' ' . $bulanId[(int) date('
       <span class="metric__caption" style="<?= $pending > 0 ? 'color:var(--color-pending);' : '' ?>"><?= $pending > 0 ? 'Perlu aksi' : 'Aman' ?></span>
     </div>
   </div>
-  <?php if ($role === 'pemilik'): ?>
-    <div class="card-salon">
-      <div class="metric">
-        <span class="label">Stylist aktif</span>
-        <span class="metric__value"><?= esc($stylist_aktif) ?></span>
-        <span class="metric__caption">Tersedia hari ini</span>
-      </div>
-    </div>
-  <?php endif ?>
 </div>
 
 <?php if ($role === 'pemilik'): ?>

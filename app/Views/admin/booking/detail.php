@@ -25,7 +25,6 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
         <tr><td class="label">Durasi</td><td class="text-right"><?= esc($booking['durasi_menit']) ?> menit</td></tr>
         <tr><td class="label">Tanggal</td><td class="text-right"><?= esc(date('d M Y', strtotime($booking['tanggal']))) ?></td></tr>
         <tr><td class="label">Jam</td><td class="text-right" style="font-weight:500;"><?= esc(substr($booking['slot_mulai'], 0, 5)) ?> – <?= esc(substr($booking['slot_selesai'], 0, 5)) ?></td></tr>
-        <tr><td class="label">Stylist</td><td class="text-right"><?= esc($booking['nama_stylist']) ?></td></tr>
         <tr><td class="label">Sumber</td><td class="text-right"><?= esc(ucfirst($booking['sumber'])) ?></td></tr>
         <tr><td class="label">Harga</td><td class="text-right" style="font-weight:500;">Rp <?= number_format((int) $booking['harga_layanan'], 0, ',', '.') ?></td></tr>
         <?php if ($booking['catatan']): ?><tr><td class="label">Catatan</td><td class="text-right"><?= esc($booking['catatan']) ?></td></tr><?php endif ?>

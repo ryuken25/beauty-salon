@@ -15,24 +15,6 @@ class SalonSeeder extends Seeder
             ['email' => 'admin@swbeautysalon.local', 'password_hash' => password_hash('Password123!', PASSWORD_BCRYPT), 'nama' => 'Admin Salon', 'role' => 'admin', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
         ]);
 
-        $this->db->table('stylists')->insert([
-            'nama' => 'Ni Wayan Sutrisna Wati',
-            'nomor_hp' => '6287862183074',
-            'peran' => 'Owner & Stylist',
-            'is_default' => 1,
-            'is_active' => 1,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
-        $stylistId = (int) $this->db->insertID();
-
-        $hari = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
-        $schedules = [];
-        foreach ($hari as $h) {
-            $schedules[] = ['stylist_id' => $stylistId, 'hari' => $h, 'jam_mulai' => '08:00:00', 'jam_selesai' => '19:00:00', 'is_libur' => 0, 'created_at' => $now, 'updated_at' => $now];
-        }
-        $this->db->table('stylist_schedules')->insertBatch($schedules);
-
         // Layanan SW Beauty Salon — durasi harus kelipatan 30 menit (fixed time slot).
         // Harga estimasi range Tabanan; pemilik bisa adjust via /admin/layanan.
         $layanan = [

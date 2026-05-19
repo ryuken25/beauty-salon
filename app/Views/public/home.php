@@ -84,8 +84,8 @@
   <!-- Solid gold pop card -->
   <div class="card-stat-gold text-center">
     <i class="bi bi-award" style="font-size:1.5rem; color:#14110F; margin-bottom:0.5rem;"></i>
-    <div class="h3 mt-1" style="color:#14110F;">Stylist tersertifikasi</div>
-    <div style="font-family:var(--font-display); font-style:italic; font-size:0.9286rem; color:rgba(20,17,15,0.65);">Profesional terbaik kami</div>
+    <div class="h3 mt-1" style="color:#14110F;">Owner langsung</div>
+    <div style="font-family:var(--font-display); font-style:italic; font-size:0.9286rem; color:rgba(20,17,15,0.65);">Dilayani langsung oleh pemilik</div>
   </div>
   <div class="card-salon text-center">
     <i class="bi bi-heart" style="font-size:1.5rem; color:var(--gold); margin-bottom:0.5rem;"></i>

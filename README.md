@@ -84,14 +84,14 @@ Jika MySQL lokal memakai password, isi `database.default.password` di file `.env
 - Registrasi dan login pelanggan.
 - Role-based access untuk pelanggan, admin, dan pemilik.
 - Daftar layanan salon dengan kategori, deskripsi, durasi, harga, dan status aktif.
-- Booking online dengan pemilihan layanan, stylist, tanggal, dan slot mulai.
+- Booking online dengan pemilihan layanan, tanggal, dan slot mulai.
 - Fixed time slot 30 menit dengan validasi ketersediaan slot berurutan.
 - Booking `pending_verification`, `accepted`, dan `completed` dianggap menahan slot.
 - Admin/pemilik dapat menerima, menolak, membatalkan, dan menyelesaikan booking.
 - Transaksi otomatis dengan input biaya tambahan opsional + catatan saat booking diselesaikan, dengan opsi mode pencatatan manual.
 - Dashboard pendapatan harian, mingguan, bulanan, grafik pendapatan, status booking, dan layanan terpopuler.
 - Input booking walk-in/offline.
-- Manajemen layanan, stylist, jam kerja stylist, dan pengaturan dasar.
+- Manajemen layanan, jam buka/tutup salon, dan pengaturan dasar.
 - Template WhatsApp manual: Salin Pesan, Buka WhatsApp, dan Tandai WA Sudah Dikirim.
 
 ## WhatsApp Manual
@@ -140,7 +140,6 @@ Halaman yang disarankan dicek manual:
 - `/admin/booking/walkin`
 - `/admin/booking/jadwal`
 - `/admin/layanan`
-- `/admin/stylist`
 - `/admin/transaksi`
 - `/admin/pengaturan`
 

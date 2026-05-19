@@ -19,7 +19,6 @@ class Dashboard extends BaseController
         $bookingHariIni = $db->table('bookings')->where('tanggal', $today)->whereNotIn('status', ['rejected', 'cancelled'])->countAllResults();
         $bookingHariIniSelesai = $db->table('bookings')->where('tanggal', $today)->where('status', 'completed')->countAllResults();
         $pending = $db->table('bookings')->where('status', 'pending_verification')->countAllResults();
-        $stylistAktif = $db->table('stylists')->where('is_active', 1)->countAllResults();
 
         $last7days = [];
         $chartLabels = [];
@@ -59,7 +58,6 @@ class Dashboard extends BaseController
             'booking_hari_ini' => $bookingHariIni,
             'booking_hari_ini_selesai' => $bookingHariIniSelesai,
             'pending' => $pending,
-            'stylist_aktif' => $stylistAktif,
             'chart_labels' => $chartLabels,
             'chart_values' => $chartValues,
             'total_minggu' => $totalMingguIni,

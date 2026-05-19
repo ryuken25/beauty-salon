@@ -38,7 +38,7 @@ $statusMap = [
           <div>
             <div class="h3"><?= esc($b['nama_layanan']) ?></div>
             <div class="caption"><i class="bi bi-calendar"></i> <?= esc($b['tanggal']) ?> · <i class="bi bi-clock"></i> <?= esc(substr((string) $b['slot_mulai'], 0, 5)) ?>–<?= esc(substr((string) $b['slot_selesai'], 0, 5)) ?></div>
-            <div class="caption">Kode: <strong><?= esc($b['kode_booking']) ?></strong> · Stylist: <?= esc($b['nama_stylist']) ?></div>
+            <div class="caption">Kode: <strong><?= esc($b['kode_booking']) ?></strong></div>
           </div>
           <div class="text-right">
             <span class="badge-salon badge-salon--<?= $cls ?>"><?= esc($label) ?></span>

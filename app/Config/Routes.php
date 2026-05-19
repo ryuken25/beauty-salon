@@ -47,12 +47,6 @@ $routes->group('admin', ['filter' => 'pemilik'], static function ($routes) {
     $routes->post('layanan/(:num)/update', 'Admin\LayananController::update/$1');
     $routes->post('layanan/(:num)/delete', 'Admin\LayananController::delete/$1');
 
-    $routes->get('stylist', 'Admin\StylistController::index');
-    $routes->post('stylist', 'Admin\StylistController::store');
-    $routes->post('stylist/(:num)/update', 'Admin\StylistController::update/$1');
-    $routes->post('stylist/(:num)/delete', 'Admin\StylistController::delete/$1');
-    $routes->match(['get', 'post'], 'stylist/(:num)/jadwal', 'Admin\StylistController::jadwal/$1');
-
     $routes->get('transaksi', 'Admin\TransaksiController::index');
 
     $routes->match(['get', 'post'], 'pengaturan', 'Admin\PengaturanController::index');

@@ -43,7 +43,7 @@ $statuses = ['' => 'Semua', 'pending_verification' => 'Pending', 'accepted' => '
   <?php else: ?>
     <div style="overflow-x:auto;">
       <table class="table-salon">
-        <thead><tr><th>Kode</th><th>Pelanggan</th><th>Layanan</th><th>Tanggal & Jam</th><th>Stylist</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Kode</th><th>Pelanggan</th><th>Layanan</th><th>Tanggal & Jam</th><th>Status</th><th></th></tr></thead>
         <tbody>
           <?php foreach ($rows as $r):
             $cls = 'badge-salon--' . ($r['status'] === 'pending_verification' ? 'pending' : str_replace('_', '-', $r['status']));
@@ -55,7 +55,6 @@ $statuses = ['' => 'Semua', 'pending_verification' => 'Pending', 'accepted' => '
               <td><?= esc($r['nama_pelanggan']) ?><div class="caption"><?= esc($r['nomor_hp_pelanggan']) ?></div></td>
               <td><?= esc($r['nama_layanan']) ?></td>
               <td><?= esc(date('d M Y', strtotime($r['tanggal']))) ?><div class="caption"><?= esc(substr($r['slot_mulai'], 0, 5)) ?>–<?= esc(substr($r['slot_selesai'], 0, 5)) ?></div></td>
-              <td><?= esc($r['nama_stylist']) ?></td>
               <td><span class="badge-salon <?= $cls ?>"><?= esc($lbl) ?></span></td>
               <td><a class="btn-salon-ghost btn-salon--sm" href="<?= base_url('admin/booking/' . $r['id']) ?>">Detail</a></td>
             </tr>

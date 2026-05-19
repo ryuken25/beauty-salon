@@ -30,7 +30,6 @@ function active_admin(string $segment, string $uri): string {
     <a class="sidebar-admin__item <?= str_starts_with($uri, 'admin/booking/jadwal') ? 'active' : '' ?>" href="<?= base_url('admin/booking/jadwal') ?>"><i class="bi bi-calendar3"></i><span>Jadwal</span></a>
     <?php if ($role === 'pemilik'): ?>
       <a class="sidebar-admin__item <?= active_admin('layanan', $uri) ?>" href="<?= base_url('admin/layanan') ?>"><i class="bi bi-scissors"></i><span>Layanan</span></a>
-      <a class="sidebar-admin__item <?= active_admin('stylist', $uri) ?>" href="<?= base_url('admin/stylist') ?>"><i class="bi bi-person-badge"></i><span>Stylist</span></a>
       <a class="sidebar-admin__item <?= active_admin('transaksi', $uri) ?>" href="<?= base_url('admin/transaksi') ?>"><i class="bi bi-cash-coin"></i><span>Transaksi</span></a>
     <?php endif ?>
     <div class="sidebar-admin__spacer"></div>

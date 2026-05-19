@@ -94,7 +94,7 @@ php spark migrate
 php spark db:seed SalonSeeder
 ```
 
-Akan bikin semua tabel + isi data sample: 2 akun admin, 1 stylist default, 8 layanan, setting awal salon.
+Akan bikin semua tabel + isi data sample: 2 akun admin/pemilik, 24 layanan, setting awal salon.
 
 ---
 

@@ -17,9 +17,8 @@ class BookingController extends BaseController
     {
         $db = db_connect();
         $builder = $db->table('bookings b')
-            ->select('b.id, b.kode_booking, b.nama_pelanggan, b.nomor_hp_pelanggan, b.tanggal, b.slot_mulai, b.slot_selesai, b.status, b.sumber, l.nama AS nama_layanan, s.nama AS nama_stylist')
-            ->join('layanan l', 'l.id = b.layanan_id')
-            ->join('stylists s', 's.id = b.stylist_id');
+            ->select('b.id, b.kode_booking, b.nama_pelanggan, b.nomor_hp_pelanggan, b.tanggal, b.slot_mulai, b.slot_selesai, b.status, b.sumber, l.nama AS nama_layanan')
+            ->join('layanan l', 'l.id = b.layanan_id');
         $status = (string) $this->request->getGet('status');
         if ($status) $builder->where('b.status', $status);
         $tanggal = (string) $this->request->getGet('tanggal');
@@ -165,21 +164,19 @@ class BookingController extends BaseController
         $tanggal = (string) ($this->request->getGet('tanggal') ?: date('Y-m-d'));
         $allSlots = (new SlotService())->allSlots();
         $rows = db_connect()->table('bookings b')
-            ->select('b.id, b.kode_booking, b.nama_pelanggan, b.status, b.slot_mulai, b.slot_selesai, b.jumlah_slot, l.nama AS nama_layanan, s.nama AS nama_stylist, s.id AS stylist_id')
+            ->select('b.id, b.kode_booking, b.nama_pelanggan, b.status, b.slot_mulai, b.slot_selesai, b.jumlah_slot, l.nama AS nama_layanan')
             ->join('layanan l', 'l.id = b.layanan_id')
-            ->join('stylists s', 's.id = b.stylist_id')
             ->where('b.tanggal', $tanggal)
             ->whereIn('b.status', ['pending_verification', 'accepted', 'completed'])
             ->orderBy('b.slot_mulai')->get()->getResultArray();
-        $stylists = db_connect()->table('stylists')->where('is_active', 1)->orderBy('nama')->get()->getResultArray();
         $slotMap = [];
         foreach ($rows as $r) {
             $start = strtotime($r['slot_mulai']);
             for ($i = 0; $i < (int) $r['jumlah_slot']; $i++) {
-                $key = $r['stylist_id'] . '|' . date('H:i', $start + $i * 1800);
+                $key = date('H:i', $start + $i * 1800);
                 $slotMap[$key] = ['booking' => $r, 'is_start' => $i === 0];
             }
         }
-        return view('admin/booking/jadwal', ['tanggal' => $tanggal, 'all_slots' => $allSlots, 'stylists' => $stylists, 'slot_map' => $slotMap]);
+        return view('admin/booking/jadwal', ['tanggal' => $tanggal, 'all_slots' => $allSlots, 'slot_map' => $slotMap]);
     }
 }
