@@ -3,7 +3,7 @@
 const { chromium } = require('@playwright/test');
 
 const BASE = process.env.BASE_URL || 'http://localhost:8080';
-const OUT = 'test-results/shots';
+const OUT = 'halaman';
 const fs = require('fs');
 
 (async () => {
