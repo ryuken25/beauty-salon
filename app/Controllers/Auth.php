@@ -49,10 +49,8 @@ class Auth extends BaseController
 
     private function redirectByRole(?string $role)
     {
-        if ($role === 'pemilik') {
-            return redirect()->to('/owner/dashboard');
-        }
-        if ($role === 'admin') {
+        // Owner is an admin superset — both land on the operational dashboard.
+        if (in_array($role, ['admin', 'pemilik'], true)) {
             return redirect()->to('/admin/dashboard');
         }
         return redirect()->to('/');

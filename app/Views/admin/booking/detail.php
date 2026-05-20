@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/admin') ?>
+<?= $this->extend('layouts/panel') ?>
 <?= $this->section('content') ?>
 <?php
 $cls = 'badge-salon--' . ($booking['status'] === 'pending_verification' ? 'pending' : str_replace('_', '-', $booking['status']));

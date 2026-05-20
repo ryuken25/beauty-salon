@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/owner') ?>
+<?= $this->extend('layouts/panel') ?>
 <?= $this->section('content') ?>
 <?php
 $ikonList = ['bi-stars', 'bi-scissors', 'bi-flower1', 'bi-droplet', 'bi-hand-index', 'bi-palette', 'bi-gem', 'bi-eye', 'bi-heart', 'bi-magic'];

@@ -33,7 +33,7 @@ Demo accounts (password `Password123!`):
 ### Roles & access
 - Customer flow is **fully public** (no auth, no account). Booking by name + WhatsApp number (+ optional email); lookup status & self-cancel at `/cek-booking` by HP number with a confirm modal; admin can also cancel from the dashboard.
 - Login lives at `/login` (alias `/admin/login`) — **admin & pemilik only**, not linked from the public navbar.
-- Two areas: `/admin/*` (operational — booking verify/reject/cancel/complete, walk-in, jadwal, pelanggan list) guarded by [AdminFilter](app/Filters/AdminFilter.php) (admin + pemilik); `/owner/*` (analytical/managerial — revenue dashboard, layanan CRUD, stylist CRUD, transaksi, pengaturan) guarded by [OwnerFilter](app/Filters/OwnerFilter.php) (pemilik only).
+- **Pemilik = Admin superset.** One unified [layouts/panel.php](app/Views/layouts/panel.php) with a role-aware sidebar. `/admin/*` (filter `admin` = admin + pemilik): dashboard, booking verify/reject/cancel/complete, walk-in, jadwal, pelanggan, transaksi, pengaturan. `/owner/*` (filter `owner` = pemilik only): laporan (analytics), layanan CRUD, stylist CRUD. Admin typing `/owner/*` gets bounced to `/admin/dashboard`.
 - Stylist is a labelled attribute on each booking — full CRUD with soft delete at `/owner/stylist`. Slots stay salon-wide (stylist is not a slot dimension).
 
 ### Fixed-slot domain (load-bearing)

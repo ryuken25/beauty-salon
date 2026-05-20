@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/admin') ?>
+<?= $this->extend('layouts/panel') ?>
 <?= $this->section('content') ?>
 <?php
 $hariId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -8,7 +8,7 @@ $tgl = $hariId[(int) date('w')] . ', ' . date('j') . ' ' . $bulanId[(int) date('
 
 <div class="page-header-salon">
   <div>
-    <div class="h1">Dashboard · Admin</div>
+    <div class="h1">Dashboard</div>
     <div class="tagline"><?= esc($tgl) ?></div>
   </div>
   <?php if ($pending > 0): ?>

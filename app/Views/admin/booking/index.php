@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/admin') ?>
+<?= $this->extend('layouts/panel') ?>
 <?= $this->section('content') ?>
 <?php
 $statuses = ['' => 'Semua', 'pending_verification' => 'Pending', 'accepted' => 'Diterima', 'completed' => 'Selesai', 'rejected' => 'Ditolak', 'cancelled' => 'Batal'];

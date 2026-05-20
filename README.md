@@ -86,8 +86,8 @@ Pelanggan **tidak punya akun** — booking dilakukan langsung tanpa login.
 - Anti-spam ringan: honeypot field + batas booking per perangkat per hari (tanpa CAPTCHA).
 - Kode booking unik `SW-YYYYMMDD-NNN` di halaman sukses, dengan tombol salin.
 - Fixed time slot 30 menit dengan validasi ketersediaan slot berurutan.
-- Cek status & batalkan booking sendiri di `/cek-booking` (kode + nomor HP) dengan modal konfirmasi.
-- Dua area login: **Admin** (operasional — verifikasi/tolak/batal/selesai booking, walk-in, jadwal, data pelanggan) dan **Pemilik** (analitik — dashboard pendapatan, grafik, layanan terpopuler, transaksi, CRUD layanan & stylist, pengaturan).
+- Cek status & batalkan booking sendiri di `/cek-booking` (kode + nomor HP) lewat halaman konfirmasi khusus, lalu lapor ke admin via WhatsApp otomatis.
+- Dua tingkat login: **Admin** (operasional — dashboard, booking verifikasi/tolak/batal/selesai, walk-in, jadwal, pelanggan, transaksi, pengaturan) dan **Pemilik** (superset Admin — semua menu admin **plus** Laporan analitik, CRUD Layanan, CRUD Stylist).
 - Manajemen stylist full CRUD dengan soft delete (riwayat booking tetap aman).
 - Manajemen layanan full CRUD dengan soft delete.
 - Transaksi otomatis dengan input biaya tambahan opsional + catatan saat booking diselesaikan, dengan opsi mode pencatatan manual.
@@ -132,10 +132,10 @@ Halaman yang disarankan dicek manual:
 - `/layanan`
 - `/booking` (form booking publik)
 - `/booking/sukses/{kode}`
-- `/cek-booking` (cek status + batal booking)
+- `/cek-booking` → `/cek-booking/{kode}/batal` (halaman konfirmasi) → `/cek-booking-sukses/{kode}`
 - `/login`
-- `/admin/dashboard`, `/admin/booking`, `/admin/booking/walkin`, `/admin/booking/jadwal`, `/admin/pelanggan`
-- `/owner/dashboard`, `/owner/layanan`, `/owner/stylist`, `/owner/transaksi`, `/owner/pengaturan`
+- Admin: `/admin/dashboard`, `/admin/booking`, `/admin/booking/walkin`, `/admin/booking/jadwal`, `/admin/pelanggan`, `/admin/transaksi`, `/admin/pengaturan`
+- Pemilik (tambahan): `/owner/laporan`, `/owner/layanan`, `/owner/stylist`
 
 End-to-end test (Playwright, butuh `php spark serve`):
 

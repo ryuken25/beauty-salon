@@ -5,8 +5,7 @@ $alreadyLoggedIn = (bool) session('is_logged_in');
 $currentNama = session('user_nama');
 $currentRole = session('user_role');
 $roleLabel = ['admin' => 'Admin', 'pemilik' => 'Pemilik'][$currentRole] ?? '';
-$dashUrl = $currentRole === 'pemilik' ? base_url('owner/dashboard')
-    : ($currentRole === 'admin' ? base_url('admin/dashboard') : base_url('/'));
+$dashUrl = in_array($currentRole, ['admin', 'pemilik'], true) ? base_url('admin/dashboard') : base_url('/');
 ?>
 <div class="card-salon" style="text-align:center; background:var(--card);">
   <img src="<?= base_url('assets/img/logo.png') ?>" alt="SW Beauty Salon" style="width:88px;height:88px;object-fit:contain;margin-bottom:0.857rem;">

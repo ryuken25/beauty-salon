@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/admin') ?>
+<?= $this->extend('layouts/panel') ?>
 <?= $this->section('content') ?>
 <?php
 $prevDay = date('Y-m-d', strtotime("{$tanggal} -1 day"));

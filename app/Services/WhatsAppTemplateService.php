@@ -52,4 +52,24 @@ class WhatsAppTemplateService
             . "• Jam: {$mulai} – {$selesai}\n\n"
             . 'Mohon konfirmasi. Terima kasih.';
     }
+
+    /**
+     * Template "pembatalan_oleh_customer" — pesan yang dikirim customer ke
+     * admin setelah membatalkan booking sendiri lewat /cek-booking.
+     */
+    public function customerCancellationMessage(array $booking, ?string $reason = null): string
+    {
+        $tanggal = date('d/m/Y', strtotime((string) $booking['tanggal']));
+        $jam = substr((string) $booking['slot_mulai'], 0, 5) . '–' . substr((string) $booking['slot_selesai'], 0, 5);
+        $alasan = ($reason !== null && trim($reason) !== '') ? trim($reason) : '(tidak disebutkan)';
+        return "Halo Admin SW Beauty Salon,\n\n"
+            . "Saya ingin memberitahukan bahwa saya telah membatalkan booking berikut:\n\n"
+            . "Kode Booking : {$booking['kode_booking']}\n"
+            . "Nama         : {$booking['nama_pelanggan']}\n"
+            . "Tanggal      : {$tanggal} pukul {$jam}\n"
+            . "Layanan      : {$booking['nama_layanan']}\n"
+            . 'Stylist      : ' . ($booking['nama_stylist'] ?? '-') . "\n\n"
+            . "Alasan: {$alasan}\n\n"
+            . 'Terima kasih atas pengertiannya.';
+    }
 }

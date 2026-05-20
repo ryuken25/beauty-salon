@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/owner') ?>
+<?= $this->extend('layouts/panel') ?>
 <?= $this->section('content') ?>
 <?php
 $hariId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -15,8 +15,8 @@ $statusLabels = [
 
 <div class="page-header-salon">
   <div>
-    <div class="h1">Dashboard · Pemilik</div>
-    <div class="tagline"><?= esc($tgl) ?></div>
+    <div class="h1">Laporan</div>
+    <div class="tagline">Analitik pendapatan &amp; performa · <?= esc($tgl) ?></div>
   </div>
 </div>
 

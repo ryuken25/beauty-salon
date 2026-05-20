@@ -18,6 +18,11 @@
         <a class="btn-salon-primary" href="<?= base_url('booking') ?>">Booking sekarang</a>
         <a class="btn-salon-secondary" href="<?= base_url('layanan') ?>">Lihat layanan</a>
       </div>
+      <div class="mt-2">
+        <a class="btn-salon-ghost btn-salon--sm" href="<?= base_url('cek-booking') ?>" style="padding-left:0;">
+          <i class="bi bi-search"></i> Cek atau Batalkan Booking
+        </a>
+      </div>
       <div class="ornament-rule" style="margin:2rem 0 0; justify-content:flex-start;">
         <span class="ornament-rule__line" style="flex:0 0 40px;"></span>
         <i class="bi bi-stars ornament-rule__icon"></i>

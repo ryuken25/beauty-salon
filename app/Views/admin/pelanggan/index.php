@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/admin') ?>
+<?= $this->extend('layouts/panel') ?>
 <?= $this->section('content') ?>
 
 <div class="page-header-salon">

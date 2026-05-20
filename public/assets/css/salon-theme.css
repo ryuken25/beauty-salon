@@ -263,6 +263,32 @@ a:hover { color: var(--text-primary); text-decoration: underline; text-underline
 .form-salon-textarea { min-height: 80px; resize: vertical; }
 .form-salon-help { font-size: 0.7143rem; color: var(--text-muted); margin-top: 0.286rem; }
 
+/* Date/time picker icon — the native indicator renders near-black, which is
+   invisible on the dark surface. Tint it toward the gold accent so the
+   calendar/clock icon is readable everywhere it appears (transaksi filter,
+   walk-in, pengaturan, …). */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  /* black icon → warm gold (#C9A66B-ish) */
+  filter: invert(74%) sepia(36%) saturate(460%) hue-rotate(2deg) brightness(92%) contrast(88%);
+  opacity: 0.95;
+  transition: opacity 0.15s;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+input[type="month"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  filter: invert(86%) sepia(20%) saturate(640%) hue-rotate(2deg) brightness(102%);
+}
+/* Firefox + the field text itself */
+input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"] {
+  color-scheme: dark;
+}
+
 /* Bootstrap input override */
 .form-control, .form-select {
   background-color: var(--surface) !important;
@@ -477,11 +503,20 @@ a:hover { color: var(--text-primary); text-decoration: underline; text-underline
 .sidebar-admin__item:hover { color: var(--gold); background: var(--gold-soft); }
 .sidebar-admin__item.active { background: var(--gold-soft); color: var(--gold); }
 .sidebar-admin__spacer { flex: 1; }
+.sidebar-admin__group {
+  padding: 0.857rem 0.857rem 0.286rem;
+  font-size: 0.6429rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
 .sidebar-admin__footer { padding: 0.571rem 0.857rem; color: var(--text-muted); font-size: 0.7143rem; border-top: 1px solid var(--gold-border); margin-top: 0.5rem; }
 @media (max-width: 991px) {
   .sidebar-admin { width: 60px; }
   .sidebar-admin__item span,
   .sidebar-admin__brand span,
+  .sidebar-admin__group,
   .sidebar-admin__footer { display: none; }
   .sidebar-admin__item { justify-content: center; }
 }

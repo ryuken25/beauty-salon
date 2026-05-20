@@ -15,33 +15,35 @@ const fs = require('fs');
     await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: true });
     console.log('  saved', name);
   }
+  async function login(email) {
+    await page.goto(BASE + '/logout');
+    await page.goto(BASE + '/login');
+    await page.fill('input[name="email"]', email);
+    await page.fill('input[name="password"]', 'Password123!');
+    await Promise.all([page.waitForURL(/dashboard/), page.click('button[type="submit"]')]);
+  }
 
-  // Public pages
+  // Public
   for (const [path, name] of [['/', 'home'], ['/layanan', 'layanan'], ['/booking', 'booking'], ['/cek-booking', 'cek-booking'], ['/login', 'login']]) {
     await page.goto(BASE + path, { waitUntil: 'networkidle' });
     await shot('public-' + name);
   }
 
-  // Owner area
-  await page.goto(BASE + '/login');
-  await page.fill('input[name="email"]', 'owner@swbeautysalon.local');
-  await page.fill('input[name="password"]', 'Password123!');
-  await Promise.all([page.waitForURL(/owner\/dashboard/), page.click('button[type="submit"]')]);
-  for (const [path, name] of [['/owner/dashboard', 'dashboard'], ['/owner/layanan', 'layanan'], ['/owner/stylist', 'stylist'], ['/owner/transaksi', 'transaksi'], ['/owner/pengaturan', 'pengaturan']]) {
+  // Owner — full superset sidebar + managerial pages
+  await login('owner@swbeautysalon.local');
+  for (const [path, name] of [
+    ['/admin/dashboard', 'dashboard'], ['/admin/booking', 'booking'], ['/admin/booking/walkin', 'walkin'],
+    ['/admin/pelanggan', 'pelanggan'], ['/admin/transaksi', 'transaksi'], ['/admin/pengaturan', 'pengaturan'],
+    ['/owner/laporan', 'laporan'], ['/owner/layanan', 'layanan'], ['/owner/stylist', 'stylist'],
+  ]) {
     await page.goto(BASE + path, { waitUntil: 'networkidle' });
     await shot('owner-' + name);
   }
 
-  // Admin area
-  await page.goto(BASE + '/logout');
-  await page.goto(BASE + '/login');
-  await page.fill('input[name="email"]', 'admin@swbeautysalon.local');
-  await page.fill('input[name="password"]', 'Password123!');
-  await Promise.all([page.waitForURL(/admin\/dashboard/), page.click('button[type="submit"]')]);
-  for (const [path, name] of [['/admin/dashboard', 'dashboard'], ['/admin/booking', 'booking'], ['/admin/booking/walkin', 'walkin'], ['/admin/pelanggan', 'pelanggan']]) {
-    await page.goto(BASE + path, { waitUntil: 'networkidle' });
-    await shot('admin-' + name);
-  }
+  // Admin — operational-only sidebar
+  await login('admin@swbeautysalon.local');
+  await page.goto(BASE + '/admin/dashboard', { waitUntil: 'networkidle' });
+  await shot('admin-dashboard');
 
   await browser.close();
   console.log('done');

@@ -4,7 +4,7 @@ namespace App\Controllers\Owner;
 
 use App\Controllers\BaseController;
 
-class Dashboard extends BaseController
+class LaporanController extends BaseController
 {
     public function index()
     {
@@ -52,7 +52,7 @@ class Dashboard extends BaseController
             ->get()->getResultArray();
         $totalTop = array_sum(array_column($topServices, 'jumlah')) ?: 1;
 
-        return view('owner/dashboard', [
+        return view('owner/laporan', [
             'pendapatan_hari_ini' => $pendapatanHariIni,
             'pendapatan_bulan_ini' => $pendapatanBulanIni,
             'trend' => $trend,
