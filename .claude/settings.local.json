@@ -4,7 +4,8 @@
       "Bash(rm -f writable/cache/* writable/session/*)",
       "Bash(php -l app/Config/Routes.php)",
       "Bash(php -l app/Controllers/Auth.php)",
-      "Bash(bash scripts/test_auth.sh)"
+      "Bash(bash scripts/test_auth.sh)",
+      "Bash(npx playwright *)"
     ]
   }
 }

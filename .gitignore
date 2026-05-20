@@ -1,3 +1,9 @@
+# Node / Playwright (e2e dev only — not shipped)
+node_modules/
+test-results/
+playwright-report/
+playwright/.cache/
+
 #-------------------------
 # Operating Specific Junk Files
 #-------------------------
