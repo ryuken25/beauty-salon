@@ -4,15 +4,14 @@
 $alreadyLoggedIn = (bool) session('is_logged_in');
 $currentNama = session('user_nama');
 $currentRole = session('user_role');
-$roleLabel = ['admin' => 'Admin', 'pemilik' => 'Pemilik', 'pelanggan' => 'Pelanggan'][$currentRole] ?? '';
+$roleLabel = ['admin' => 'Admin', 'pemilik' => 'Pemilik'][$currentRole] ?? '';
 $dashUrl = $currentRole === 'pemilik' ? base_url('owner/dashboard')
-    : ($currentRole === 'admin' ? base_url('admin/dashboard')
-    : ($currentRole === 'pelanggan' ? base_url('pelanggan/dashboard') : base_url('/')));
+    : ($currentRole === 'admin' ? base_url('admin/dashboard') : base_url('/'));
 ?>
 <div class="card-salon" style="text-align:center; background:var(--card);">
   <img src="<?= base_url('assets/img/logo.png') ?>" alt="SW Beauty Salon" style="width:88px;height:88px;object-fit:contain;margin-bottom:0.857rem;">
-  <div class="h2" style="margin-bottom:0.25rem; font-size:1.571rem;">Selamat datang</div>
-  <div class="tagline mb-3">Admin · Pemilik · Pelanggan</div>
+  <div class="h2" style="margin-bottom:0.25rem; font-size:1.571rem;">Masuk</div>
+  <div class="tagline mb-3">Khusus Admin &amp; Pemilik</div>
 
   <?php if ($alreadyLoggedIn): ?>
     <div class="alert-salon alert-salon--info" style="text-align:left;">
@@ -22,7 +21,7 @@ $dashUrl = $currentRole === 'pemilik' ? base_url('owner/dashboard')
       </div>
       <div class="caption">Untuk login dengan akun lain, klik <strong>Logout</strong> dulu. Atau lanjut ke dashboard Anda.</div>
       <div class="flex gap-1 mt-2" style="flex-wrap:wrap;">
-        <a class="btn-salon-secondary btn-salon--sm" href="<?= esc($dashUrl) ?>">→ Ke dashboard saya</a>
+        <a class="btn-salon-secondary btn-salon--sm" href="<?= esc($dashUrl) ?>">&rarr; Ke dashboard saya</a>
         <a class="btn-salon-danger btn-salon--sm" href="<?= base_url('logout') ?>"><i class="bi bi-box-arrow-right"></i> Logout</a>
       </div>
     </div>
@@ -44,9 +43,6 @@ $dashUrl = $currentRole === 'pemilik' ? base_url('owner/dashboard')
   </form>
 
   <div class="mt-2 caption">
-    Belum punya akun? <a href="<?= base_url('register') ?>">Daftar sebagai pelanggan</a>
-  </div>
-  <div class="mt-1 caption">
     <a href="<?= base_url('/') ?>">&larr; Kembali ke beranda</a>
   </div>
 </div>

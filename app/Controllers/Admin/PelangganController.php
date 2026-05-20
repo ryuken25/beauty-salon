@@ -11,14 +11,13 @@ class PelangganController extends BaseController
         $db = db_connect();
         $q = trim((string) $this->request->getGet('q'));
 
-        // Aggregate from bookings: each unique (nama, nomor_hp) pair = one customer.
-        // Registered pelanggan rows are linked via user_id; anonymous bookings carry
-        // their own nama + HP.
+        // Customers are not user accounts — they exist only as booking rows.
+        // Aggregate each unique (nama, nomor_hp) pair into one customer record.
         $builder = $db->table('bookings')
             ->select('
-                MAX(user_id) AS user_id,
                 nama_pelanggan,
                 nomor_hp_pelanggan,
+                MAX(email_pelanggan) AS email_pelanggan,
                 COUNT(*) AS total_booking,
                 SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) AS total_selesai,
                 SUM(CASE WHEN status IN ("pending_verification","accepted") THEN 1 ELSE 0 END) AS aktif,

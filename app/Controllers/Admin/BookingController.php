@@ -17,8 +17,9 @@ class BookingController extends BaseController
     {
         $db = db_connect();
         $builder = $db->table('bookings b')
-            ->select('b.id, b.kode_booking, b.nama_pelanggan, b.nomor_hp_pelanggan, b.tanggal, b.slot_mulai, b.slot_selesai, b.status, b.sumber, l.nama AS nama_layanan')
-            ->join('layanan l', 'l.id = b.layanan_id');
+            ->select('b.id, b.kode_booking, b.nama_pelanggan, b.nomor_hp_pelanggan, b.tanggal, b.slot_mulai, b.slot_selesai, b.status, b.sumber, l.nama AS nama_layanan, s.nama AS nama_stylist')
+            ->join('layanan l', 'l.id = b.layanan_id')
+            ->join('stylists s', 's.id = b.stylist_id', 'left');
         $status = (string) $this->request->getGet('status');
         if ($status) $builder->where('b.status', $status);
         $tanggal = (string) $this->request->getGet('tanggal');
@@ -137,6 +138,7 @@ class BookingController extends BaseController
                     'nama_pelanggan' => $this->request->getPost('nama_pelanggan'),
                     'nomor_hp_pelanggan' => $this->request->getPost('nomor_hp_pelanggan'),
                     'layanan_id' => (int) $this->request->getPost('layanan_id'),
+                    'stylist_id' => (int) $this->request->getPost('stylist_id'),
                     'tanggal' => $this->request->getPost('tanggal'),
                     'slot_mulai' => $this->request->getPost('slot_mulai'),
                     'catatan' => $this->request->getPost('catatan'),
@@ -150,13 +152,17 @@ class BookingController extends BaseController
                 return redirect()->back()->withInput()->with('error', $e->getMessage());
             }
         }
-        $layanans = (new LayananModel())->where('is_active', 1)->orderBy('nama')->find();
         $slot = new SlotService();
         $allSlots = $slot->allSlots();
         $rangeHari = $slot->rangeHari();
         $dates = [];
         for ($i = 0; $i <= $rangeHari; $i++) $dates[] = date('Y-m-d', strtotime("+{$i} days"));
-        return view('admin/booking/walkin', ['layanans' => $layanans, 'all_slots' => $allSlots, 'dates' => $dates]);
+        return view('admin/booking/walkin', [
+            'layanans' => (new LayananModel())->where('is_active', 1)->orderBy('nama')->find(),
+            'stylists' => (new \App\Models\StylistModel())->activeForBooking(),
+            'all_slots' => $allSlots,
+            'dates' => $dates,
+        ]);
     }
 
     public function jadwal()

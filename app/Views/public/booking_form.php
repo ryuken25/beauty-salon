@@ -15,23 +15,48 @@ $today = date('Y-m-d');
 <form method="post" action="<?= base_url('booking') ?>" id="bookingForm">
   <?= csrf_field() ?>
 
+  <!-- Honeypot: hidden from humans, bots fill it -->
+  <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+    <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+  </div>
+
   <div class="card-salon mb-3">
     <div class="h2 mb-2">Data pelanggan</div>
     <div class="row-salon cols-2">
       <div>
         <label class="form-salon-label">Nama lengkap *</label>
-        <input class="form-salon-input" type="text" name="nama_pelanggan" required minlength="3" value="<?= esc(old('nama_pelanggan') ?? ($prefill_nama ?? '')) ?>">
+        <input class="form-salon-input" type="text" name="nama_pelanggan" required minlength="3" value="<?= esc(old('nama_pelanggan')) ?>">
       </div>
       <div>
         <label class="form-salon-label">Nomor WhatsApp *</label>
-        <input class="form-salon-input" type="tel" name="nomor_hp_pelanggan" required value="<?= esc(old('nomor_hp_pelanggan') ?? ($prefill_hp ?? '')) ?>" placeholder="08xxxxxxxxxx">
+        <input class="form-salon-input" type="tel" name="nomor_hp_pelanggan" required value="<?= esc(old('nomor_hp_pelanggan')) ?>" placeholder="08xxxxxxxxxx">
         <div class="form-salon-help">Contoh: 081234567890. Nomor ini dipakai untuk Cek Booking.</div>
       </div>
+      <div>
+        <label class="form-salon-label">Email (opsional)</label>
+        <input class="form-salon-input" type="email" name="email_pelanggan" value="<?= esc(old('email_pelanggan')) ?>" placeholder="nama@email.com">
+      </div>
+      <div>
+        <label class="form-salon-label">Catatan (opsional)</label>
+        <textarea class="form-salon-textarea" name="catatan" rows="2" placeholder="Permintaan khusus, dll"><?= esc(old('catatan')) ?></textarea>
+      </div>
     </div>
-    <div class="mt-2">
-      <label class="form-salon-label">Catatan (opsional)</label>
-      <textarea class="form-salon-textarea" name="catatan" rows="2" placeholder="Permintaan khusus, dll"><?= esc(old('catatan')) ?></textarea>
-    </div>
+  </div>
+
+  <div class="card-salon mb-3">
+    <div class="h2 mb-2">Pilih stylist</div>
+    <?php if (empty($stylists)): ?>
+      <div class="caption" style="color:var(--color-danger);">Belum ada stylist aktif. Silakan hubungi salon via WhatsApp.</div>
+    <?php else: ?>
+      <select class="form-salon-select" name="stylist_id" id="stylistSelect" required>
+        <option value="">— Pilih stylist —</option>
+        <?php foreach ($stylists as $st): ?>
+          <option value="<?= $st['id'] ?>" <?= old('stylist_id') == $st['id'] ? 'selected' : '' ?>>
+            <?= esc($st['nama']) ?><?= $st['spesialisasi'] ? ' — ' . esc($st['spesialisasi']) : '' ?>
+          </option>
+        <?php endforeach ?>
+      </select>
+    <?php endif ?>
   </div>
 
   <div class="card-salon mb-3">
@@ -218,19 +243,25 @@ function updateSummary() {
     const endMin = toMin(state.slot) + state.durasi;
     info.innerHTML = '🔒 Slot ditahan: <strong>' + state.slot + ' – ' + fromMin(endMin) + '</strong> (' + state.durasi + ' menit)';
   } else { info.textContent = ''; }
+  const stylistEl = document.getElementById('stylistSelect');
+  const stylistOk = stylistEl && stylistEl.value !== '';
   const text = document.getElementById('summaryText');
-  if (state.layananId && state.tanggal && state.slot) {
+  if (state.layananId && state.tanggal && state.slot && stylistOk) {
     const endMin = toMin(state.slot) + state.durasi;
     text.innerHTML = '<strong>' + layananName + '</strong> · ' + state.tanggal + ' · ' + state.slot + '–' + fromMin(endMin) + ' · ' + layananHarga;
     document.getElementById('submitBtn').disabled = false;
+  } else if (state.layananId && state.tanggal && state.slot && !stylistOk) {
+    text.textContent = 'Pilih stylist dulu untuk menyelesaikan booking.';
+    document.getElementById('submitBtn').disabled = true;
   } else {
-    text.textContent = 'Pilih layanan, tanggal, dan jam untuk melihat ringkasan.';
+    text.textContent = 'Pilih layanan, stylist, tanggal, dan jam untuk melihat ringkasan.';
     document.getElementById('submitBtn').disabled = true;
   }
 }
 
 document.querySelectorAll('#layananList .card-salon').forEach((c) => { c.onclick = () => pickLayanan(c); if (c.querySelector('input').checked) pickLayanan(c); });
 document.querySelectorAll('#dateStrip .date-strip-item').forEach((c) => { c.onclick = () => pickDate(c); if (c.dataset.tanggal === state.tanggal) pickDate(c); });
+(function () { const s = document.getElementById('stylistSelect'); if (s) s.addEventListener('change', updateSummary); })();
 </script>
 
 <?= $this->endSection() ?>

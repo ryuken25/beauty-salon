@@ -77,21 +77,21 @@ Jika MySQL lokal memakai password, isi `database.default.password` di file `.env
 |---|---|---|
 | Pemilik | `owner@swbeautysalon.local` | `Password123!` |
 | Admin | `admin@swbeautysalon.local` | `Password123!` |
-| Pelanggan | `pelanggan@example.com` | `Password123!` |
+
+Pelanggan **tidak punya akun** — booking dilakukan langsung tanpa login.
 
 ## Fitur Utama
 
-- Registrasi dan login pelanggan.
-- Role-based access untuk pelanggan, admin, dan pemilik.
-- Daftar layanan salon dengan kategori, deskripsi, durasi, harga, dan status aktif.
-- Booking online dengan pemilihan layanan, tanggal, dan slot mulai.
+- Booking publik tanpa akun: nama + nomor WhatsApp (email opsional), pilih layanan, stylist, tanggal, dan slot mulai.
+- Anti-spam ringan: honeypot field + batas booking per perangkat per hari (tanpa CAPTCHA).
+- Kode booking unik `SW-YYYYMMDD-NNN` di halaman sukses, dengan tombol salin.
 - Fixed time slot 30 menit dengan validasi ketersediaan slot berurutan.
-- Booking `pending_verification`, `accepted`, dan `completed` dianggap menahan slot.
-- Admin/pemilik dapat menerima, menolak, membatalkan, dan menyelesaikan booking.
+- Cek status & batalkan booking sendiri di `/cek-booking` (kode + nomor HP) dengan modal konfirmasi.
+- Dua area login: **Admin** (operasional — verifikasi/tolak/batal/selesai booking, walk-in, jadwal, data pelanggan) dan **Pemilik** (analitik — dashboard pendapatan, grafik, layanan terpopuler, transaksi, CRUD layanan & stylist, pengaturan).
+- Manajemen stylist full CRUD dengan soft delete (riwayat booking tetap aman).
+- Manajemen layanan full CRUD dengan soft delete.
 - Transaksi otomatis dengan input biaya tambahan opsional + catatan saat booking diselesaikan, dengan opsi mode pencatatan manual.
-- Dashboard pendapatan harian, mingguan, bulanan, grafik pendapatan, status booking, dan layanan terpopuler.
-- Input booking walk-in/offline.
-- Manajemen layanan, jam buka/tutup salon, dan pengaturan dasar.
+- Input booking walk-in/offline oleh admin.
 - Template WhatsApp manual: Salin Pesan, Buka WhatsApp, dan Tandai WA Sudah Dikirim.
 
 ## WhatsApp Manual
@@ -128,20 +128,22 @@ php spark serve
 
 Halaman yang disarankan dicek manual:
 
-- `/`
+- `/` (beranda + CTA pesan)
 - `/layanan`
+- `/booking` (form booking publik)
+- `/booking/sukses/{kode}`
+- `/cek-booking` (cek status + batal booking)
 - `/login`
-- `/register`
-- `/pelanggan`
-- `/pelanggan/booking/baru`
-- `/pelanggan/booking`
-- `/admin`
-- `/admin/booking`
-- `/admin/booking/walkin`
-- `/admin/booking/jadwal`
-- `/admin/layanan`
-- `/admin/transaksi`
-- `/admin/pengaturan`
+- `/admin/dashboard`, `/admin/booking`, `/admin/booking/walkin`, `/admin/booking/jadwal`, `/admin/pelanggan`
+- `/owner/dashboard`, `/owner/layanan`, `/owner/stylist`, `/owner/transaksi`, `/owner/pengaturan`
+
+End-to-end test (Playwright, butuh `php spark serve`):
+
+```bash
+npm install
+npx playwright install chromium
+npx playwright test
+```
 
 ## Dokumentasi
 

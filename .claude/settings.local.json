@@ -5,7 +5,9 @@
       "Bash(php -l app/Config/Routes.php)",
       "Bash(php -l app/Controllers/Auth.php)",
       "Bash(bash scripts/test_auth.sh)",
-      "Bash(npx playwright *)"
+      "Bash(npx playwright *)",
+      "Bash(rm -f writable/cache/*)",
+      "Bash(curl -fsS -o /dev/null -w \"server:%{http_code}\\\\n\" http://localhost:8080/)"
     ]
   }
 }

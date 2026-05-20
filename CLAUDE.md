@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**SW Beauty Salon** — CodeIgniter 4 booking app for a salon in Tabanan, Bali. Unified login at `/login` for admin / pemilik / pelanggan; anonymous booking also supported (anyone can book without an account). Stack: PHP 8.1+, MySQL/MariaDB, Bootstrap 5 + Bootstrap Icons + Chart.js via CDN, WhatsApp manual via `wa.me`. **No Telegram integration.**
+**SW Beauty Salon** — CodeIgniter 4 booking app for a salon in Tabanan, Bali. Booking is **fully public** — customers do not have accounts. Login at `/login` is for **admin & pemilik only** (2 actors). Stack: PHP 8.1+, MySQL/MariaDB, Bootstrap 5 + Bootstrap Icons + Chart.js via CDN, WhatsApp manual via `wa.me`. **No Telegram integration.**
 
 ## Common Commands
 
@@ -31,9 +31,10 @@ Demo accounts (password `Password123!`):
 ## Architecture
 
 ### Roles & access
-- Customer flow is **fully public** (no auth). Booking by name + WhatsApp number; lookup status at `/cek-booking` by HP number; cancel from booking detail using HP + kode.
-- Admin login lives at `/admin/login` (or `/admin`) and is **not linked** from the public navbar.
-- Roles: `admin` and `pemilik`. Filters: [AdminFilter](app/Filters/AdminFilter.php), [PemilikFilter](app/Filters/PemilikFilter.php). Pemilik-only routes: CRUD layanan, transaksi, pengaturan.
+- Customer flow is **fully public** (no auth, no account). Booking by name + WhatsApp number (+ optional email); lookup status & self-cancel at `/cek-booking` by HP number with a confirm modal; admin can also cancel from the dashboard.
+- Login lives at `/login` (alias `/admin/login`) — **admin & pemilik only**, not linked from the public navbar.
+- Two areas: `/admin/*` (operational — booking verify/reject/cancel/complete, walk-in, jadwal, pelanggan list) guarded by [AdminFilter](app/Filters/AdminFilter.php) (admin + pemilik); `/owner/*` (analytical/managerial — revenue dashboard, layanan CRUD, stylist CRUD, transaksi, pengaturan) guarded by [OwnerFilter](app/Filters/OwnerFilter.php) (pemilik only).
+- Stylist is a labelled attribute on each booking — full CRUD with soft delete at `/owner/stylist`. Slots stay salon-wide (stylist is not a slot dimension).
 
 ### Fixed-slot domain (load-bearing)
 - All times are 30-minute slots from `jam_buka` to `jam_tutup` (default 08:00–19:00, settable in `/admin/pengaturan`).
@@ -47,8 +48,8 @@ Demo accounts (password `Password123!`):
 - [WhatsAppTemplateService](app/Services/WhatsAppTemplateService.php) — renders templates from settings, builds `wa.me` links. Manual-only — never integrate a paid WhatsApp API.
 
 ### Schema (Indonesian column names)
-- `users` (admin, pemilik, pelanggan — `nomor_hp` optional), `layanan`, `bookings` (`kode_booking`, `user_id` nullable, `nama_pelanggan`, `nomor_hp_pelanggan`, `slot_mulai`, `slot_selesai`, `jumlah_slot`, status, …), `booking_slots`, `transaksi`, `settings` (key/value), `booking_logs`. **Owner all-in-one — no stylist table.**
-- Baseline migration: `2026-05-12-100000_ResetAndCreateSalonSchema.php`. Subsequent: `2026-05-14_AddPelangganRoleAndUserBookings`, `2026-05-15_DropTelegramArtifacts`. Add NEW dated migrations for any further schema change.
+- `users` (admin & pemilik only — no pelanggan role), `layanan` (soft delete), `stylists` (soft delete), `bookings` (`kode_booking` format `SW-YYYYMMDD-NNN`, `nama_pelanggan`, `nomor_hp_pelanggan`, `email_pelanggan` nullable, `layanan_id`, `stylist_id` nullable, `slot_mulai`, `slot_selesai`, `jumlah_slot`, status, `cancellation_reason`, …), `booking_slots`, `transaksi`, `settings` (key/value), `booking_logs`.
+- Baseline migration: `2026-05-12-100000_ResetAndCreateSalonSchema.php`. Add NEW dated migrations for any further schema change — **never** rely on `$db->getFieldNames()` inside a migration (CI4 caches it for the whole migrate run; probe `information_schema` instead).
 
 ### Booking status vocabulary
 | Internal | UI label | Slot held? |
@@ -62,15 +63,15 @@ Demo accounts (password `Password123!`):
 Transactions in `transaksi` are created **once** on transition to `completed` (nominal = layanan.harga, payment method manual).
 
 ### Customer cancel rule
-Customer can cancel via `/booking/{kode}?no_hp=…` while booking is `pending_verification` or `accepted` AND ≥ 2 jam sebelum `slot_mulai`. Logic in [BookingService::cancel](app/Services/BookingService.php).
+Customer self-cancels at `/cek-booking`: enter HP → see bookings → "Batalkan" opens a confirm modal (optional reason) → `POST /booking/{kode}/batal`. Allowed while `pending_verification` or `accepted` AND ≥ 2 jam sebelum `slot_mulai`. Logic in [BookingService::cancel](app/Services/BookingService.php). Admin can also cancel from `/admin/booking/{id}`.
 
 ## Hard constraints (from IMPLEMENTATION_PLAN aka [implementation.md](implementation.md))
 
 - **Stack lock:** PHP 8.1+, CodeIgniter 4, MySQL, Bootstrap 5, Chart.js. No React/Vue/Tailwind/Sass/build tools. Custom CSS lives in [public/assets/css/salon-theme.css](public/assets/css/salon-theme.css).
 - **No paid WhatsApp API.** `wa.me` links + copy-to-clipboard templates only.
 - **No payment gateway**, no ML/AI/forecasting, no multi-branch, no inventory.
-- **Customer tidak punya akun.** Booking anonymous (nama + HP). Cancel lewat kode + HP.
-- **Admin URL `/admin` tidak ditampilkan di navbar publik.**
+- **Customer tidak punya akun.** Booking anonymous (nama + HP + email opsional). Cancel lewat kode + HP. No `/register`, no pelanggan login.
+- **Login URL tidak ditampilkan di navbar publik.**
 - **Jam operasional & range hari** dapat diubah di Pengaturan; default 08:00–19:00 dan 7 hari ke depan.
 - **Bahasa Indonesia** di semua label UI dan error message.
 

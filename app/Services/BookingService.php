@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\BookingModel;
 use App\Models\LayananModel;
+use App\Models\StylistModel;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use RuntimeException;
 
@@ -30,6 +31,15 @@ class BookingService
             throw new RuntimeException('Layanan tidak valid.');
         }
 
+        // Stylist is required; must be an active, non-deleted stylist.
+        $stylistId = isset($data['stylist_id']) ? (int) $data['stylist_id'] : 0;
+        $stylist = $stylistId ? (new StylistModel())->where('is_active', 1)->find($stylistId) : null;
+        if (! $stylist) {
+            throw new RuntimeException('Stylist tidak valid atau tidak tersedia.');
+        }
+
+        $email = isset($data['email_pelanggan']) ? trim((string) $data['email_pelanggan']) : '';
+
         $db = db_connect();
         $db->transBegin();
         try {
@@ -41,10 +51,11 @@ class BookingService
 
             $bookingRow = [
                 'kode_booking' => $kode,
-                'user_id' => isset($data['user_id']) && $data['user_id'] ? (int) $data['user_id'] : null,
                 'nama_pelanggan' => trim((string) $data['nama_pelanggan']),
                 'nomor_hp_pelanggan' => $phone,
+                'email_pelanggan' => $email !== '' ? $email : null,
                 'layanan_id' => (int) $layanan['id'],
+                'stylist_id' => (int) $stylist['id'],
                 'tanggal' => $data['tanggal'],
                 'slot_mulai' => $validation['slot_mulai'] . ':00',
                 'slot_selesai' => $validation['slot_selesai'] . ':00',
@@ -240,10 +251,14 @@ class BookingService
 
     private function generateKodeBooking(): string
     {
+        // Format: SW-YYYYMMDD-NNN (legacy BK- rows are still counted so the
+        // daily sequence never collides with pre-2026-05-20 bookings).
         $date = date('Ymd');
-        $count = db_connect()->table('bookings')->like('kode_booking', "BK-{$date}-", 'after')->countAllResults();
+        $count = db_connect()->table('bookings')
+            ->groupStart()->like('kode_booking', "SW-{$date}-", 'after')->orLike('kode_booking', "BK-{$date}-", 'after')->groupEnd()
+            ->countAllResults();
         $seq = str_pad((string) ($count + 1), 3, '0', STR_PAD_LEFT);
-        return "BK-{$date}-{$seq}";
+        return "SW-{$date}-{$seq}";
     }
 
     private function transitionPending(int $bookingId, string $newStatus, ?int $userId, ?string $reason): void

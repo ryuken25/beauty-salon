@@ -36,7 +36,7 @@
         <tr>
           <th>Nama</th>
           <th>Nomor HP</th>
-          <th>Akun</th>
+          <th>Email</th>
           <th class="text-right">Total booking</th>
           <th class="text-right">Selesai</th>
           <th class="text-right">Aktif</th>
@@ -48,13 +48,7 @@
           <tr>
             <td style="font-weight:500;"><?= esc($r['nama_pelanggan']) ?></td>
             <td><?= esc($r['nomor_hp_pelanggan']) ?></td>
-            <td>
-              <?php if (! empty($r['user_id'])): ?>
-                <span class="badge-salon badge-salon--accepted">Terdaftar</span>
-              <?php else: ?>
-                <span class="badge-salon badge-salon--cancelled">Anonim</span>
-              <?php endif ?>
-            </td>
+            <td class="caption"><?= esc($r['email_pelanggan'] ?: '—') ?></td>
             <td class="text-right"><?= esc($r['total_booking']) ?></td>
             <td class="text-right" style="color:var(--color-completed-fg);"><?= esc($r['total_selesai']) ?></td>
             <td class="text-right" style="color:<?= (int) $r['aktif'] > 0 ? 'var(--gold)' : 'var(--text-muted)' ?>;"><?= esc($r['aktif']) ?></td>

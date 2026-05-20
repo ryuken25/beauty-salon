@@ -10,9 +10,17 @@ class SalonSeeder extends Seeder
     {
         $now = date('Y-m-d H:i:s');
 
+        // Login accounts — admin & pemilik only. Pelanggan tidak punya akun.
         $this->db->table('users')->insertBatch([
             ['email' => 'owner@swbeautysalon.local', 'password_hash' => password_hash('Password123!', PASSWORD_BCRYPT), 'nama' => 'Ni Wayan Sutrisna Wati', 'role' => 'pemilik', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
             ['email' => 'admin@swbeautysalon.local', 'password_hash' => password_hash('Password123!', PASSWORD_BCRYPT), 'nama' => 'Admin Salon', 'role' => 'admin', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+        ]);
+
+        // Stylist tim salon (full CRUD via /owner/stylist).
+        $this->db->table('stylists')->insertBatch([
+            ['nama' => 'Ni Wayan Sutrisna Wati', 'spesialisasi' => 'Hair & Make Up', 'jam_kerja_mulai' => '08:00:00', 'jam_kerja_selesai' => '19:00:00', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['nama' => 'Kadek Ayu Lestari',      'spesialisasi' => 'Nail & Lashes',  'jam_kerja_mulai' => '09:00:00', 'jam_kerja_selesai' => '17:00:00', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['nama' => 'Putu Indah Pertiwi',     'spesialisasi' => 'Facial & Body',  'jam_kerja_mulai' => '10:00:00', 'jam_kerja_selesai' => '18:00:00', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
         ]);
 
         // Layanan SW Beauty Salon — durasi harus kelipatan 30 menit (fixed time slot).

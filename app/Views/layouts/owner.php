@@ -28,6 +28,7 @@ if (! function_exists('active_owner')) {
 
     <a class="sidebar-admin__item <?= active_owner('dashboard', $uri) ?>" href="<?= base_url('owner/dashboard') ?>"><i class="bi bi-bar-chart-line"></i><span>Dashboard</span></a>
     <a class="sidebar-admin__item <?= active_owner('layanan', $uri) ?>" href="<?= base_url('owner/layanan') ?>"><i class="bi bi-scissors"></i><span>Layanan</span></a>
+    <a class="sidebar-admin__item <?= active_owner('stylist', $uri) ?>" href="<?= base_url('owner/stylist') ?>"><i class="bi bi-person-badge"></i><span>Stylist</span></a>
     <a class="sidebar-admin__item <?= active_owner('transaksi', $uri) ?>" href="<?= base_url('owner/transaksi') ?>"><i class="bi bi-cash-coin"></i><span>Transaksi</span></a>
     <a class="sidebar-admin__item <?= active_owner('pengaturan', $uri) ?>" href="<?= base_url('owner/pengaturan') ?>"><i class="bi bi-gear"></i><span>Pengaturan</span></a>
 

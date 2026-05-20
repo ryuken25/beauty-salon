@@ -6,6 +6,7 @@ use App\Models\BookingLogModel;
 use App\Models\BookingModel;
 use App\Models\LayananModel;
 use App\Models\SettingModel;
+use App\Models\StylistModel;
 use App\Services\BookingService;
 use App\Services\SlotService;
 use App\Services\WhatsAppTemplateService;
@@ -17,10 +18,24 @@ class Booking extends BaseController
     {
         $svc = new BookingService();
         if ($this->request->getMethod() === 'POST') {
+            // Anti-spam #1 — honeypot. Bots fill every field; humans never see
+            // the "website" input (hidden via CSS). A filled value = bot.
+            if (trim((string) $this->request->getPost('website')) !== '') {
+                return redirect()->to('/')->with('success', 'Terima kasih.');
+            }
+            // Anti-spam #2 — soft per-IP daily cap (no CAPTCHA, gaptek-friendly).
+            $ipKey = 'booking_count_' . md5($this->request->getIPAddress());
+            $todayCount = (int) (cache($ipKey) ?? 0);
+            if ($todayCount >= 12) {
+                return redirect()->back()->withInput()->with('error', 'Terlalu banyak booking dari perangkat ini hari ini. Silakan hubungi salon via WhatsApp.');
+            }
+
             $rules = [
                 'nama_pelanggan' => 'required|min_length[3]|max_length[100]',
                 'nomor_hp_pelanggan' => 'required|regex_match[/^(\+?62|0)8[0-9]{7,12}$/]',
+                'email_pelanggan' => 'permit_empty|valid_email|max_length[150]',
                 'layanan_id' => 'required|is_natural_no_zero',
+                'stylist_id' => 'required|is_natural_no_zero',
                 'tanggal' => 'required|valid_date[Y-m-d]',
                 'slot_mulai' => 'required|regex_match[/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/]',
             ];
@@ -28,40 +43,37 @@ class Booking extends BaseController
                 return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
             }
             try {
-                $userId = session('user_role') === 'pelanggan' ? (int) session('user_id') : null;
                 $row = $svc->create([
                     'nama_pelanggan' => $this->request->getPost('nama_pelanggan'),
                     'nomor_hp_pelanggan' => $this->request->getPost('nomor_hp_pelanggan'),
+                    'email_pelanggan' => $this->request->getPost('email_pelanggan'),
                     'layanan_id' => (int) $this->request->getPost('layanan_id'),
+                    'stylist_id' => (int) $this->request->getPost('stylist_id'),
                     'tanggal' => $this->request->getPost('tanggal'),
                     'slot_mulai' => $this->request->getPost('slot_mulai'),
                     'catatan' => $this->request->getPost('catatan'),
                     'sumber' => 'online',
                     'actor' => 'pelanggan',
                     'actor_role' => 'pelanggan',
-                    'user_id' => $userId,
                 ]);
+                cache()->save($ipKey, $todayCount + 1, DAY);
                 return redirect()->to('/booking/sukses/' . $row['kode_booking']);
             } catch (RuntimeException $e) {
                 return redirect()->back()->withInput()->with('error', $e->getMessage());
             }
         }
-        $layanans = (new LayananModel())->where('is_active', 1)->orderBy('kategori')->orderBy('nama')->find();
         $slot = new SlotService();
-        $allSlots = $slot->allSlots();
         $rangeHari = $slot->rangeHari();
         $dates = [];
         for ($i = 0; $i <= $rangeHari; $i++) {
-            $d = date('Y-m-d', strtotime("+{$i} days"));
-            $dates[] = $d;
+            $dates[] = date('Y-m-d', strtotime("+{$i} days"));
         }
         return view('public/booking_form', [
-            'layanans' => $layanans,
-            'all_slots' => $allSlots,
+            'layanans' => (new LayananModel())->where('is_active', 1)->orderBy('kategori')->orderBy('nama')->find(),
+            'stylists' => (new StylistModel())->activeForBooking(),
+            'all_slots' => $slot->allSlots(),
             'dates' => $dates,
             'preselect_layanan_id' => (int) ($this->request->getGet('layanan_id') ?? 0),
-            'prefill_nama' => session('user_role') === 'pelanggan' ? (string) session('user_nama') : '',
-            'prefill_hp' => session('user_role') === 'pelanggan' ? (string) session('user_hp') : '',
         ]);
     }
 
@@ -120,7 +132,8 @@ class Booking extends BaseController
             return redirect()->to('/cek-booking')->with('error', 'Booking tidak ditemukan atau nomor tidak cocok.');
         }
         try {
-            (new BookingService())->cancel((int) $row['id'], 'pelanggan');
+            $reason = trim((string) $this->request->getPost('cancellation_reason'));
+            (new BookingService())->cancel((int) $row['id'], 'pelanggan', null, $reason !== '' ? $reason : null);
             return redirect()->to('/booking/' . $row['kode_booking'] . '?no_hp=' . urlencode($phone))->with('success', 'Booking berhasil dibatalkan.');
         } catch (RuntimeException $e) {
             return redirect()->back()->with('error', $e->getMessage());

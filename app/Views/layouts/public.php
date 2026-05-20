@@ -1,5 +1,4 @@
 <?php $uriPath = trim(service('uri')->getPath(), '/'); ?>
-<?php $isPelanggan = session('is_logged_in') && session('user_role') === 'pelanggan'; ?>
 <!doctype html>
 <html lang="id">
 <head>
@@ -28,16 +27,7 @@
     <a class="nav-salon__link <?= $uriPath === 'layanan' ? 'active' : '' ?>" href="<?= base_url('layanan') ?>">Layanan</a>
     <a class="nav-salon__link <?= str_starts_with($uriPath, 'booking') && $uriPath !== 'cek-booking' ? 'active' : '' ?>" href="<?= base_url('booking') ?>">Booking</a>
     <a class="nav-salon__link <?= $uriPath === 'cek-booking' ? 'active' : '' ?>" href="<?= base_url('cek-booking') ?>">Cek Booking</a>
-    <?php if ($isPelanggan): ?>
-      <a class="nav-salon__link <?= str_starts_with($uriPath, 'pelanggan') ? 'active' : '' ?>" href="<?= base_url('pelanggan/dashboard') ?>"><i class="bi bi-person-circle"></i> <?= esc(session('user_nama')) ?></a>
-      <form method="post" action="<?= base_url('logout') ?>" style="display:inline;">
-        <?= csrf_field() ?>
-        <button class="btn-salon-ghost" type="submit" style="font-size:0.8571rem; padding:0.5rem 0.857rem;">Logout</button>
-      </form>
-    <?php else: ?>
-      <a class="nav-salon__link" href="<?= base_url('login') ?>">Masuk</a>
-      <a class="btn-salon-primary" style="padding:0.571rem 1.143rem; font-size:0.8571rem;" href="<?= base_url('booking') ?>">Booking sekarang</a>
-    <?php endif ?>
+    <a class="btn-salon-primary" style="padding:0.571rem 1.143rem; font-size:0.8571rem;" href="<?= base_url('booking') ?>">Pesan sekarang</a>
   </div>
 </nav>
 

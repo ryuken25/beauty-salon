@@ -4,7 +4,6 @@ namespace Config;
 
 use App\Filters\AdminFilter;
 use App\Filters\OwnerFilter;
-use App\Filters\PelangganFilter;
 use App\Filters\PemilikFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
@@ -32,7 +31,6 @@ class Filters extends BaseFilters
         'admin'         => AdminFilter::class,
         'owner'         => OwnerFilter::class,
         'pemilik'       => PemilikFilter::class,
-        'pelanggan'     => PelangganFilter::class,
         'csrf'          => CSRF::class,
         'toolbar'       => DebugToolbar::class,
         'honeypot'      => Honeypot::class,

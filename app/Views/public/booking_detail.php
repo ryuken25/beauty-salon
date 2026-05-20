@@ -21,6 +21,8 @@ $canCancel = in_array($booking['status'], ['pending_verification', 'accepted'], 
     <table style="width:100%; font-size:0.875rem;">
       <tr><td class="label">Nama</td><td class="text-right"><?= esc($booking['nama_pelanggan']) ?></td></tr>
       <tr><td class="label">No. HP</td><td class="text-right"><?= esc($booking['nomor_hp_pelanggan']) ?></td></tr>
+      <tr><td class="label">Layanan</td><td class="text-right"><?= esc($booking['nama_layanan']) ?></td></tr>
+      <tr><td class="label">Stylist</td><td class="text-right"><?= esc($booking['nama_stylist'] ?? '—') ?></td></tr>
       <tr><td class="label">Tanggal</td><td class="text-right"><?= esc(date('d M Y', strtotime($booking['tanggal']))) ?></td></tr>
       <tr><td class="label">Jam</td><td class="text-right" style="font-weight:500;"><?= esc(substr($booking['slot_mulai'], 0, 5)) ?> – <?= esc(substr($booking['slot_selesai'], 0, 5)) ?></td></tr>
       <tr><td class="label">Durasi</td><td class="text-right"><?= esc($booking['durasi_menit']) ?> menit</td></tr>

@@ -17,9 +17,8 @@ $routes->post('booking/(:segment)/batal', 'Booking::batal/$1');
 
 $routes->get('api/slots', 'Api::slots');
 
-// ── Auth ──────────────────────────────────────────────────
+// ── Auth (admin & pemilik only — pelanggan tidak punya akun) ──
 $routes->match(['GET', 'POST'], 'login', 'Auth::login');
-$routes->match(['GET', 'POST'], 'register', 'Auth::register');
 $routes->match(['GET', 'POST'], 'logout', 'Auth::logout');
 // Back-compat: keep /admin/login + /admin pointing to the unified login.
 $routes->match(['GET', 'POST'], 'admin/login', 'Auth::login');
@@ -29,12 +28,10 @@ $routes->match(['GET', 'POST'], 'admin/logout', 'Auth::logout');
 $routes->get('owner', static function () {
     return redirect()->to(session('user_role') === 'pemilik' ? '/owner/dashboard' : '/login');
 });
-
-// ── Pelanggan area ────────────────────────────────────────
-$routes->group('pelanggan', ['filter' => 'pelanggan'], static function ($routes) {
-    $routes->get('dashboard', 'Pelanggan::dashboard');
-    $routes->post('booking/(:num)/cancel', 'Pelanggan::cancel/$1');
-});
+// Legacy pelanggan URLs — login pelanggan dihapus; arahkan ke beranda.
+$routes->get('register', static fn () => redirect()->to('/'));
+$routes->get('pelanggan', static fn () => redirect()->to('/'));
+$routes->get('pelanggan/(:any)', static fn () => redirect()->to('/'));
 
 // ── Admin area (operational) ──────────────────────────────
 // Allowed for admin AND pemilik (pemilik has read access to admin views).
@@ -62,6 +59,11 @@ $routes->group('owner', ['filter' => 'owner'], static function ($routes) {
     $routes->post('layanan', 'Owner\LayananController::store');
     $routes->post('layanan/(:num)/update', 'Owner\LayananController::update/$1');
     $routes->post('layanan/(:num)/delete', 'Owner\LayananController::delete/$1');
+
+    $routes->get('stylist', 'Owner\StylistController::index');
+    $routes->post('stylist', 'Owner\StylistController::store');
+    $routes->post('stylist/(:num)/update', 'Owner\StylistController::update/$1');
+    $routes->post('stylist/(:num)/delete', 'Owner\StylistController::delete/$1');
 
     $routes->get('transaksi', 'Owner\TransaksiController::index');
 
