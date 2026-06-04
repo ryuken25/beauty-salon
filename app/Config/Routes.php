@@ -50,6 +50,8 @@ $routes->group('admin', ['filter' => 'admin'], static function ($routes) {
     $routes->post('booking/(:num)/wa-sent', 'Admin\BookingController::waSent/$1');
 
     $routes->get('pelanggan', 'Admin\PelangganController::index');
+    $routes->post('pelanggan/(:num)/update-nama', 'Admin\PelangganController::updateNama/$1');
+    $routes->post('pelanggan/(:num)/reset-password', 'Admin\PelangganController::resetPassword/$1');
     $routes->get('transaksi', 'Admin\TransaksiController::index');
     $routes->match(['GET', 'POST'], 'pengaturan', 'Admin\PengaturanController::index');
     $routes->post('pengaturan/ganti-password', 'Admin\PengaturanController::gantiPassword');
