@@ -11,6 +11,7 @@ class PengaturanController extends BaseController
     private array $editableKeys = [
         'nama_salon', 'alamat_salon', 'telp_salon', 'nomor_hp_owner',
         'jam_buka', 'jam_tutup', 'range_hari_booking',
+        'info_pembayaran_dp',
         'template_wa_diterima', 'template_wa_ditolak', 'template_wa_reminder', 'template_wa_selesai',
     ];
 

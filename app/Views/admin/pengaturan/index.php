@@ -28,6 +28,13 @@
         <div><label class="form-salon-label">Range hari booking (ke depan)</label><input class="form-salon-input" type="number" min="1" max="30" name="range_hari_booking" value="<?= esc($s['range_hari_booking'] ?? '7') ?>"></div>
         <div><label class="form-salon-label">Durasi slot</label><input class="form-salon-input" value="30 menit (fixed sesuai novelty)" disabled></div>
       </div>
+
+      <div class="mt-3">
+        <label class="form-salon-label">Info pembayaran DP (tampil di halaman booking)</label>
+        <textarea class="form-salon-textarea" rows="4" name="info_pembayaran_dp" placeholder="Misal:&#10;Transfer DP ke BCA 1234567890 a.n. SW Beauty Salon&#10;Atau scan QRIS di bawah, lalu upload bukti."><?= esc($s['info_pembayaran_dp'] ?? '') ?></textarea>
+        <div class="form-salon-help">Aturan DP: harga &le; Rp 50.000 → DP penuh; harga &gt; Rp 50.000 → DP Rp 50.000.</div>
+      </div>
+
       <button class="btn-salon-primary mt-2" type="submit">Simpan</button>
     </form>
   </div>
