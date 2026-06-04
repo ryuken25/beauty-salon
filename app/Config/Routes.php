@@ -10,7 +10,6 @@ $routes->get('layanan', 'Home::layanan');
 
 $routes->match(['GET', 'POST'], 'booking', 'Booking::form');
 $routes->get('booking/sukses/(:any)', 'Booking::sukses/$1');
-$routes->get('booking/cek-saya', 'Booking::redirectCek');
 $routes->get('api/slots', 'Api::slots');
 
 // ── Cek & batal booking (publik — customer tanpa akun) ────
