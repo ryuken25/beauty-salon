@@ -53,7 +53,7 @@ class Booking extends BaseController
                     'user_id' => (int) session('user_id'),
                     'nama_pelanggan' => session('user_nama'),
                     'nomor_hp_pelanggan' => session('user_hp'),
-                    'email_pelanggan' => null,
+                    'email_pelanggan' => session('user_email'),
                     'layanan_id' => (int) $this->request->getPost('layanan_id'),
                     'tanggal' => $this->request->getPost('tanggal'),
                     'slot_mulai' => $this->request->getPost('slot_mulai'),

@@ -64,7 +64,7 @@ $paymentLabel = [
           <div class="text-right">
             <span class="badge-salon badge-salon--<?= $cls ?>"><?= esc($label) ?></span>
             <div class="mt-1">
-              <a class="btn-salon-secondary btn-salon--sm" href="<?= base_url('cek-booking') ?>">Cek / Batal</a>
+              <a class="btn-salon-secondary btn-salon--sm" href="<?= base_url('pelanggan/booking/' . rawurlencode($b['kode_booking'])) ?>">Lihat detail</a>
             </div>
           </div>
         </div>

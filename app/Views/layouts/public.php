@@ -27,7 +27,30 @@
     <a class="nav-salon__link <?= $uriPath === 'layanan' ? 'active' : '' ?>" href="<?= base_url('layanan') ?>">Layanan</a>
     <a class="nav-salon__link <?= str_starts_with($uriPath, 'booking') && $uriPath !== 'cek-booking' ? 'active' : '' ?>" href="<?= base_url('booking') ?>">Booking</a>
     <a class="nav-salon__link <?= $uriPath === 'cek-booking' ? 'active' : '' ?>" href="<?= base_url('cek-booking') ?>">Cek Booking</a>
-    <a class="btn-salon-primary" style="padding:0.571rem 1.143rem; font-size:0.8571rem;" href="<?= base_url('booking') ?>">Pesan sekarang</a>
+    <?php if (! session('is_logged_in')): ?>
+      <a class="nav-salon__link <?= $uriPath === 'login' ? 'active' : '' ?>" href="<?= base_url('login') ?>">Masuk</a>
+      <a class="btn-salon-primary" style="padding:0.571rem 1.143rem; font-size:0.8571rem;" href="<?= base_url('login') ?>">Pesan sekarang</a>
+    <?php elseif (session('user_role') === 'pelanggan'): ?>
+      <div class="dropdown">
+        <button class="btn-salon-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding:0.5rem 1rem;">
+          <i class="bi bi-person-circle"></i> <?= esc(session('user_nama')) ?>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" style="background:var(--card); border:1px solid var(--gold-border); min-width:200px;">
+          <li><a class="dropdown-item" style="color:var(--text-primary);" href="<?= base_url('pelanggan/dashboard') ?>"><i class="bi bi-grid"></i> Dashboard</a></li>
+          <li><a class="dropdown-item" style="color:var(--text-primary);" href="<?= base_url('booking') ?>"><i class="bi bi-plus-circle"></i> Booking baru</a></li>
+          <li><hr class="dropdown-divider" style="border-color:var(--gold-border);"></li>
+          <li>
+            <form method="post" action="<?= base_url('logout') ?>" style="margin:0;">
+              <?= csrf_field() ?>
+              <button type="submit" class="dropdown-item" style="color:var(--color-danger);"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    <?php else: ?>
+      <a class="nav-salon__link" href="<?= base_url('admin/dashboard') ?>">Panel Admin</a>
+      <a class="btn-salon-secondary" style="padding:0.571rem 1.143rem;" href="<?= base_url('admin/logout') ?>"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    <?php endif ?>
   </div>
 </nav>
 

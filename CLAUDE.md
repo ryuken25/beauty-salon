@@ -36,7 +36,9 @@ Demo accounts (password `Password123!`):
 - **Staff** (admin/pemilik) login separately at `/admin/login` (email + password). Two-form split so neither side can authenticate the other role.
 - Booking (`/booking` + `/booking/sukses/{kode}`) sits behind the `customer` filter — guests bounce to `/login`. Pelanggan dashboard `/pelanggan/dashboard` is history-only (booking own + 'Cek/Batal' deep link).
 - **Pemilik = Admin superset.** One unified [layouts/panel.php](app/Views/layouts/panel.php) with a role-aware sidebar. `/admin/*` (filter `admin` = admin + pemilik): dashboard, booking verify/reject/cancel/complete + DP-verify, walk-in, jadwal, pelanggan account management, transaksi, pengaturan. `/owner/*` (filter `owner` = pemilik only): laporan (analytics), layanan CRUD. Admin typing `/owner/*` gets bounced to `/admin/dashboard`.
-- Public `/cek-booking` (no auth): nomor WA only → list every booking on that number → dedicated cancel pages.
+- Public `/cek-booking` (no auth): **kode booking only** (dikirim ke pelanggan via email setelah booking sukses) → tampil read-only detail booking. Tombol "Batalkan" hanya muncul kalau session pelanggan aktif (redirect ke `/pelanggan/booking/{kode}/batal`). Walk-in tanpa akun dibatalkan oleh admin. Brute-force enumerasi kode dibatasi: 5 kegagalan / 15 menit / IP via cache `cek_fail_*`.
+- Logged-in pelanggan punya halaman detail spesifik di `/pelanggan/booking/{kode}` (ownership via `user_id`, bukan via kode publik) — di sinilah flow batal pelanggan login berlangsung. Dashboard pelanggan link "Lihat detail" mengarah ke sini.
+- Navbar publik (`layouts/public.php`) sadar login: guest → "Masuk" + "Pesan sekarang" (→ `/login`); pelanggan → dropdown profil (Dashboard / Booking baru / Logout); admin/pemilik → link "Panel Admin" + Logout.
 
 ### Fixed-slot domain (load-bearing)
 - All times are 30-minute slots from `jam_buka` to `jam_tutup` (default 08:00–19:00, settable in `/admin/pengaturan`).
@@ -65,7 +67,10 @@ Demo accounts (password `Password123!`):
 Transactions in `transaksi` are created **once** on transition to `completed` (nominal = layanan.harga, payment method manual).
 
 ### Customer cancel rule
-Customer self-cancels at `/cek-booking`: enter HP → see bookings → "Batalkan" opens a confirm modal (optional reason) → `POST /booking/{kode}/batal`. Allowed while `pending_verification` or `accepted` AND ≥ 2 jam sebelum `slot_mulai`. Logic in [BookingService::cancel](app/Services/BookingService.php). Admin can also cancel from `/admin/booking/{id}`.
+Dua jalur batal customer-side (logika sama: ≥ 2 jam sebelum `slot_mulai`, status ∈ {pending_verification, accepted}):
+  - **Pelanggan login**: `/pelanggan/booking/{kode}/batal` (konfirmasi page) → POST → BookingService::cancel('pelanggan', user_id, reason). Ownership tervalidasi via session `user_id`.
+  - **Publik dari /cek-booking**: hanya kalau user login sebagai pelanggan, jalur ini di-redirect ke jalur pertama (rekomendasi keamanan B). Walk-in (tanpa akun) hanya bisa dibatalkan admin.
+Logic di [BookingService::cancel](app/Services/BookingService.php). Admin juga bisa cancel dari `/admin/booking/{id}`. **Halaman sukses-batal tidak memuat tombol WhatsApp** — pembatalan sudah otomatis tercatat di sistem; admin lihat di panel.
 
 ## Hard constraints (from IMPLEMENTATION_PLAN aka [implementation.md](implementation.md))
 

@@ -4,60 +4,70 @@ namespace App\Controllers;
 
 use App\Models\BookingModel;
 use App\Services\BookingService;
-use App\Services\WhatsAppTemplateService;
 use RuntimeException;
 
 /**
- * Public "cek & batal booking" flow — customers have no account, so every
- * step re-verifies ownership with (kode_booking + nomor HP). The cancel
- * confirmation is a dedicated page (not a modal), per the 2026-05-20 brief.
+ * Public "cek booking" flow — kode booking saja (dikirim via email setelah
+ * booking sukses). Buang dependency nomor HP & WhatsApp template.
+ *
+ * Keamanan (policy B): jalur publik bersifat read-only. Tombol "Batalkan"
+ * di /cek-booking hanya muncul jika pelanggan sudah login (lalu jalur
+ * pembatalan dialihkan ke /pelanggan/booking/{kode}/batal yang
+ * mem-validasi ownership via session('user_id')). Untuk percobaan kode
+ * salah, terapkan rate-limit ringan (5 kegagalan / 15 menit / IP) supaya
+ * enumerasi brute-force jadi mahal walaupun format SW-YYYYMMDD-NNN
+ * sekuensial.
  */
 class CekBooking extends BaseController
 {
     private const CANCELABLE = ['pending_verification', 'accepted'];
+    private const MAX_FAIL_PER_WINDOW = 5;
+    private const WINDOW_SECONDS = 900;
 
-    /** Form (nomor WA only) + on POST a list of every booking on that number. */
+    /** Form (kode booking) + tampilkan 1 booking jika ditemukan. */
     public function index()
     {
-        $data = ['phone' => '', 'bookings' => null];
+        $data = ['kode' => '', 'booking' => null];
 
         if ($this->request->getMethod() === 'POST') {
-            $phone = (new BookingService())->normalizePhone((string) $this->request->getPost('nomor_hp'));
-            $data['phone'] = $phone;
-            if ($phone === '') {
-                return redirect()->back()->withInput()->with('error', 'Nomor WhatsApp tidak valid.');
+            $ipKey = 'cek_fail_' . md5($this->request->getIPAddress());
+            $fails = (int) (cache($ipKey) ?? 0);
+            if ($fails >= self::MAX_FAIL_PER_WINDOW) {
+                return redirect()->back()->withInput()->with('error', 'Terlalu banyak percobaan kode salah. Silakan coba lagi nanti, atau login untuk melihat semua booking Anda.');
             }
-            $rows = (new BookingModel())->findByNomorHp($phone);
-            $data['bookings'] = $rows;
-            if (empty($rows)) {
-                return redirect()->back()->withInput()->with('error', 'Tidak ada booking untuk nomor ini.');
+            $kode = strtoupper(trim((string) $this->request->getPost('kode_booking')));
+            $data['kode'] = $kode;
+            if ($kode === '') {
+                return redirect()->back()->withInput()->with('error', 'Masukkan kode booking Anda.');
             }
+            $row = (new BookingModel())->detailByKode($kode);
+            if (! $row) {
+                cache()->save($ipKey, $fails + 1, self::WINDOW_SECONDS);
+                return redirect()->back()->withInput()->with('error', 'Booking dengan kode tersebut tidak ditemukan. Cek kembali email konfirmasi Anda.');
+            }
+            $data['booking'] = $row;
         }
         return view('cek_booking/index', $data);
     }
 
-    /** Dedicated confirmation page. */
+    /** Halaman konfirmasi batal (publik, walk-in/no-account). */
     public function konfirmasiBatal(string $kode)
     {
-        $phone = (new BookingService())->normalizePhone((string) $this->request->getGet('no_hp'));
-        $booking = $this->verified(strtoupper($kode), $phone);
+        $booking = $this->byKode($kode);
         if ($booking === null) {
-            return redirect()->to('/cek-booking')->with('error', 'Booking tidak ditemukan atau nomor HP tidak cocok.');
+            return redirect()->to('/cek-booking')->with('error', 'Booking tidak ditemukan.');
         }
         if (! in_array($booking['status'], self::CANCELABLE, true)) {
             return redirect()->to('/cek-booking')->with('error', 'Booking ini sudah final dan tidak dapat dibatalkan.');
         }
-        return view('cek_booking/konfirmasi_batal', ['booking' => $booking, 'phone' => $phone]);
+        return view('cek_booking/konfirmasi_batal', ['booking' => $booking]);
     }
 
-    /** Process the cancellation, then redirect to the success page. */
     public function prosesBatal(string $kode)
     {
-        $kode = strtoupper($kode);
-        $phone = (new BookingService())->normalizePhone((string) $this->request->getPost('nomor_hp'));
-        $booking = $this->verified($kode, $phone);
+        $booking = $this->byKode($kode);
         if ($booking === null) {
-            return redirect()->to('/cek-booking')->with('error', 'Booking tidak ditemukan atau nomor HP tidak cocok.');
+            return redirect()->to('/cek-booking')->with('error', 'Booking tidak ditemukan.');
         }
         if (! in_array($booking['status'], self::CANCELABLE, true)) {
             return redirect()->to('/cek-booking')->with('error', 'Booking ini sudah final dan tidak dapat dibatalkan.');
@@ -72,32 +82,22 @@ class CekBooking extends BaseController
         } catch (RuntimeException $e) {
             return redirect()->to('/cek-booking')->with('error', $e->getMessage());
         }
-        return redirect()->to('/cek-booking-sukses/' . rawurlencode($kode) . '?no_hp=' . urlencode($phone));
+        return redirect()->to('/cek-booking-sukses/' . rawurlencode(strtoupper($kode)));
     }
 
-    /** Success page — shows the WhatsApp deep link to notify admin. */
     public function suksesBatal(string $kode)
     {
-        $phone = (new BookingService())->normalizePhone((string) $this->request->getGet('no_hp'));
-        $booking = $this->verified(strtoupper($kode), $phone);
+        $booking = $this->byKode($kode);
         if ($booking === null || $booking['status'] !== 'cancelled') {
             return redirect()->to('/cek-booking')->with('error', 'Data pembatalan tidak ditemukan.');
         }
-        $waText = (new WhatsAppTemplateService())->customerCancellationMessage($booking, $booking['cancellation_reason'] ?? null);
-        $waLink = (new WhatsAppTemplateService())->ownerLink($waText);
-        return view('cek_booking/sukses_batal', ['booking' => $booking, 'wa_link' => $waLink, 'wa_text' => $waText]);
+        return view('cek_booking/sukses_batal', ['booking' => $booking]);
     }
 
-    /** Returns the joined booking row only when kode + phone both match. */
-    private function verified(string $kode, string $phone): ?array
+    private function byKode(string $kode): ?array
     {
-        if ($kode === '' || $phone === '') {
-            return null;
-        }
-        $row = (new BookingModel())->detailByKode($kode);
-        if (! $row || (string) $row['nomor_hp_pelanggan'] !== $phone) {
-            return null;
-        }
-        return $row;
+        $kode = strtoupper(trim($kode));
+        if ($kode === '') return null;
+        return (new BookingModel())->detailByKode($kode) ?: null;
     }
 }

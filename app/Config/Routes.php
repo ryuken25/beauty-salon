@@ -33,6 +33,10 @@ $routes->get('owner', static fn () => redirect()->to('/admin/dashboard'));
 // ── Pelanggan area (akun pelanggan only) ──────────────────
 $routes->group('pelanggan', ['filter' => 'customer'], static function ($routes) {
     $routes->get('dashboard', 'Pelanggan::dashboard');
+    $routes->get('booking/(:segment)', 'Pelanggan::detail/$1');
+    $routes->get('booking/(:segment)/batal', 'Pelanggan::konfirmasiBatal/$1');
+    $routes->post('booking/(:segment)/batal', 'Pelanggan::prosesBatal/$1');
+    $routes->get('booking/(:segment)/sukses', 'Pelanggan::suksesBatal/$1');
 });
 
 // ── Admin area — operasional (admin & pemilik) ────────────

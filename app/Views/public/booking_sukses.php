@@ -33,7 +33,7 @@
 
   <div class="flex flex-wrap gap-2 mt-3" style="justify-content:center;">
     <a class="btn-salon-primary" href="<?= base_url('pelanggan/dashboard') ?>"><i class="bi bi-grid"></i> Ke dashboard saya</a>
-    <a class="btn-salon-secondary" href="<?= base_url('cek-booking') ?>"><i class="bi bi-search"></i> Cek status booking</a>
+    <a class="btn-salon-secondary" href="<?= base_url('pelanggan/booking/' . rawurlencode($booking['kode_booking'])) ?>"><i class="bi bi-search"></i> Lihat detail booking</a>
   </div>
   <div class="text-center mt-2">
     <a href="<?= base_url('/') ?>">&larr; Kembali ke beranda</a>
