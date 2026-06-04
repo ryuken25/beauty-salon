@@ -103,6 +103,18 @@ class BookingService
             ]);
 
             $row = (new BookingModel())->detail($bookingId);
+
+            // FASE 14 hook A — email "menunggu verifikasi" untuk booking
+            // online yang punya alamat email. Best-effort: kegagalan SMTP
+            // tidak boleh membatalkan booking yang sudah commit.
+            if ($row && $sumber === 'online' && ! empty($row['email_pelanggan'])) {
+                try {
+                    (new NotificationService())->sendBookingCreated($row);
+                } catch (\Throwable $e) {
+                    log_message('error', 'sendBookingCreated gagal: ' . $e->getMessage());
+                }
+            }
+
             return $row ?: ['id' => $bookingId, 'kode_booking' => $kode];
         } catch (DatabaseException|RuntimeException $e) {
             $db->transRollback();
@@ -340,6 +352,21 @@ class BookingService
         $this->logEvent($bookingId, $newStatus === 'accepted' ? 'verified' : 'rejected', $verifiedVia, 'admin', [
             'reason' => $reason,
         ]);
+
+        // FASE 14 hook B — kalau admin verifikasi (accepted), kirim email
+        // konfirmasi ke pelanggan. Reject sengaja tidak dikirim — WA manual
+        // di detail booking adalah saluran yang dipakai admin untuk alasan
+        // tolak.
+        if ($newStatus === 'accepted') {
+            $row = (new BookingModel())->detail($bookingId);
+            if ($row && ! empty($row['email_pelanggan'])) {
+                try {
+                    (new NotificationService())->sendBookingVerified($row);
+                } catch (\Throwable $e) {
+                    log_message('error', 'sendBookingVerified gagal: ' . $e->getMessage());
+                }
+            }
+        }
     }
 
     public function logEvent(int $bookingId, string $eventType, string $actor, string $actorRole, array $payload = [], ?string $notes = null): void
