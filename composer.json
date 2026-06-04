@@ -38,6 +38,10 @@
         "sort-packages": true
     },
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit",
+        "fresh": [
+            "php spark migrate",
+            "php spark db:seed SalonSeeder"
+        ]
     }
 }

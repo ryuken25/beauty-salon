@@ -12,31 +12,31 @@ Tampilan aplikasi memakai **dark editorial theme** (deep onyx + accent gold) —
 - Grafik: Chart.js via CDN.
 - WhatsApp: manual melalui template dan tautan `wa.me`, tanpa API pengiriman otomatis.
 
-## Clone dan Install Lokal
+## Install Lokal
 
-### Linux/macOS/Git Bash
+### Windows — auto setup (rekomendasi)
+
+```bat
+git clone https://github.com/ryuken25/beauty-salon.git
+cd beauty-salon
+setup-windows.bat
+```
+
+Skrip ini mengecek PHP/Composer/MySQL, install dependency, menyalin `.env`, membuat database `sw_beauty_salon`, menjalankan migrate + seed, lalu start server di `http://localhost:8080`. Versi PowerShell tersedia: `.\setup-windows.ps1`.
+
+### Manual (Linux/macOS/Git Bash atau Windows tanpa setup script)
 
 ```bash
 git clone https://github.com/ryuken25/beauty-salon.git
 cd beauty-salon
 composer install
-cp .env.localhost .env
+cp .env.localhost .env             # Windows: copy .env.localhost .env
 php spark migrate
 php spark db:seed SalonSeeder
 php spark serve
 ```
 
-### Windows Command Prompt
-
-```bat
-git clone https://github.com/ryuken25/beauty-salon.git
-cd beauty-salon
-composer install
-copy .env.localhost .env
-php spark migrate
-php spark db:seed SalonSeeder
-php spark serve
-```
+Atau pakai composer script: `composer fresh` menjalankan migrate + seed sekaligus.
 
 Akses aplikasi di:
 
@@ -73,26 +73,29 @@ Jika MySQL lokal memakai password, isi `database.default.password` di file `.env
 
 ## Akun Demo
 
-| Role | Email | Password |
+| Role | Identitas Login | Password |
 |---|---|---|
-| Pemilik | `owner@swbeautysalon.local` | `Password123!` |
-| Admin | `admin@swbeautysalon.local` | `Password123!` |
+| Pemilik | email `owner@swbeautysalon.local` di `/admin/login` | `Password123!` |
+| Admin | email `admin@swbeautysalon.local` di `/admin/login` | `Password123!` |
+| Pelanggan | nomor WA `6281338109102` di `/login` | `Password123!` |
 
-Pelanggan **tidak punya akun** — booking dilakukan langsung tanpa login.
+Login terpisah: staff (admin/pemilik) pakai email di **`/admin/login`**; pelanggan pakai nomor WA di **`/login`**.
 
 ## Fitur Utama
 
-- Booking publik tanpa akun: nama + nomor WhatsApp (email opsional), pilih layanan, stylist, tanggal, dan slot mulai.
-- Anti-spam ringan: honeypot field + batas booking per perangkat per hari (tanpa CAPTCHA).
-- Kode booking unik `SW-YYYYMMDD-NNN` di halaman sukses, dengan tombol salin.
+- **Akun pelanggan** dengan registrasi (nama + nomor WA + password) di `/register`. Lupa password tidak self-service — pelanggan menghubungi salon via WhatsApp, admin reset dari `/admin/pelanggan`.
+- Booking **wajib login** sebagai pelanggan. Form mengisi nama + WA otomatis dari akun.
+- **Aturan DP**: harga ≤ Rp 50.000 → DP penuh; harga > Rp 50.000 → DP Rp 50.000. Pelanggan wajib upload bukti transfer/QRIS saat booking; admin verifikasi di halaman detail.
+- **Awareness salon tutup**: kalau salon hampir/sudah tutup, halaman booking menampilkan banner dan langsung mengarahkan ke hari berikutnya.
+- **Auto-cancel** booking pending yang sudah lewat jadwal — via `php spark bookings:auto-cancel` (jadwalkan Task Scheduler/cron tiap 5–10 menit) + lazy sweep di dashboard admin (1× per 5 menit).
+- Kode booking unik `SW-YYYYMMDD-NNN`, tombol salin di halaman sukses.
 - Fixed time slot 30 menit dengan validasi ketersediaan slot berurutan.
-- Cek status & batalkan booking sendiri di `/cek-booking` (kode + nomor HP) lewat halaman konfirmasi khusus, lalu lapor ke admin via WhatsApp otomatis.
-- Dua tingkat login: **Admin** (operasional — dashboard, booking verifikasi/tolak/batal/selesai, walk-in, jadwal, pelanggan, transaksi, pengaturan) dan **Pemilik** (superset Admin — semua menu admin **plus** Laporan analitik, CRUD Layanan, CRUD Stylist).
-- Manajemen stylist full CRUD dengan soft delete (riwayat booking tetap aman).
-- Manajemen layanan full CRUD dengan soft delete.
-- Transaksi otomatis dengan input biaya tambahan opsional + catatan saat booking diselesaikan, dengan opsi mode pencatatan manual.
-- Input booking walk-in/offline oleh admin.
-- Template WhatsApp manual: Salin Pesan, Buka WhatsApp, dan Tandai WA Sudah Dikirim.
+- Cek & batal booking publik di `/cek-booking` — cukup masukkan nomor WA, lihat semua booking di nomor itu. Pembatalan via halaman konfirmasi dedicated + lapor ke admin via WhatsApp.
+- Dua tingkat akses panel: **Admin** (dashboard, booking, walk-in, jadwal, pelanggan, transaksi, pengaturan) dan **Pemilik** = superset Admin (tambah grup Manajerial: Laporan, Layanan).
+- Manajemen layanan full CRUD (soft delete). Manajemen akun pelanggan: edit nama + reset password (nomor WA read-only — identitas login).
+- Transaksi otomatis dengan input biaya tambahan opsional + catatan saat booking diselesaikan.
+- Input booking walk-in oleh admin (tanpa DP — bayar di tempat).
+- Template WhatsApp manual (Salin Pesan, Buka WhatsApp, Tandai sudah dikirim).
 
 ## WhatsApp Manual
 
@@ -130,12 +133,12 @@ Halaman yang disarankan dicek manual:
 
 - `/` (beranda + CTA pesan)
 - `/layanan`
-- `/booking` (form booking publik)
-- `/booking/sukses/{kode}`
-- `/cek-booking` → `/cek-booking/{kode}/batal` (halaman konfirmasi) → `/cek-booking-sukses/{kode}`
-- `/login`
+- `/register`, `/login`, `/lupa-password` (auth pelanggan), `/admin/login` (auth staff)
+- `/booking` (wajib login pelanggan; data nama/WA dari akun) → `/booking/sukses/{kode}`
+- `/pelanggan/dashboard` (riwayat booking milik akun)
+- `/cek-booking` (publik — nomor WA only) → `/cek-booking/{kode}/batal` → `/cek-booking-sukses/{kode}`
 - Admin: `/admin/dashboard`, `/admin/booking`, `/admin/booking/walkin`, `/admin/booking/jadwal`, `/admin/pelanggan`, `/admin/transaksi`, `/admin/pengaturan`
-- Pemilik (tambahan): `/owner/laporan`, `/owner/layanan`, `/owner/stylist`
+- Pemilik (tambahan): `/owner/laporan`, `/owner/layanan`
 
 End-to-end test (Playwright, butuh `php spark serve`):
 
