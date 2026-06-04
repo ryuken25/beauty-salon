@@ -40,7 +40,7 @@
     "scripts": {
         "test": "phpunit",
         "fresh": [
-            "php spark migrate",
+            "php spark migrate:refresh -f",
             "php spark db:seed SalonSeeder"
         ]
     }

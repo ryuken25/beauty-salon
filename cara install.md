@@ -94,7 +94,7 @@ php spark migrate
 php spark db:seed SalonSeeder
 ```
 
-Akan bikin semua tabel + isi data sample: 2 akun admin/pemilik, 24 layanan, setting awal salon.
+Akan bikin semua tabel + isi data sample: 1 pemilik + 1 admin + 5 pelanggan (semua password `Password123!`), 24 layanan, setting awal salon, dan 7 booking demo (campur status — termasuk 1 pending kemarin untuk uji auto-cancel & 1 accepted yang dimulai +25 menit dari sekarang untuk uji reminder email).
 
 ---
 
@@ -110,30 +110,66 @@ Selesai! 🎉
 
 ---
 
-## 8. Akun login admin
+## 8. Akun login
 
-| Role | Email | Password |
-|---|---|---|
-| **Pemilik** (akses penuh) | `owner@swbeautysalon.local` | `Password123!` |
-| **Admin** (akses terbatas) | `admin@swbeautysalon.local` | `Password123!` |
+| Role | Login di | Identitas | Password |
+|---|---|---|---|
+| **Pemilik** (akses penuh) | `/admin/login` | email `owner@swbeautysalon.local` | `Password123!` |
+| **Admin** (akses terbatas) | `/admin/login` | email `admin@swbeautysalon.local` | `Password123!` |
+| **Pelanggan demo** | `/login` | nomor WA `6281338109102` (email akun: `winayagatar@gmail.com`) | `Password123!` |
 
-Login di **http://localhost:8080/admin** (link ini sengaja **tidak ditampilkan di navbar publik** — admin harus tau URL-nya).
+Staff & pelanggan punya form login terpisah. Link `/admin/login` sengaja **tidak ditampilkan di navbar publik**.
 
 ---
 
 ## 9. Pelanggan booking — gimana caranya?
 
-Pelanggan **tidak perlu daftar akun**. Cukup:
+Pelanggan **wajib punya akun** (nama + nomor WA + email + password). Daftar dulu di **http://localhost:8080/register**. Lalu:
 
-1. Buka **http://localhost:8080/booking**
-2. Isi nama + nomor WhatsApp
-3. Pilih layanan, tanggal (max 7 hari ke depan), jam mulai
-4. Submit → dapat kode booking + tombol WhatsApp ke owner
+1. Login di **http://localhost:8080/login** (pakai nomor WA + password).
+2. Buka **http://localhost:8080/booking** — nama, WA, dan email otomatis dari akun.
+3. Pilih layanan, tanggal (max 7 hari ke depan), jam mulai.
+4. Upload bukti transfer DP (PNG/JPG, max 2 MB). Aturan DP: harga ≤ Rp 50.000 → DP penuh; > Rp 50.000 → DP Rp 50.000.
+5. Submit → dapat kode booking. Status awal `Menunggu Verifikasi` sampai admin verifikasi.
 
-Untuk cek status booking nantinya:
-- Buka **http://localhost:8080/cek-booking**
-- Masukkan nomor WhatsApp yang dipakai saat booking
-- Lihat detail + bisa batalkan (selama booking belum verifikasi atau ≥ 2 jam sebelum jam mulai)
+Pelanggan menerima **email otomatis** di 3 momen:
+- Booking dibuat → "Menunggu verifikasi".
+- Admin verifikasi → "Dikonfirmasi".
+- ~30 menit sebelum sesi → "Pengingat".
+
+Email butuh konfigurasi Gmail SMTP — lihat bagian **10. Notifikasi Email** di bawah. Tanpa SMTP terkonfigurasi, booking tetap jalan, hanya email yang nonaktif.
+
+Cek status / batal booking tanpa login: buka **http://localhost:8080/cek-booking**, masukkan nomor WA → list semua booking nomor itu. Pembatalan dibolehkan selama booking belum verifikasi atau ≥ 2 jam sebelum jam mulai.
+
+---
+
+## 10. Notifikasi Email (Gmail SMTP)
+
+Email otomatis dikirim atas nama "SW Beauty Salon" lewat Gmail SMTP. Setup:
+
+1. Aktifkan **2-Step Verification** di akun Gmail salon ([myaccount.google.com/security](https://myaccount.google.com/security)).
+2. Buat **App Password** (16 huruf, tanpa spasi) di [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+3. Buka `.env`, isi:
+   ```env
+   email.SMTPUser  = 'akun-salon@gmail.com'
+   email.SMTPPass  = 'xxxxxxxxxxxxxxxx'
+   email.fromEmail = 'akun-salon@gmail.com'
+   ```
+   `fromEmail` **wajib sama** dengan `SMTPUser` — Gmail akan tolak kalau beda.
+4. Restart `php spark serve` supaya `.env` ter-reload.
+
+Tanpa `SMTPHost`/`SMTPPass` terisi, sistem skip email diam-diam (log info) — booking tetap sukses.
+
+### Auto-cancel + reminder produksi
+
+Schedule via **Task Scheduler (Windows)** atau **cron (Linux)** tiap 5 menit:
+
+```bat
+php spark bookings:auto-cancel
+php spark bookings:send-reminders
+```
+
+Tanpa schedule, lazy sweep di `/admin/dashboard` & `/admin/booking` tetap menjalankan keduanya (max 1× per 5 menit) — cukup untuk dev/demo.
 
 ---
 

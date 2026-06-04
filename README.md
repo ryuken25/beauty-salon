@@ -77,14 +77,15 @@ Jika MySQL lokal memakai password, isi `database.default.password` di file `.env
 |---|---|---|
 | Pemilik | email `owner@swbeautysalon.local` di `/admin/login` | `Password123!` |
 | Admin | email `admin@swbeautysalon.local` di `/admin/login` | `Password123!` |
-| Pelanggan | nomor WA `6281338109102` di `/login` | `Password123!` |
+| Pelanggan | nomor WA `6281338109102` di `/login` (email akun: `winayagatar@gmail.com`) | `Password123!` |
 
 Login terpisah: staff (admin/pemilik) pakai email di **`/admin/login`**; pelanggan pakai nomor WA di **`/login`**.
 
 ## Fitur Utama
 
-- **Akun pelanggan** dengan registrasi (nama + nomor WA + password) di `/register`. Lupa password tidak self-service — pelanggan menghubungi salon via WhatsApp, admin reset dari `/admin/pelanggan`.
-- Booking **wajib login** sebagai pelanggan. Form mengisi nama + WA otomatis dari akun.
+- **Akun pelanggan** dengan registrasi (nama + nomor WA + **email** wajib + password) di `/register`. Lupa password tidak self-service — pelanggan menghubungi salon via WhatsApp, admin reset dari `/admin/pelanggan`.
+- Booking **wajib login** sebagai pelanggan. Form mengisi nama + WA + email otomatis dari akun.
+- **Notifikasi email otomatis** (Gmail SMTP, atas nama "SW Beauty Salon") di 3 momen: booking dibuat (menunggu verifikasi), admin verifikasi (dikonfirmasi), 30 menit sebelum sesi (pengingat). Best-effort — tanpa SMTP terkonfigurasi, booking tetap sukses.
 - **Aturan DP**: harga ≤ Rp 50.000 → DP penuh; harga > Rp 50.000 → DP Rp 50.000. Pelanggan wajib upload bukti transfer/QRIS saat booking; admin verifikasi di halaman detail.
 - **Awareness salon tutup**: kalau salon hampir/sudah tutup, halaman booking menampilkan banner dan langsung mengarahkan ke hari berikutnya.
 - **Auto-cancel** booking pending yang sudah lewat jadwal — via `php spark bookings:auto-cancel` (jadwalkan Task Scheduler/cron tiap 5–10 menit) + lazy sweep di dashboard admin (1× per 5 menit).
@@ -97,9 +98,44 @@ Login terpisah: staff (admin/pemilik) pakai email di **`/admin/login`**; pelangg
 - Input booking walk-in oleh admin (tanpa DP — bayar di tempat).
 - Template WhatsApp manual (Salin Pesan, Buka WhatsApp, Tandai sudah dikirim).
 
-## WhatsApp Manual
+## Notifikasi Email (Gmail SMTP)
 
-Aplikasi tidak mengirim WhatsApp otomatis dan tidak memakai WhatsApp Cloud API, Twilio, Meta Graph API, atau layanan berbayar. Sistem hanya membuat template pesan, menyediakan tombol salin, membuka tautan WhatsApp, dan mencatat jika admin menandai pesan sudah dikirim manual.
+Email otomatis dikirim ke alamat akun pelanggan di tiga momen:
+
+| Momen | Trigger | Subject |
+|---|---|---|
+| Booking dibuat | `BookingService::create()` setelah commit | `[SW Beauty Salon] Booking {kode} menunggu verifikasi` |
+| Admin verifikasi | `BookingService::verify()` → `accepted` | `[SW Beauty Salon] Booking {kode} sudah dikonfirmasi` |
+| Reminder 30 menit sebelum sesi | `bookings:send-reminders` (cron 5 menit) atau lazy sweep | `[SW Beauty Salon] Pengingat: sesi Anda {jam} hari ini` |
+
+### Setup Gmail SMTP
+
+1. Aktifkan **2-Step Verification** di akun Gmail salon ([myaccount.google.com/security](https://myaccount.google.com/security)).
+2. Buat **App Password** (16 huruf) di [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+3. Buka file `.env`, isi:
+   ```dotenv
+   email.SMTPUser  = 'akun-salon@gmail.com'
+   email.SMTPPass  = 'xxxxxxxxxxxxxxxx'   # App Password tanpa spasi
+   email.fromEmail = 'akun-salon@gmail.com'   # WAJIB sama dengan SMTPUser
+   ```
+4. (Opsional) `SMTPPort=465` + `SMTPCrypto=ssl` sebagai alternatif TLS-587 default.
+
+Tanpa `SMTPHost`/`SMTPPass`, sistem skip pengiriman secara diam-diam dan log info — booking tetap sukses.
+
+### Jadwal command produksi
+
+Schedule via Windows Task Scheduler (atau cron di Linux) tiap **5 menit**:
+
+```text
+php spark bookings:auto-cancel       # batalkan pending yang lewat jadwal
+php spark bookings:send-reminders    # email pengingat 30 menit sebelum sesi
+```
+
+Tanpa schedule, lazy sweep di `/admin/dashboard` & `/admin/booking` tetap menjalankan keduanya (max 1× per 5 menit) — cukup untuk dev/demo.
+
+## WhatsApp Manual (bukan otomatis)
+
+Aplikasi **tidak** mengirim WhatsApp otomatis dan tidak memakai WhatsApp Cloud API / Twilio / Meta Graph API / layanan berbayar lain. Yang otomatis adalah **email**. WhatsApp tetap manual: sistem menyediakan template pesan, tombol salin, tautan `wa.me`, dan flag "Tandai sudah dikirim" di detail booking admin.
 
 ## Status Booking
 

@@ -50,6 +50,15 @@ Write-Host '[5/5] Menjalankan server di http://localhost:8080' -ForegroundColor 
 Write-Host '    Akun demo:'
 Write-Host '      Pemilik:   owner@swbeautysalon.local / Password123!'
 Write-Host '      Admin:     admin@swbeautysalon.local / Password123!'
-Write-Host '      Pelanggan: nomor WA 6281338109102 / Password123!'
+Write-Host '      Pelanggan: WA 6281338109102 / Password123! (email: winayagatar@gmail.com)'
+Write-Host ''
+Write-Host '[i] Notifikasi email (opsional): buka .env, isi email.SMTPUser/fromEmail' -ForegroundColor Yellow
+Write-Host '    dengan akun Gmail salon + email.SMTPPass dengan Gmail App Password (16 huruf,' -ForegroundColor Yellow
+Write-Host '    https://myaccount.google.com/apppasswords). Tanpa ini, booking tetap jalan,' -ForegroundColor Yellow
+Write-Host '    hanya email yang nonaktif.' -ForegroundColor Yellow
+Write-Host ''
+Write-Host '[i] Reminder + auto-cancel di produksi, jadwalkan tiap 5 menit:' -ForegroundColor Yellow
+Write-Host '      php spark bookings:auto-cancel' -ForegroundColor Yellow
+Write-Host '      php spark bookings:send-reminders' -ForegroundColor Yellow
 Write-Host ''
 php spark serve

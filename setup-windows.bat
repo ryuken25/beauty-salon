@@ -69,7 +69,16 @@ echo [5/5] Menjalankan server di http://localhost:8080
 echo     Akun demo:
 echo       Pemilik:   owner@swbeautysalon.local / Password123!
 echo       Admin:     admin@swbeautysalon.local / Password123!
-echo       Pelanggan: nomor WA 6281338109102 / Password123!
+echo       Pelanggan: WA 6281338109102 / Password123! (email: winayagatar@gmail.com)
+echo.
+echo [i] Notifikasi email (opsional): buka .env, isi email.SMTPUser/fromEmail
+echo     dengan akun Gmail salon + email.SMTPPass dengan Gmail App Password
+echo     (16 huruf, https://myaccount.google.com/apppasswords).
+echo     Tanpa ini, booking tetap jalan, hanya email yang nonaktif.
+echo.
+echo [i] Untuk reminder + auto-cancel di produksi, jadwalkan tiap 5 menit:
+echo       php spark bookings:auto-cancel
+echo       php spark bookings:send-reminders
 echo.
 echo     Tutup server dengan Ctrl+C kapan saja.
 echo.
