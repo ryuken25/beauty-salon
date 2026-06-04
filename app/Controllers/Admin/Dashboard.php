@@ -3,11 +3,13 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Services\BookingService;
 
 class Dashboard extends BaseController
 {
     public function index()
     {
+        $this->autoCancelSweep();
         $db = db_connect();
         $today = date('Y-m-d');
 
@@ -41,5 +43,17 @@ class Dashboard extends BaseController
             'accepted_hari_ini' => $acceptedHariIni,
             'booking_terbaru' => $bookingTerbaru,
         ]);
+    }
+
+    /**
+     * Best-effort cron-less sweep. Throttled to 1× per 5 minutes via
+     * cache so a busy admin page doesn't run it on every click.
+     * Production should still schedule `php spark bookings:auto-cancel`.
+     */
+    private function autoCancelSweep(): void
+    {
+        if (cache('auto_cancel_last_run')) return;
+        cache()->save('auto_cancel_last_run', time(), 300);
+        (new BookingService())->autoCancelExpired();
     }
 }

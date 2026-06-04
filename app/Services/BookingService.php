@@ -163,6 +163,50 @@ class BookingService
         ]);
     }
 
+    /**
+     * Auto-cancel bookings still pending_verification whose start time
+     * has already passed. Called by the `bookings:auto-cancel` Spark
+     * command and by lazy sweep in admin landing pages.
+     *
+     * @return int Number of bookings cancelled.
+     */
+    public function autoCancelExpired(): int
+    {
+        $db = db_connect();
+        $now = date('Y-m-d H:i:s');
+        // Raw query: builder mis-quotes a CONCAT(...) on the LHS of a where().
+        $expired = $db->query(
+            "SELECT id FROM bookings WHERE status = 'pending_verification' AND CONCAT(tanggal, ' ', slot_mulai) < ?",
+            [$now]
+        )->getResultArray();
+        $count = 0;
+        foreach ($expired as $row) {
+            $bookingId = (int) $row['id'];
+            $db->transBegin();
+            $affected = $db->table('bookings')
+                ->where('id', $bookingId)
+                ->where('status', 'pending_verification')
+                ->update([
+                    'status' => 'cancelled',
+                    'cancelled_at' => $now,
+                    'cancelled_by' => 'system',
+                    'cancellation_reason' => 'Dibatalkan otomatis: tidak dikonfirmasi admin sampai jadwal lewat.',
+                    'updated_at' => $now,
+                ]);
+            if ($db->affectedRows() !== 1) {
+                $db->transRollback();
+                continue;
+            }
+            $db->table('booking_slots')->where('booking_id', $bookingId)->delete();
+            $db->transCommit();
+            $this->logEvent($bookingId, 'cancelled', 'system', 'system', [
+                'reason' => 'expired_no_verification',
+            ]);
+            $count++;
+        }
+        return $count;
+    }
+
     public function complete(
         int $bookingId,
         ?int $userId,

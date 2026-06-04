@@ -15,6 +15,12 @@ class BookingController extends BaseController
 {
     public function index()
     {
+        // Lazy sweep (throttled 5 min via cache). Production should still
+        // schedule `php spark bookings:auto-cancel`.
+        if (! cache('auto_cancel_last_run')) {
+            cache()->save('auto_cancel_last_run', time(), 300);
+            (new BookingService())->autoCancelExpired();
+        }
         $db = db_connect();
         $builder = $db->table('bookings b')
             ->select('b.id, b.kode_booking, b.nama_pelanggan, b.nomor_hp_pelanggan, b.tanggal, b.slot_mulai, b.slot_selesai, b.status, b.sumber, b.payment_status, l.nama AS nama_layanan')
