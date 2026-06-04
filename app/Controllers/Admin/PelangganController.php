@@ -21,7 +21,7 @@ class PelangganController extends BaseController
         $q = trim((string) $this->request->getGet('q'));
         $db = db_connect();
         $builder = $db->table('users u')
-            ->select('u.id, u.nama, u.nomor_hp, u.is_active, u.created_at, COUNT(b.id) AS total_booking, MAX(b.tanggal) AS terakhir')
+            ->select('u.id, u.nama, u.nomor_hp, u.email, u.is_active, u.created_at, COUNT(b.id) AS total_booking, MAX(b.tanggal) AS terakhir')
             ->join('bookings b', 'b.user_id = u.id', 'left')
             ->where('u.role', 'pelanggan')
             ->groupBy('u.id')
@@ -31,6 +31,7 @@ class PelangganController extends BaseController
             $builder->groupStart()
                 ->like('u.nama', $q)
                 ->orLike('u.nomor_hp', $q)
+                ->orLike('u.email', $q)
                 ->groupEnd();
         }
 

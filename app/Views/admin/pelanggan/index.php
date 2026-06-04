@@ -11,8 +11,8 @@
 <form method="get" class="card-salon mb-3">
   <div class="row-salon cols-2">
     <div>
-      <label class="form-salon-label">Cari nama / nomor WA</label>
-      <input class="form-salon-input" type="text" name="q" value="<?= esc($q) ?>" placeholder="Misal: Ari atau 0812…">
+      <label class="form-salon-label">Cari nama / nomor WA / email</label>
+      <input class="form-salon-input" type="text" name="q" value="<?= esc($q) ?>" placeholder="Misal: Ari, 0812…, atau @gmail">
     </div>
     <div style="display:flex; align-items:end; gap:0.5rem;">
       <button class="btn-salon-primary" type="submit"><i class="bi bi-search"></i> Cari</button>
@@ -36,6 +36,7 @@
         <tr>
           <th>Nama</th>
           <th>Nomor WhatsApp</th>
+          <th>Email</th>
           <th class="text-right">Booking</th>
           <th>Terakhir</th>
           <th>Aksi</th>
@@ -46,6 +47,7 @@
           <tr>
             <td style="font-weight:500;"><?= esc($r['nama']) ?></td>
             <td><?= esc($r['nomor_hp']) ?></td>
+            <td><?= esc($r['email'] ?? '—') ?></td>
             <td class="text-right"><?= esc($r['total_booking']) ?></td>
             <td class="caption"><?= $r['terakhir'] ? esc(date('d M Y', strtotime($r['terakhir']))) : '—' ?></td>
             <td>
@@ -65,7 +67,7 @@
       </tbody>
     </table>
     <div class="caption mt-2">
-      <i class="bi bi-info-circle"></i> Nomor WhatsApp tidak dapat diubah — itu identitas login pelanggan.
+      <i class="bi bi-info-circle"></i> Nomor WhatsApp &amp; email tidak dapat diubah — keduanya identitas akun &amp; tujuan notifikasi.
     </div>
   <?php endif ?>
 </div>
