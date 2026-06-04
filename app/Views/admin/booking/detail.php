@@ -55,6 +55,40 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
   </div>
 
   <div>
+    <?php
+    $payMap = [
+        'unpaid' => ['Belum bayar', 'pending'],
+        'dp_uploaded' => ['Bukti diunggah', 'pending'],
+        'dp_verified' => ['DP terverifikasi', 'completed'],
+    ];
+    [$payLabel, $payCls] = $payMap[$booking['payment_status'] ?? 'unpaid'] ?? ['—', 'pending'];
+    ?>
+    <div class="card-salon mb-2">
+      <div class="h2 mb-2"><i class="bi bi-cash-coin" style="color:var(--gold);"></i> Bukti DP</div>
+      <div class="caption mb-1">
+        DP: <strong>Rp <?= number_format((int) ($booking['dp_amount'] ?? 0), 0, ',', '.') ?></strong>
+        · <span class="badge-salon badge-salon--<?= $payCls ?>" style="font-size:0.6875rem;"><?= esc($payLabel) ?></span>
+      </div>
+      <?php if (! empty($booking['dp_proof_path'])): ?>
+        <a href="<?= base_url($booking['dp_proof_path']) ?>" target="_blank" rel="noopener" title="Buka di tab baru">
+          <img src="<?= base_url($booking['dp_proof_path']) ?>" alt="Bukti DP"
+               style="width:100%; max-height:240px; object-fit:contain; border:1px solid var(--gold-border); border-radius:8px; background:#0b0b0b;">
+        </a>
+        <?php if (($booking['payment_status'] ?? 'unpaid') !== 'dp_verified'): ?>
+          <form method="post" action="<?= base_url('admin/booking/' . $booking['id'] . '/dp-verify') ?>" class="mt-2">
+            <?= csrf_field() ?>
+            <button class="btn-salon-success btn-salon--full" type="submit">
+              <i class="bi bi-shield-check"></i> Tandai DP terverifikasi
+            </button>
+          </form>
+        <?php endif ?>
+      <?php else: ?>
+        <div class="alert-salon alert-salon--info" style="margin:0;">
+          <i class="bi bi-info-circle"></i> Belum ada bukti DP <?= $booking['sumber'] === 'walkin' ? '(walk-in — bayar di tempat).' : '.' ?>
+        </div>
+      <?php endif ?>
+    </div>
+
     <div class="card-salon">
       <div class="h2 mb-2">Aksi</div>
       <?php if ($booking['status'] === 'pending_verification'): ?>

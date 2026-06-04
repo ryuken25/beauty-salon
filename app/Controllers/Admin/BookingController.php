@@ -129,6 +129,17 @@ class BookingController extends BaseController
         return redirect()->back()->with('success', 'WhatsApp ditandai sudah dikirim.');
     }
 
+    public function dpVerify(int $id)
+    {
+        $model = new BookingModel();
+        $row = $model->find($id);
+        if (! $row) {
+            return redirect()->to('/admin/booking')->with('error', 'Booking tidak ditemukan.');
+        }
+        $model->update($id, ['payment_status' => 'dp_verified']);
+        return redirect()->to('/admin/booking/' . $id)->with('success', 'DP ditandai terverifikasi.');
+    }
+
     public function walkin()
     {
         if ($this->request->getMethod() === 'POST') {

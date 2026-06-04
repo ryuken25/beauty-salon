@@ -48,6 +48,7 @@ $routes->group('admin', ['filter' => 'admin'], static function ($routes) {
     $routes->post('booking/(:num)/cancel', 'Admin\BookingController::cancel/$1');
     $routes->post('booking/(:num)/complete', 'Admin\BookingController::complete/$1');
     $routes->post('booking/(:num)/wa-sent', 'Admin\BookingController::waSent/$1');
+    $routes->post('booking/(:num)/dp-verify', 'Admin\BookingController::dpVerify/$1');
 
     $routes->get('pelanggan', 'Admin\PelangganController::index');
     $routes->post('pelanggan/(:num)/update-nama', 'Admin\PelangganController::updateNama/$1');
