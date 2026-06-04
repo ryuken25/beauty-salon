@@ -31,17 +31,12 @@
     <div class="text-center"><span class="badge-salon badge-salon--pending">Menunggu verifikasi</span></div>
   </div>
 
-  <?php if ($wa_link): ?>
-    <a class="btn-salon-success btn-salon--full mt-3" target="_blank" rel="noopener" href="<?= esc($wa_link) ?>">
-      <i class="bi bi-whatsapp"></i> Chat owner via WhatsApp
-    </a>
-    <div class="caption text-center mt-1">Pesan akan terisi otomatis.</div>
-  <?php endif ?>
-
-
-  <div class="text-center mt-3">
-    <div class="tagline">Terima kasih sudah memesan</div>
-    <div class="mt-2"><a href="<?= base_url('/') ?>">&larr; Kembali ke beranda</a> · <a href="<?= base_url('cek-booking') ?>">Cek status booking</a></div>
+  <div class="flex flex-wrap gap-2 mt-3" style="justify-content:center;">
+    <a class="btn-salon-primary" href="<?= base_url('pelanggan/dashboard') ?>"><i class="bi bi-grid"></i> Ke dashboard saya</a>
+    <a class="btn-salon-secondary" href="<?= base_url('cek-booking') ?>"><i class="bi bi-search"></i> Cek status booking</a>
+  </div>
+  <div class="text-center mt-2">
+    <a href="<?= base_url('/') ?>">&larr; Kembali ke beranda</a>
   </div>
 </div>
 

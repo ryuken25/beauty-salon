@@ -40,19 +40,6 @@ class WhatsAppTemplateService
         return $owner ? $this->link($owner, $message) : '#';
     }
 
-    public function ownerConfirmationMessage(array $booking): string
-    {
-        $tanggal = date('d/m/Y', strtotime($booking['tanggal']));
-        $mulai = substr($booking['slot_mulai'], 0, 5);
-        $selesai = substr($booking['slot_selesai'], 0, 5);
-        return "Halo SW Beauty Salon, saya {$booking['nama_pelanggan']} sudah melakukan booking:\n\n"
-            . "• Kode: {$booking['kode_booking']}\n"
-            . "• Layanan: {$booking['nama_layanan']}\n"
-            . "• Tanggal: {$tanggal}\n"
-            . "• Jam: {$mulai} – {$selesai}\n\n"
-            . 'Mohon konfirmasi. Terima kasih.';
-    }
-
     /**
      * Template "pembatalan_oleh_customer" — pesan yang dikirim customer ke
      * admin setelah membatalkan booking sendiri lewat /cek-booking.
