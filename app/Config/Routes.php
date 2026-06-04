@@ -8,8 +8,8 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('layanan', 'Home::layanan');
 
-$routes->match(['GET', 'POST'], 'booking', 'Booking::form');
-$routes->get('booking/sukses/(:any)', 'Booking::sukses/$1');
+$routes->match(['GET', 'POST'], 'booking', 'Booking::form', ['filter' => 'customer']);
+$routes->get('booking/sukses/(:any)', 'Booking::sukses/$1', ['filter' => 'customer']);
 $routes->get('api/slots', 'Api::slots');
 
 // ── Cek & batal booking (publik — customer tanpa akun) ────

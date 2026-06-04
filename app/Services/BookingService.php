@@ -30,6 +30,13 @@ class BookingService
             throw new RuntimeException('Layanan tidak valid.');
         }
 
+        // DP rule: harga ≤ 50.000 → DP = full; harga > 50.000 → DP = 50.000.
+        $hargaInt = (int) $layanan['harga'];
+        $sumberRaw = ($data['sumber'] ?? 'online') === 'walkin' ? 'walkin' : 'online';
+        $dpAmount = $sumberRaw === 'walkin' ? 0 : min($hargaInt, 50_000);
+        $dpProof = $sumberRaw === 'walkin' ? null : ($data['dp_proof_path'] ?? null);
+        $paymentStatus = $sumberRaw === 'walkin' ? 'unpaid' : ($dpProof ? 'dp_uploaded' : 'unpaid');
+
         $email = isset($data['email_pelanggan']) ? trim((string) $data['email_pelanggan']) : '';
 
         $db = db_connect();
@@ -43,6 +50,7 @@ class BookingService
 
             $bookingRow = [
                 'kode_booking' => $kode,
+                'user_id' => isset($data['user_id']) && $data['user_id'] ? (int) $data['user_id'] : null,
                 'nama_pelanggan' => trim((string) $data['nama_pelanggan']),
                 'nomor_hp_pelanggan' => $phone,
                 'email_pelanggan' => $email !== '' ? $email : null,
@@ -51,7 +59,10 @@ class BookingService
                 'slot_mulai' => $validation['slot_mulai'] . ':00',
                 'slot_selesai' => $validation['slot_selesai'] . ':00',
                 'jumlah_slot' => $validation['jumlah_slot'],
-                'harga_layanan' => (int) $layanan['harga'],
+                'harga_layanan' => $hargaInt,
+                'dp_amount' => $dpAmount,
+                'dp_proof_path' => $dpProof,
+                'payment_status' => $paymentStatus,
                 'status' => $statusInitial,
                 'sumber' => $sumber,
                 'catatan' => $data['catatan'] ?? null,

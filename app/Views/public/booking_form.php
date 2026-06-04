@@ -12,7 +12,7 @@ $today = date('Y-m-d');
   <div class="ornament-rule"><span class="ornament-rule__line"></span><i class="bi bi-gem ornament-rule__icon"></i><span class="ornament-rule__line"></span></div>
 </section>
 
-<form method="post" action="<?= base_url('booking') ?>" id="bookingForm">
+<form method="post" action="<?= base_url('booking') ?>" id="bookingForm" enctype="multipart/form-data">
   <?= csrf_field() ?>
 
   <!-- Honeypot: hidden from humans, bots fill it -->
@@ -21,25 +21,15 @@ $today = date('Y-m-d');
   </div>
 
   <div class="card-salon mb-3">
-    <div class="h2 mb-2">Data pelanggan</div>
-    <div class="row-salon cols-2">
-      <div>
-        <label class="form-salon-label">Nama lengkap *</label>
-        <input class="form-salon-input" type="text" name="nama_pelanggan" required minlength="3" value="<?= esc(old('nama_pelanggan')) ?>">
-      </div>
-      <div>
-        <label class="form-salon-label">Nomor WhatsApp *</label>
-        <input class="form-salon-input" type="tel" name="nomor_hp_pelanggan" required value="<?= esc(old('nomor_hp_pelanggan')) ?>" placeholder="08xxxxxxxxxx">
-        <div class="form-salon-help">Contoh: 081234567890. Nomor ini dipakai untuk Cek Booking.</div>
-      </div>
-      <div>
-        <label class="form-salon-label">Email (opsional)</label>
-        <input class="form-salon-input" type="email" name="email_pelanggan" value="<?= esc(old('email_pelanggan')) ?>" placeholder="nama@email.com">
-      </div>
-      <div>
-        <label class="form-salon-label">Catatan (opsional)</label>
-        <textarea class="form-salon-textarea" name="catatan" rows="2" placeholder="Permintaan khusus, dll"><?= esc(old('catatan')) ?></textarea>
-      </div>
+    <div class="h2 mb-2">Booking sebagai</div>
+    <div class="caption">
+      <i class="bi bi-person-check" style="color:var(--gold);"></i>
+      <strong><?= esc($akun_nama) ?></strong> · <?= esc($akun_hp) ?>
+      &nbsp;<a class="caption" href="<?= base_url('pelanggan/dashboard') ?>" style="text-decoration:underline;">(bukan Anda?)</a>
+    </div>
+    <div class="mt-2">
+      <label class="form-salon-label">Catatan (opsional)</label>
+      <textarea class="form-salon-textarea" name="catatan" rows="2" placeholder="Permintaan khusus, dll"><?= esc(old('catatan')) ?></textarea>
     </div>
   </div>
 
@@ -99,6 +89,26 @@ $today = date('Y-m-d');
     <div id="slotInfo" class="caption mt-1"></div>
   </div>
 
+  <!-- DP info + upload bukti -->
+  <div class="card-salon mb-3" id="dpCard">
+    <div class="h2 mb-1"><i class="bi bi-cash-coin" style="color:var(--gold);"></i> Pembayaran DP</div>
+    <div class="caption mb-2">
+      DP yang harus dibayar: <strong id="dpAmountText" style="color:var(--gold);">Pilih layanan dulu</strong>
+      <span class="form-salon-help">Harga ≤ Rp 50.000 → DP penuh. Lebih dari itu → DP Rp 50.000.</span>
+    </div>
+    <?php if (! empty($info_pembayaran_dp)): ?>
+      <div class="alert-salon alert-salon--info" style="white-space:pre-line;"><?= esc($info_pembayaran_dp) ?></div>
+    <?php endif ?>
+    <?php if (! empty($qris_image_path)): ?>
+      <div class="text-center mb-2">
+        <img src="<?= base_url($qris_image_path) ?>" alt="QRIS" style="max-width:220px; border:1px solid var(--gold-border); border-radius:8px; background:#fff; padding:6px;">
+      </div>
+    <?php endif ?>
+    <label class="form-salon-label">Upload bukti transfer / QRIS *</label>
+    <input class="form-salon-input" type="file" name="bukti_dp" accept="image/png,image/jpeg,image/jpg,image/webp" required>
+    <div class="form-salon-help">PNG / JPG / WEBP, maksimal 2 MB. Admin akan memverifikasi sebelum booking dikonfirmasi.</div>
+  </div>
+
   <div class="card-salon" id="summaryBar" style="position:sticky; bottom:0;">
     <div class="flex justify-between items-center flex-wrap gap-2">
       <div id="summaryText" class="caption">Pilih layanan, tanggal, dan jam untuk melihat ringkasan.</div>
@@ -125,6 +135,11 @@ function pickLayanan(card) {
     c.querySelector('.bi-check-circle-fill').style.display = c === card ? 'inline-block' : 'none';
   });
   card.querySelector('input').checked = true;
+  // DP rule: ≤ 50k → full, else 50k.
+  const hargaStr = card.querySelectorAll('.h3')[1].textContent.replace(/[^0-9]/g, '');
+  const harga = parseInt(hargaStr, 10) || 0;
+  const dp = Math.min(harga, 50000);
+  document.getElementById('dpAmountText').textContent = 'Rp ' + dp.toLocaleString('id-ID');
   refreshSlots();
 }
 

@@ -7,7 +7,6 @@ use App\Models\LayananModel;
 use App\Models\SettingModel;
 use App\Services\BookingService;
 use App\Services\SlotService;
-use App\Services\WhatsAppTemplateService;
 use RuntimeException;
 
 class Booking extends BaseController
@@ -15,13 +14,14 @@ class Booking extends BaseController
     public function form()
     {
         $svc = new BookingService();
+        $slot = new SlotService();
+        $settings = new SettingModel();
+
         if ($this->request->getMethod() === 'POST') {
-            // Anti-spam #1 — honeypot. Bots fill every field; humans never see
-            // the "website" input (hidden via CSS). A filled value = bot.
+            // Honeypot (bot trap).
             if (trim((string) $this->request->getPost('website')) !== '') {
                 return redirect()->to('/')->with('success', 'Terima kasih.');
             }
-            // Anti-spam #2 — soft per-IP daily cap (no CAPTCHA, gaptek-friendly).
             $ipKey = 'booking_count_' . md5($this->request->getIPAddress());
             $todayCount = (int) (cache($ipKey) ?? 0);
             if ($todayCount >= 12) {
@@ -29,36 +29,49 @@ class Booking extends BaseController
             }
 
             $rules = [
-                'nama_pelanggan' => 'required|min_length[3]|max_length[100]',
-                'nomor_hp_pelanggan' => 'required|regex_match[/^(\+?62|0)8[0-9]{7,12}$/]',
-                'email_pelanggan' => 'permit_empty|valid_email|max_length[150]',
                 'layanan_id' => 'required|is_natural_no_zero',
                 'tanggal' => 'required|valid_date[Y-m-d]',
                 'slot_mulai' => 'required|regex_match[/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/]',
+                'bukti_dp' => 'uploaded[bukti_dp]|is_image[bukti_dp]|max_size[bukti_dp,2048]|mime_in[bukti_dp,image/png,image/jpg,image/jpeg,image/webp]',
             ];
             if (! $this->validate($rules)) {
                 return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
             }
+
+            // Move bukti DP into public/uploads/dp/.
+            $file = $this->request->getFile('bukti_dp');
+            $uploadDir = FCPATH . 'uploads/dp';
+            if (! is_dir($uploadDir)) {
+                @mkdir($uploadDir, 0775, true);
+            }
+            $name = $file->getRandomName();
+            $file->move($uploadDir, $name);
+            $proofRelative = 'uploads/dp/' . $name;
+
             try {
                 $row = $svc->create([
-                    'nama_pelanggan' => $this->request->getPost('nama_pelanggan'),
-                    'nomor_hp_pelanggan' => $this->request->getPost('nomor_hp_pelanggan'),
-                    'email_pelanggan' => $this->request->getPost('email_pelanggan'),
+                    'user_id' => (int) session('user_id'),
+                    'nama_pelanggan' => session('user_nama'),
+                    'nomor_hp_pelanggan' => session('user_hp'),
+                    'email_pelanggan' => null,
                     'layanan_id' => (int) $this->request->getPost('layanan_id'),
                     'tanggal' => $this->request->getPost('tanggal'),
                     'slot_mulai' => $this->request->getPost('slot_mulai'),
                     'catatan' => $this->request->getPost('catatan'),
+                    'dp_proof_path' => $proofRelative,
                     'sumber' => 'online',
-                    'actor' => 'pelanggan',
+                    'actor' => 'pelanggan:' . session('user_id'),
                     'actor_role' => 'pelanggan',
                 ]);
                 cache()->save($ipKey, $todayCount + 1, DAY);
                 return redirect()->to('/booking/sukses/' . $row['kode_booking']);
             } catch (RuntimeException $e) {
+                // Roll the orphan upload back so we don't leak files on validation errors.
+                @unlink($uploadDir . '/' . $name);
                 return redirect()->back()->withInput()->with('error', $e->getMessage());
             }
         }
-        $slot = new SlotService();
+
         $rangeHari = $slot->rangeHari();
         $dates = [];
         for ($i = 0; $i <= $rangeHari; $i++) {
@@ -69,6 +82,10 @@ class Booking extends BaseController
             'all_slots' => $slot->allSlots(),
             'dates' => $dates,
             'preselect_layanan_id' => (int) ($this->request->getGet('layanan_id') ?? 0),
+            'info_pembayaran_dp' => $settings->getValue('info_pembayaran_dp', ''),
+            'qris_image_path' => $settings->getValue('qris_image_path', ''),
+            'akun_nama' => session('user_nama'),
+            'akun_hp' => session('user_hp'),
         ]);
     }
 
@@ -78,9 +95,6 @@ class Booking extends BaseController
         if (! $row) {
             return redirect()->to('/cek-booking')->with('error', 'Booking tidak ditemukan.');
         }
-        $owner = (new SettingModel())->getValue('nomor_hp_owner', '');
-        $template = (new WhatsAppTemplateService())->ownerConfirmationMessage($row);
-        $waLink = $owner ? 'https://wa.me/' . preg_replace('/\D+/', '', $owner) . '?text=' . rawurlencode($template) : '';
-        return view('public/booking_sukses', ['booking' => $row, 'wa_link' => $waLink]);
+        return view('public/booking_sukses', ['booking' => $row]);
     }
 }

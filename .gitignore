@@ -67,6 +67,11 @@ Vagrantfile
 /writable/uploads/*
 !/writable/uploads/index.html
 
+# DP bukti transfer (per-booking, never committed) — keep the folder via .gitkeep
+/public/uploads/dp/*
+!/public/uploads/dp/.gitkeep
+!/public/uploads/dp/sample.jpg
+
 /writable/debugbar/*
 !/writable/debugbar/index.html
 
