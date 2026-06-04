@@ -25,11 +25,11 @@ class SalonSeeder extends Seeder
             ['email' => 'owner@swbeautysalon.local', 'password_hash' => $hash, 'nama' => 'Ni Wayan Sutrisna Wati', 'nomor_hp' => null, 'role' => 'pemilik',   'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
             ['email' => 'admin@swbeautysalon.local', 'password_hash' => $hash, 'nama' => 'Admin Salon',            'nomor_hp' => null, 'role' => 'admin',     'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
             // Pelanggan demo (login pakai nomor WA + Password123!).
-            ['email' => null, 'password_hash' => $hash, 'nama' => 'I Made Winayagatar',  'nomor_hp' => '6281338109102', 'role' => 'pelanggan', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['email' => null, 'password_hash' => $hash, 'nama' => 'Putu Ayu Pramesti',   'nomor_hp' => '6281234567001', 'role' => 'pelanggan', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['email' => null, 'password_hash' => $hash, 'nama' => 'Kadek Sri Wahyuni',   'nomor_hp' => '6281234567002', 'role' => 'pelanggan', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['email' => null, 'password_hash' => $hash, 'nama' => 'Ni Komang Aristina',  'nomor_hp' => '6281234567003', 'role' => 'pelanggan', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['email' => null, 'password_hash' => $hash, 'nama' => 'Made Bayu Sentana',   'nomor_hp' => '6281234567004', 'role' => 'pelanggan', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['email' => 'winayagatar@gmail.com', 'password_hash' => $hash, 'nama' => 'I Made Winayagatar',  'nomor_hp' => '6281338109102', 'role' => 'pelanggan', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['email' => 'pramesti.demo@gmail.com', 'password_hash' => $hash, 'nama' => 'Putu Ayu Pramesti',   'nomor_hp' => '6281234567001', 'role' => 'pelanggan', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['email' => 'wahyuni.demo@gmail.com', 'password_hash' => $hash, 'nama' => 'Kadek Sri Wahyuni',   'nomor_hp' => '6281234567002', 'role' => 'pelanggan', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['email' => 'aristina.demo@gmail.com', 'password_hash' => $hash, 'nama' => 'Ni Komang Aristina',  'nomor_hp' => '6281234567003', 'role' => 'pelanggan', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['email' => 'bayu.demo@gmail.com', 'password_hash' => $hash, 'nama' => 'Made Bayu Sentana',   'nomor_hp' => '6281234567004', 'role' => 'pelanggan', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
         ];
         $this->db->table('users')->insertBatch($userRows);
         $pelangganIds = [];
@@ -107,19 +107,37 @@ class SalonSeeder extends Seeder
         $dpFor = static fn (int $h): int => min($h, 50_000);
         $kode = static fn (string $date, int $seq): string => 'SW-' . str_replace('-', '', $date) . '-' . str_pad((string) $seq, 3, '0', STR_PAD_LEFT);
 
+        // Booking #7 (reminder fixture): accepted dengan slot_mulai +25 menit
+        // dari NOW() MySQL → masuk window 30 menit (FASE 14C). Pakai DB clock
+        // supaya konsisten dengan timezone server (PHP UTC vs MySQL lokal).
+        $dbNow = $this->db->query('SELECT DATE_ADD(NOW(), INTERVAL 25 MINUTE) t')->getRowArray()['t'];
+        $reminderTanggal = substr((string) $dbNow, 0, 10);
+        $reminderMulai = substr((string) $dbNow, 11, 8);
+        $reminderSelesai = date('H:i:s', strtotime((string) $dbNow) + 30 * 60);
+
         $bookings = [
             // 1. Pending — tomorrow, manicure 30min
-            ['user' => '6281338109102', 'layanan' => 'Manicure / Pedicure', 'tanggal' => $tomorrow,   'mulai' => '10:00:00', 'selesai' => '10:30:00', 'slot' => 1, 'status' => 'pending_verification', 'pay' => 'dp_uploaded', 'proof' => 'uploads/dp/sample.jpg', 'seq' => 1],
+            ['user' => '6281338109102', 'layanan' => 'Manicure / Pedicure', 'tanggal' => $tomorrow,        'mulai' => '10:00:00',     'selesai' => '10:30:00',     'slot' => 1, 'status' => 'pending_verification', 'pay' => 'dp_uploaded', 'proof' => 'uploads/dp/sample.jpg', 'seq' => 1],
             // 2. Accepted — tomorrow, facial 60min
-            ['user' => '6281234567001', 'layanan' => 'Facial',              'tanggal' => $tomorrow,   'mulai' => '13:00:00', 'selesai' => '14:00:00', 'slot' => 2, 'status' => 'accepted',             'pay' => 'dp_verified', 'proof' => 'uploads/dp/sample.jpg', 'seq' => 2],
+            ['user' => '6281234567001', 'layanan' => 'Facial',              'tanggal' => $tomorrow,        'mulai' => '13:00:00',     'selesai' => '14:00:00',     'slot' => 2, 'status' => 'accepted',             'pay' => 'dp_verified', 'proof' => 'uploads/dp/sample.jpg', 'seq' => 2],
             // 3. Accepted — day after, hair spa 90min
-            ['user' => '6281234567002', 'layanan' => 'Hair Spa',            'tanggal' => $dayAfter,   'mulai' => '15:00:00', 'selesai' => '16:30:00', 'slot' => 3, 'status' => 'accepted',             'pay' => 'dp_verified', 'proof' => 'uploads/dp/sample.jpg', 'seq' => 1],
+            ['user' => '6281234567002', 'layanan' => 'Hair Spa',            'tanggal' => $dayAfter,        'mulai' => '15:00:00',     'selesai' => '16:30:00',     'slot' => 3, 'status' => 'accepted',             'pay' => 'dp_verified', 'proof' => 'uploads/dp/sample.jpg', 'seq' => 1],
             // 4. Completed — last week
-            ['user' => '6281234567003', 'layanan' => 'Make Up',             'tanggal' => $oneWeekAgo, 'mulai' => '08:00:00', 'selesai' => '09:30:00', 'slot' => 3, 'status' => 'completed',            'pay' => 'dp_verified', 'proof' => null, 'seq' => 1],
+            ['user' => '6281234567003', 'layanan' => 'Make Up',             'tanggal' => $oneWeekAgo,      'mulai' => '08:00:00',     'selesai' => '09:30:00',     'slot' => 3, 'status' => 'completed',            'pay' => 'dp_verified', 'proof' => null, 'seq' => 1],
             // 5. Cancelled — today (history)
-            ['user' => '6281234567004', 'layanan' => 'Keramas',             'tanggal' => $today,      'mulai' => '11:00:00', 'selesai' => '11:30:00', 'slot' => 1, 'status' => 'cancelled',            'pay' => 'unpaid',      'proof' => null, 'seq' => 1],
+            ['user' => '6281234567004', 'layanan' => 'Keramas',             'tanggal' => $today,           'mulai' => '11:00:00',     'selesai' => '11:30:00',     'slot' => 1, 'status' => 'cancelled',            'pay' => 'unpaid',      'proof' => null, 'seq' => 1],
             // 6. Pending kemarin — kandidat auto-cancel (FASE 10 demo)
-            ['user' => '6281234567001', 'layanan' => 'Catok / Styling',     'tanggal' => $yesterday,  'mulai' => '12:00:00', 'selesai' => '12:30:00', 'slot' => 1, 'status' => 'pending_verification', 'pay' => 'dp_uploaded', 'proof' => 'uploads/dp/sample.jpg', 'seq' => 1],
+            ['user' => '6281234567001', 'layanan' => 'Catok / Styling',     'tanggal' => $yesterday,       'mulai' => '12:00:00',     'selesai' => '12:30:00',     'slot' => 1, 'status' => 'pending_verification', 'pay' => 'dp_uploaded', 'proof' => 'uploads/dp/sample.jpg', 'seq' => 1],
+            // 7. Accepted starting +25 min from NOW() — kandidat reminder (FASE 14C demo)
+            ['user' => '6281338109102', 'layanan' => 'Keramas',             'tanggal' => $reminderTanggal, 'mulai' => $reminderMulai, 'selesai' => $reminderSelesai, 'slot' => 1, 'status' => 'accepted',             'pay' => 'dp_verified', 'proof' => 'uploads/dp/sample.jpg', 'seq' => 9],
+        ];
+
+        $emailForPhone = [
+            '6281338109102' => 'winayagatar@gmail.com',
+            '6281234567001' => 'pramesti.demo@gmail.com',
+            '6281234567002' => 'wahyuni.demo@gmail.com',
+            '6281234567003' => 'aristina.demo@gmail.com',
+            '6281234567004' => 'bayu.demo@gmail.com',
         ];
 
         foreach ($bookings as $b) {
@@ -131,7 +149,7 @@ class SalonSeeder extends Seeder
                 'user_id' => $pelangganIds[$b['user']] ?? null,
                 'nama_pelanggan' => $this->namaForPhone($b['user']),
                 'nomor_hp_pelanggan' => $b['user'],
-                'email_pelanggan' => null,
+                'email_pelanggan' => $emailForPhone[$b['user']] ?? null,
                 'layanan_id' => (int) $l['id'],
                 'tanggal' => $b['tanggal'],
                 'slot_mulai' => $b['mulai'],
