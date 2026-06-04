@@ -10,6 +10,7 @@ class BookingModel extends BaseAppModel
         'layanan_id',
         'tanggal', 'slot_mulai', 'slot_selesai', 'jumlah_slot',
         'harga_layanan', 'dp_amount', 'dp_proof_path', 'payment_status',
+        'email_reminder_sent_at',
         'status', 'sumber', 'catatan',
         'wa_sent', 'verified_via', 'verified_at', 'completed_at', 'cancelled_at', 'cancelled_by',
         'rejection_reason', 'cancellation_reason',
