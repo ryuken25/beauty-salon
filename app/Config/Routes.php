@@ -18,18 +18,17 @@ $routes->get('cek-booking/(:segment)/batal', 'CekBooking::konfirmasiBatal/$1');
 $routes->post('cek-booking/(:segment)/batal', 'CekBooking::prosesBatal/$1');
 $routes->get('cek-booking-sukses/(:segment)', 'CekBooking::suksesBatal/$1');
 
-// ── Auth (admin & pemilik only — pelanggan tidak punya akun) ──
-$routes->match(['GET', 'POST'], 'login', 'Auth::login');
+// ── Auth: pelanggan (WA+password) di /login, /register, /lupa-password ─
+$routes->match(['GET', 'POST'], 'login', 'Auth::loginPelanggan');
+$routes->match(['GET', 'POST'], 'register', 'Auth::register');
+$routes->get('lupa-password', 'Auth::lupaPassword');
 $routes->match(['GET', 'POST'], 'logout', 'Auth::logout');
+// Auth: admin/pemilik (email+password) di /admin/login.
 $routes->match(['GET', 'POST'], 'admin/login', 'Auth::login');
 $routes->get('admin', 'Auth::login');
 $routes->match(['GET', 'POST'], 'admin/logout', 'Auth::logout');
 // /owner shortcut → operational dashboard (owner = admin superset).
 $routes->get('owner', static fn () => redirect()->to('/admin/dashboard'));
-// Legacy pelanggan URLs — login pelanggan dihapus; arahkan ke beranda.
-$routes->get('register', static fn () => redirect()->to('/'));
-$routes->get('pelanggan', static fn () => redirect()->to('/'));
-$routes->get('pelanggan/(:any)', static fn () => redirect()->to('/'));
 
 // ── Admin area — operasional (admin & pemilik) ────────────
 $routes->group('admin', ['filter' => 'admin'], static function ($routes) {

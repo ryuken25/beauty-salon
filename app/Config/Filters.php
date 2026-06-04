@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Filters\AdminFilter;
+use App\Filters\CustomerFilter;
 use App\Filters\OwnerFilter;
 use App\Filters\PemilikFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
@@ -31,6 +32,7 @@ class Filters extends BaseFilters
         'admin'         => AdminFilter::class,
         'owner'         => OwnerFilter::class,
         'pemilik'       => PemilikFilter::class,
+        'customer'      => CustomerFilter::class,
         'csrf'          => CSRF::class,
         'toolbar'       => DebugToolbar::class,
         'honeypot'      => Honeypot::class,
