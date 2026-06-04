@@ -136,16 +136,19 @@ test('pemilik bisa buka /owner/laporan', async ({ page }) => {
   await expect(page).toHaveURL(/\/owner\/laporan/);
 });
 
-// ── 11. /cek-booking minta nomor WA saja, lalu list ──────────────
-test('/cek-booking: nomor WA → list booking', async ({ page }) => {
+// ── 11. /cek-booking minta KODE booking (bukan nomor WA) ─────────
+test('/cek-booking: kode booking → tampil detail', async ({ page }) => {
   await page.goto('/cek-booking');
-  // Single nomor_hp input
-  await expect(page.locator('input[name="nomor_hp"]')).toBeVisible();
-  await expect(page.locator('input[name="kode_booking"]')).toHaveCount(0);
+  // Form sekarang hanya menerima kode_booking; nomor_hp dihapus.
+  await expect(page.locator('input[name="kode_booking"]')).toBeVisible();
+  await expect(page.locator('input[name="nomor_hp"]')).toHaveCount(0);
 
-  await page.fill('input[name="nomor_hp"]', PEL_HP);
+  // Seeder menjamin SW-20260605-001 (pending_verification) selalu ada.
+  await page.fill('input[name="kode_booking"]', 'SW-20260605-001');
   await page.click('button[type="submit"]');
-  await expect(page.locator('text=/Ditemukan/i').first()).toBeVisible();
+  await expect(page.locator('text=SW-20260605-001').first()).toBeVisible();
+  // Guest tidak boleh bisa cancel — tombol Batalkan hanya muncul kalau login.
+  await expect(page.locator('text=/Login untuk membatalkan/i')).toBeVisible();
 });
 
 // ── 12. Booking form (logged-in) shows DP card + upload ──────────
