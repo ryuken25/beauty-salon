@@ -30,6 +30,11 @@ $routes->match(['GET', 'POST'], 'admin/logout', 'Auth::logout');
 // /owner shortcut → operational dashboard (owner = admin superset).
 $routes->get('owner', static fn () => redirect()->to('/admin/dashboard'));
 
+// ── Pelanggan area (akun pelanggan only) ──────────────────
+$routes->group('pelanggan', ['filter' => 'customer'], static function ($routes) {
+    $routes->get('dashboard', 'Pelanggan::dashboard');
+});
+
 // ── Admin area — operasional (admin & pemilik) ────────────
 $routes->group('admin', ['filter' => 'admin'], static function ($routes) {
     $routes->get('dashboard', 'Admin\Dashboard::index');
