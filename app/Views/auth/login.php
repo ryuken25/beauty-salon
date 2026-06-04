@@ -26,7 +26,7 @@ $dashUrl = in_array($currentRole, ['admin', 'pemilik'], true) ? base_url('admin/
     </div>
   <?php endif ?>
 
-  <form method="post" action="<?= base_url('login') ?>" style="text-align:left;">
+  <form method="post" action="<?= base_url('admin/login') ?>" style="text-align:left;">
     <?= csrf_field() ?>
     <div class="mb-2">
       <label class="form-salon-label">Email</label>
