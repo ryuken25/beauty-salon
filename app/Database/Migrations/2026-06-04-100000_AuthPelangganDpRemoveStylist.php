@@ -22,8 +22,10 @@ class AuthPelangganDpRemoveStylist extends Migration
     {
         $db = $this->db;
 
-        // ── 1. Re-enable 'pelanggan' role on users ────────────────
+        // ── 1. Re-enable 'pelanggan' role on users + make email nullable
+        //       (pelanggan login pakai nomor WA — email opsional).
         $db->query("ALTER TABLE users MODIFY COLUMN role ENUM('admin','pemilik','pelanggan') NOT NULL");
+        $db->query('ALTER TABLE users MODIFY COLUMN email VARCHAR(150) NULL');
 
         // ── 2. Unique index on users.nomor_hp (MySQL allows many NULLs) ─
         if (! $this->hasIndex('users', 'users_nomor_hp_unique')) {
