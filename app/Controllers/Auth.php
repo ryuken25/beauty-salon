@@ -70,6 +70,7 @@ class Auth extends BaseController
         if ($this->request->getMethod() === 'POST') {
             $rules = [
                 'nama' => 'required|min_length[3]|max_length[100]',
+                'email' => 'required|valid_email|max_length[150]|is_unique[users.email]',
                 'nomor_hp' => 'required|regex_match[/^(\+?62|0)8[0-9]{7,12}$/]',
                 'password' => 'required|min_length[8]',
                 'password_confirm' => 'required|matches[password]',
@@ -82,8 +83,9 @@ class Auth extends BaseController
             if ($userModel->where('nomor_hp', $phone)->first()) {
                 return redirect()->back()->withInput()->with('error', 'Nomor WhatsApp sudah terdaftar. Silakan login.');
             }
+            $email = strtolower(trim((string) $this->request->getPost('email')));
             $userModel->insert([
-                'email' => null,
+                'email' => $email,
                 'password_hash' => password_hash((string) $this->request->getPost('password'), PASSWORD_BCRYPT),
                 'nama' => trim((string) $this->request->getPost('nama')),
                 'nomor_hp' => $phone,

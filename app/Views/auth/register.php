@@ -19,6 +19,11 @@
       <div class="form-salon-help">Nomor ini akan dipakai untuk login dan kontak booking.</div>
     </div>
     <div class="mb-2">
+      <label class="form-salon-label">Email</label>
+      <input class="form-salon-input" type="email" name="email" required value="<?= esc(old('email')) ?>" placeholder="nama@gmail.com">
+      <div class="form-salon-help">Konfirmasi &amp; pengingat booking dikirim ke email ini.</div>
+    </div>
+    <div class="mb-2">
       <label class="form-salon-label">Password (min 8 karakter)</label>
       <input class="form-salon-input" type="password" name="password" required minlength="8">
     </div>
