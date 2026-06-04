@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**SW Beauty Salon** — CodeIgniter 4 booking app for a salon in Tabanan, Bali. Booking is **fully public** — customers do not have accounts. Login at `/login` is for **admin & pemilik only** (2 actors). Stack: PHP 8.1+, MySQL/MariaDB, Bootstrap 5 + Bootstrap Icons + Chart.js via CDN, WhatsApp manual via `wa.me`. **No Telegram integration.**
+**SW Beauty Salon** — CodeIgniter 4 booking app for a salon in Tabanan, Bali. As of 2026-06-04: customers **must have accounts**. Pelanggan login at `/login` (nomor WA + password); staff (admin/pemilik) login at `/admin/login` (email + password). Stack: PHP 8.1+, MySQL/MariaDB, Bootstrap 5 + Bootstrap Icons + Chart.js via CDN, WhatsApp manual via `wa.me`. **No Telegram integration, no stylist.**
 
 ## Common Commands
 
@@ -25,16 +25,18 @@ php -r "foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator('.
 ```
 
 Demo accounts (password `Password123!`):
-- Pemilik: `owner@swbeautysalon.local`
-- Admin: `admin@swbeautysalon.local`
+- Pemilik: `owner@swbeautysalon.local` (via `/admin/login`)
+- Admin: `admin@swbeautysalon.local` (via `/admin/login`)
+- Pelanggan: nomor WA `6281338109102` (via `/login`)
 
 ## Architecture
 
 ### Roles & access
-- Customer flow is **fully public** (no auth, no account). Booking by name + WhatsApp number (+ optional email); lookup status & self-cancel at `/cek-booking` by HP number with a confirm modal; admin can also cancel from the dashboard.
-- Login lives at `/login` (alias `/admin/login`) — **admin & pemilik only**, not linked from the public navbar.
-- **Pemilik = Admin superset.** One unified [layouts/panel.php](app/Views/layouts/panel.php) with a role-aware sidebar. `/admin/*` (filter `admin` = admin + pemilik): dashboard, booking verify/reject/cancel/complete, walk-in, jadwal, pelanggan, transaksi, pengaturan. `/owner/*` (filter `owner` = pemilik only): laporan (analytics), layanan CRUD, stylist CRUD. Admin typing `/owner/*` gets bounced to `/admin/dashboard`.
-- Stylist is a labelled attribute on each booking — full CRUD with soft delete at `/owner/stylist`. Slots stay salon-wide (stylist is not a slot dimension).
+- **Pelanggan = customer accounts.** Register `/register` (nama + nomor WA + password), login `/login` (nomor WA + password). Reset password admin-only (`/admin/pelanggan`); `/lupa-password` is info-only.
+- **Staff** (admin/pemilik) login separately at `/admin/login` (email + password). Two-form split so neither side can authenticate the other role.
+- Booking (`/booking` + `/booking/sukses/{kode}`) sits behind the `customer` filter — guests bounce to `/login`. Pelanggan dashboard `/pelanggan/dashboard` is history-only (booking own + 'Cek/Batal' deep link).
+- **Pemilik = Admin superset.** One unified [layouts/panel.php](app/Views/layouts/panel.php) with a role-aware sidebar. `/admin/*` (filter `admin` = admin + pemilik): dashboard, booking verify/reject/cancel/complete + DP-verify, walk-in, jadwal, pelanggan account management, transaksi, pengaturan. `/owner/*` (filter `owner` = pemilik only): laporan (analytics), layanan CRUD. Admin typing `/owner/*` gets bounced to `/admin/dashboard`.
+- Public `/cek-booking` (no auth): nomor WA only → list every booking on that number → dedicated cancel pages.
 
 ### Fixed-slot domain (load-bearing)
 - All times are 30-minute slots from `jam_buka` to `jam_tutup` (default 08:00–19:00, settable in `/admin/pengaturan`).
@@ -48,8 +50,8 @@ Demo accounts (password `Password123!`):
 - [WhatsAppTemplateService](app/Services/WhatsAppTemplateService.php) — renders templates from settings, builds `wa.me` links. Manual-only — never integrate a paid WhatsApp API.
 
 ### Schema (Indonesian column names)
-- `users` (admin & pemilik only — no pelanggan role), `layanan` (soft delete), `stylists` (soft delete), `bookings` (`kode_booking` format `SW-YYYYMMDD-NNN`, `nama_pelanggan`, `nomor_hp_pelanggan`, `email_pelanggan` nullable, `layanan_id`, `stylist_id` nullable, `slot_mulai`, `slot_selesai`, `jumlah_slot`, status, `cancellation_reason`, …), `booking_slots`, `transaksi`, `settings` (key/value), `booking_logs`.
-- Baseline migration: `2026-05-12-100000_ResetAndCreateSalonSchema.php`. Add NEW dated migrations for any further schema change — **never** rely on `$db->getFieldNames()` inside a migration (CI4 caches it for the whole migrate run; probe `information_schema` instead).
+- `users` (roles admin/pemilik/pelanggan; `email` nullable; `nomor_hp` UNIQUE — MySQL allows many NULLs for staff rows), `layanan` (soft delete), `bookings` (`kode_booking` format `SW-YYYYMMDD-NNN`, `user_id` FK→users nullable for walk-in, `nama_pelanggan`, `nomor_hp_pelanggan`, `email_pelanggan` nullable, `layanan_id`, `slot_mulai`, `slot_selesai`, `jumlah_slot`, `harga_layanan`, `dp_amount`, `dp_proof_path`, `payment_status` ENUM('unpaid','dp_uploaded','dp_verified'), status, `cancellation_reason`, …), `booking_slots` (the column is `slot_waktu`, not `slot` — bites in seeders), `transaksi` (`booking_id`, `nominal`, `base_price`, `additional_price`, `metode_bayar`, `tanggal_transaksi`, `catatan` — no `kode_transaksi`), `settings` (key/value), `booking_logs`.
+- Baseline: `2026-05-12-100000_ResetAndCreateSalonSchema.php`. Latest: `2026-06-04-100000_AuthPelangganDpRemoveStylist.php`. Add NEW dated migrations for any further schema change — **never** rely on `$db->getFieldNames()` inside a migration (CI4 caches it for the whole migrate run; probe `information_schema` instead).
 
 ### Booking status vocabulary
 | Internal | UI label | Slot held? |
@@ -70,8 +72,9 @@ Customer self-cancels at `/cek-booking`: enter HP → see bookings → "Batalkan
 - **Stack lock:** PHP 8.1+, CodeIgniter 4, MySQL, Bootstrap 5, Chart.js. No React/Vue/Tailwind/Sass/build tools. Custom CSS lives in [public/assets/css/salon-theme.css](public/assets/css/salon-theme.css).
 - **No paid WhatsApp API.** `wa.me` links + copy-to-clipboard templates only.
 - **No payment gateway**, no ML/AI/forecasting, no multi-branch, no inventory.
-- **Customer tidak punya akun.** Booking anonymous (nama + HP + email opsional). Cancel lewat kode + HP. No `/register`, no pelanggan login.
-- **Login URL tidak ditampilkan di navbar publik.**
+- **Customer wajib login** untuk booking. `/register` aktif (nama + nomor WA + password). `/cek-booking` publik (nomor WA only) untuk lookup/cancel tanpa login.
+- **DP rule**: harga ≤ Rp 50.000 → DP penuh; > 50.000 → DP Rp 50.000. Wajib upload bukti saat booking online. Walk-in (admin) tidak butuh DP.
+- **Auto-cancel**: booking pending yang lewat jadwal dibatalkan via `php spark bookings:auto-cancel` (jadwalkan Task Scheduler/cron) + lazy sweep (max 1× per 5 menit) di admin dashboard + booking index.
 - **Jam operasional & range hari** dapat diubah di Pengaturan; default 08:00–19:00 dan 7 hari ke depan.
 - **Bahasa Indonesia** di semua label UI dan error message.
 
