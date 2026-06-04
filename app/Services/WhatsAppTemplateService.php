@@ -67,8 +67,7 @@ class WhatsAppTemplateService
             . "Kode Booking : {$booking['kode_booking']}\n"
             . "Nama         : {$booking['nama_pelanggan']}\n"
             . "Tanggal      : {$tanggal} pukul {$jam}\n"
-            . "Layanan      : {$booking['nama_layanan']}\n"
-            . 'Stylist      : ' . ($booking['nama_stylist'] ?? '-') . "\n\n"
+            . "Layanan      : {$booking['nama_layanan']}\n\n"
             . "Alasan: {$alasan}\n\n"
             . 'Terima kasih atas pengertiannya.';
     }

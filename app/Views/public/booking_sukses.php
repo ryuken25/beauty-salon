@@ -23,9 +23,6 @@
   <div class="card-salon mt-3">
     <table style="width:100%; font-size:0.875rem;">
       <tr><td class="label">Layanan</td><td class="text-right"><?= esc($booking['nama_layanan']) ?></td></tr>
-      <?php if (! empty($booking['nama_stylist'])): ?>
-        <tr><td class="label">Stylist</td><td class="text-right"><?= esc($booking['nama_stylist']) ?></td></tr>
-      <?php endif ?>
       <tr><td class="label">Tanggal</td><td class="text-right"><?= esc($tanggalLabel) ?></td></tr>
       <tr><td class="label">Jam</td><td class="text-right" style="font-weight:500;"><?= esc(substr($booking['slot_mulai'], 0, 5)) ?> – <?= esc(substr($booking['slot_selesai'], 0, 5)) ?></td></tr>
       <tr><td class="label">Estimasi total</td><td class="text-right" style="font-weight:500;">Rp <?= number_format((int) $booking['harga_layanan'], 0, ',', '.') ?></td></tr>

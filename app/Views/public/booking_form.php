@@ -43,21 +43,6 @@ $today = date('Y-m-d');
     </div>
   </div>
 
-  <div class="card-salon mb-3">
-    <div class="h2 mb-2">Pilih stylist</div>
-    <?php if (empty($stylists)): ?>
-      <div class="caption" style="color:var(--color-danger);">Belum ada stylist aktif. Silakan hubungi salon via WhatsApp.</div>
-    <?php else: ?>
-      <select class="form-salon-select" name="stylist_id" id="stylistSelect" required>
-        <option value="">— Pilih stylist —</option>
-        <?php foreach ($stylists as $st): ?>
-          <option value="<?= $st['id'] ?>" <?= old('stylist_id') == $st['id'] ? 'selected' : '' ?>>
-            <?= esc($st['nama']) ?><?= $st['spesialisasi'] ? ' — ' . esc($st['spesialisasi']) : '' ?>
-          </option>
-        <?php endforeach ?>
-      </select>
-    <?php endif ?>
-  </div>
 
   <div class="card-salon mb-3">
     <div class="h2 mb-2">Pilih layanan</div>
@@ -243,25 +228,19 @@ function updateSummary() {
     const endMin = toMin(state.slot) + state.durasi;
     info.innerHTML = '🔒 Slot ditahan: <strong>' + state.slot + ' – ' + fromMin(endMin) + '</strong> (' + state.durasi + ' menit)';
   } else { info.textContent = ''; }
-  const stylistEl = document.getElementById('stylistSelect');
-  const stylistOk = stylistEl && stylistEl.value !== '';
   const text = document.getElementById('summaryText');
-  if (state.layananId && state.tanggal && state.slot && stylistOk) {
+  if (state.layananId && state.tanggal && state.slot) {
     const endMin = toMin(state.slot) + state.durasi;
     text.innerHTML = '<strong>' + layananName + '</strong> · ' + state.tanggal + ' · ' + state.slot + '–' + fromMin(endMin) + ' · ' + layananHarga;
     document.getElementById('submitBtn').disabled = false;
-  } else if (state.layananId && state.tanggal && state.slot && !stylistOk) {
-    text.textContent = 'Pilih stylist dulu untuk menyelesaikan booking.';
-    document.getElementById('submitBtn').disabled = true;
   } else {
-    text.textContent = 'Pilih layanan, stylist, tanggal, dan jam untuk melihat ringkasan.';
+    text.textContent = 'Pilih layanan, tanggal, dan jam untuk melihat ringkasan.';
     document.getElementById('submitBtn').disabled = true;
   }
 }
 
 document.querySelectorAll('#layananList .card-salon').forEach((c) => { c.onclick = () => pickLayanan(c); if (c.querySelector('input').checked) pickLayanan(c); });
 document.querySelectorAll('#dateStrip .date-strip-item').forEach((c) => { c.onclick = () => pickDate(c); if (c.dataset.tanggal === state.tanggal) pickDate(c); });
-(function () { const s = document.getElementById('stylistSelect'); if (s) s.addEventListener('change', updateSummary); })();
 </script>
 
 <?= $this->endSection() ?>

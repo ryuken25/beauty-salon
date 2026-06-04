@@ -60,8 +60,4 @@ $routes->group('owner', ['filter' => 'owner'], static function ($routes) {
     $routes->post('layanan/(:num)/update', 'Owner\LayananController::update/$1');
     $routes->post('layanan/(:num)/delete', 'Owner\LayananController::delete/$1');
 
-    $routes->get('stylist', 'Owner\StylistController::index');
-    $routes->post('stylist', 'Owner\StylistController::store');
-    $routes->post('stylist/(:num)/update', 'Owner\StylistController::update/$1');
-    $routes->post('stylist/(:num)/delete', 'Owner\StylistController::delete/$1');
 });

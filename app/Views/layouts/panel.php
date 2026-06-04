@@ -48,7 +48,6 @@ if (! function_exists('panel_active')) {
       <div class="sidebar-admin__group">Manajerial</div>
       <a class="sidebar-admin__item <?= panel_active('owner/laporan', $uri) ?>" href="<?= base_url('owner/laporan') ?>"><i class="bi bi-bar-chart-line"></i><span>Laporan</span></a>
       <a class="sidebar-admin__item <?= panel_active('owner/layanan', $uri) ?>" href="<?= base_url('owner/layanan') ?>"><i class="bi bi-scissors"></i><span>Layanan</span></a>
-      <a class="sidebar-admin__item <?= panel_active('owner/stylist', $uri) ?>" href="<?= base_url('owner/stylist') ?>"><i class="bi bi-person-badge"></i><span>Stylist</span></a>
     <?php endif ?>
 
     <div class="sidebar-admin__spacer"></div>

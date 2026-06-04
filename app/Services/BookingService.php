@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\BookingModel;
 use App\Models\LayananModel;
-use App\Models\StylistModel;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use RuntimeException;
 
@@ -31,13 +30,6 @@ class BookingService
             throw new RuntimeException('Layanan tidak valid.');
         }
 
-        // Stylist is required; must be an active, non-deleted stylist.
-        $stylistId = isset($data['stylist_id']) ? (int) $data['stylist_id'] : 0;
-        $stylist = $stylistId ? (new StylistModel())->where('is_active', 1)->find($stylistId) : null;
-        if (! $stylist) {
-            throw new RuntimeException('Stylist tidak valid atau tidak tersedia.');
-        }
-
         $email = isset($data['email_pelanggan']) ? trim((string) $data['email_pelanggan']) : '';
 
         $db = db_connect();
@@ -55,7 +47,6 @@ class BookingService
                 'nomor_hp_pelanggan' => $phone,
                 'email_pelanggan' => $email !== '' ? $email : null,
                 'layanan_id' => (int) $layanan['id'],
-                'stylist_id' => (int) $stylist['id'],
                 'tanggal' => $data['tanggal'],
                 'slot_mulai' => $validation['slot_mulai'] . ':00',
                 'slot_selesai' => $validation['slot_selesai'] . ':00',

@@ -26,27 +26,13 @@ $today = date('Y-m-d');
   </div>
 
   <div class="card-salon mb-2">
-    <div class="h2 mb-2">Layanan &amp; Stylist</div>
-    <div class="row-salon cols-2">
-      <div>
-        <label class="form-salon-label">Layanan *</label>
-        <select class="form-salon-select" name="layanan_id" id="layanan_id" required>
-          <option value="">Pilih layanan</option>
-          <?php foreach ($layanans as $l): ?>
-            <option value="<?= $l['id'] ?>" data-durasi="<?= $l['durasi_menit'] ?>"><?= esc($l['nama']) ?> · <?= $l['durasi_menit'] ?> menit · Rp <?= number_format((int) $l['harga'], 0, ',', '.') ?></option>
-          <?php endforeach ?>
-        </select>
-      </div>
-      <div>
-        <label class="form-salon-label">Stylist *</label>
-        <select class="form-salon-select" name="stylist_id" required>
-          <option value="">Pilih stylist</option>
-          <?php foreach ($stylists as $st): ?>
-            <option value="<?= $st['id'] ?>"><?= esc($st['nama']) ?><?= $st['spesialisasi'] ? ' — ' . esc($st['spesialisasi']) : '' ?></option>
-          <?php endforeach ?>
-        </select>
-      </div>
-    </div>
+    <div class="h2 mb-2">Layanan</div>
+    <select class="form-salon-select" name="layanan_id" id="layanan_id" required>
+      <option value="">Pilih layanan</option>
+      <?php foreach ($layanans as $l): ?>
+        <option value="<?= $l['id'] ?>" data-durasi="<?= $l['durasi_menit'] ?>"><?= esc($l['nama']) ?> · <?= $l['durasi_menit'] ?> menit · Rp <?= number_format((int) $l['harga'], 0, ',', '.') ?></option>
+      <?php endforeach ?>
+    </select>
   </div>
 
   <div class="card-salon mb-2">

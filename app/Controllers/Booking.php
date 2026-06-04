@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Models\BookingModel;
 use App\Models\LayananModel;
 use App\Models\SettingModel;
-use App\Models\StylistModel;
 use App\Services\BookingService;
 use App\Services\SlotService;
 use App\Services\WhatsAppTemplateService;
@@ -34,7 +33,6 @@ class Booking extends BaseController
                 'nomor_hp_pelanggan' => 'required|regex_match[/^(\+?62|0)8[0-9]{7,12}$/]',
                 'email_pelanggan' => 'permit_empty|valid_email|max_length[150]',
                 'layanan_id' => 'required|is_natural_no_zero',
-                'stylist_id' => 'required|is_natural_no_zero',
                 'tanggal' => 'required|valid_date[Y-m-d]',
                 'slot_mulai' => 'required|regex_match[/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/]',
             ];
@@ -47,7 +45,6 @@ class Booking extends BaseController
                     'nomor_hp_pelanggan' => $this->request->getPost('nomor_hp_pelanggan'),
                     'email_pelanggan' => $this->request->getPost('email_pelanggan'),
                     'layanan_id' => (int) $this->request->getPost('layanan_id'),
-                    'stylist_id' => (int) $this->request->getPost('stylist_id'),
                     'tanggal' => $this->request->getPost('tanggal'),
                     'slot_mulai' => $this->request->getPost('slot_mulai'),
                     'catatan' => $this->request->getPost('catatan'),
@@ -69,7 +66,6 @@ class Booking extends BaseController
         }
         return view('public/booking_form', [
             'layanans' => (new LayananModel())->where('is_active', 1)->orderBy('kategori')->orderBy('nama')->find(),
-            'stylists' => (new StylistModel())->activeForBooking(),
             'all_slots' => $slot->allSlots(),
             'dates' => $dates,
             'preselect_layanan_id' => (int) ($this->request->getGet('layanan_id') ?? 0),

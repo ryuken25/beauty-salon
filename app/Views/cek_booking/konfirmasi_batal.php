@@ -14,7 +14,6 @@
       <tr><td class="label">Kode</td><td class="text-right"><strong><?= esc($booking['kode_booking']) ?></strong></td></tr>
       <tr><td class="label">Nama</td><td class="text-right"><?= esc($booking['nama_pelanggan']) ?></td></tr>
       <tr><td class="label">Layanan</td><td class="text-right"><?= esc($booking['nama_layanan']) ?></td></tr>
-      <tr><td class="label">Stylist</td><td class="text-right"><?= esc($booking['nama_stylist'] ?? '—') ?></td></tr>
       <tr><td class="label">Tanggal</td><td class="text-right"><?= esc(date('d M Y', strtotime($booking['tanggal']))) ?></td></tr>
       <tr><td class="label">Jam</td><td class="text-right" style="font-weight:500;"><?= esc(substr($booking['slot_mulai'], 0, 5)) ?> – <?= esc(substr($booking['slot_selesai'], 0, 5)) ?></td></tr>
       <tr><td class="label">Total</td><td class="text-right" style="font-weight:500;">Rp <?= number_format((int) $booking['harga_layanan'], 0, ',', '.') ?></td></tr>
