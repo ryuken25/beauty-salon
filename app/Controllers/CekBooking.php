@@ -16,25 +16,23 @@ class CekBooking extends BaseController
 {
     private const CANCELABLE = ['pending_verification', 'accepted'];
 
-    /** Form + (on POST) inline booking detail. */
+    /** Form (nomor WA only) + on POST a list of every booking on that number. */
     public function index()
     {
-        $data = ['kode' => '', 'phone' => '', 'booking' => null, 'cancelable' => false];
+        $data = ['phone' => '', 'bookings' => null];
 
         if ($this->request->getMethod() === 'POST') {
-            $kode = strtoupper(trim((string) $this->request->getPost('kode_booking')));
             $phone = (new BookingService())->normalizePhone((string) $this->request->getPost('nomor_hp'));
-            $data['kode'] = $kode;
             $data['phone'] = $phone;
-
-            $booking = $this->verified($kode, $phone);
-            if ($booking === null) {
-                return redirect()->back()->withInput()->with('error', 'Kode booking dan nomor HP tidak cocok. Periksa kembali.');
+            if ($phone === '') {
+                return redirect()->back()->withInput()->with('error', 'Nomor WhatsApp tidak valid.');
             }
-            $data['booking'] = $booking;
-            $data['cancelable'] = in_array($booking['status'], self::CANCELABLE, true);
+            $rows = (new BookingModel())->findByNomorHp($phone);
+            $data['bookings'] = $rows;
+            if (empty($rows)) {
+                return redirect()->back()->withInput()->with('error', 'Tidak ada booking untuk nomor ini.');
+            }
         }
-
         return view('cek_booking/index', $data);
     }
 
