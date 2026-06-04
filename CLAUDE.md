@@ -72,7 +72,7 @@ Dua jalur batal customer-side (logika sama: ≥ 2 jam sebelum `slot_mulai`, stat
   - **Publik dari /cek-booking**: hanya kalau user login sebagai pelanggan, jalur ini di-redirect ke jalur pertama (rekomendasi keamanan B). Walk-in (tanpa akun) hanya bisa dibatalkan admin.
 Logic di [BookingService::cancel](app/Services/BookingService.php). Admin juga bisa cancel dari `/admin/booking/{id}`. **Halaman sukses-batal tidak memuat tombol WhatsApp** — pembatalan sudah otomatis tercatat di sistem; admin lihat di panel.
 
-## Hard constraints (from IMPLEMENTATION_PLAN aka [implementation.md](implementation.md))
+## Hard constraints
 
 - **Stack lock:** PHP 8.1+, CodeIgniter 4, MySQL, Bootstrap 5, Chart.js. No React/Vue/Tailwind/Sass/build tools. Custom CSS lives in [public/assets/css/salon-theme.css](public/assets/css/salon-theme.css).
 - **No paid WhatsApp API.** `wa.me` links + copy-to-clipboard templates only.
@@ -84,7 +84,6 @@ Logic di [BookingService::cancel](app/Services/BookingService.php). Admin juga b
 - **Bahasa Indonesia** di semua label UI dan error message.
 
 ## Docs
-- [implementation.md](implementation.md) — IMPLEMENTATION_PLAN lengkap.
 - [docs/ERD.md](docs/ERD.md) — schema overview.
 - [docs/BLACKBOX_TESTING.md](docs/BLACKBOX_TESTING.md) — skenario uji.
 - [docs/SUS.md](docs/SUS.md) — instrumen System Usability Scale.

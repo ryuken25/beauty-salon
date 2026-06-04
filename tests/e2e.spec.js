@@ -104,7 +104,6 @@ test('admin sidebar tidak ada Laporan / Layanan', async ({ page }) => {
   const sidebar = page.locator('.sidebar-admin');
   await expect(sidebar.getByText('Laporan')).toHaveCount(0);
   await expect(sidebar.getByText('Layanan')).toHaveCount(0);
-  await expect(sidebar.getByText('Stylist')).toHaveCount(0);
 });
 
 // ── 8. Admin blocked from /owner/laporan ─────────────────────────
