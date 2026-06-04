@@ -15,11 +15,13 @@ class BookingController extends BaseController
 {
     public function index()
     {
-        // Lazy sweep (throttled 5 min via cache). Production should still
-        // schedule `php spark bookings:auto-cancel`.
-        if (! cache('auto_cancel_last_run')) {
-            cache()->save('auto_cancel_last_run', time(), 300);
-            (new BookingService())->autoCancelExpired();
+        // Lazy sweep tick (auto-cancel + due reminders), throttled 5 min.
+        // Production should still schedule the two Spark commands.
+        if (! cache('notify_tick_last_run')) {
+            cache()->save('notify_tick_last_run', time(), 300);
+            $svc = new BookingService();
+            $svc->autoCancelExpired();
+            $svc->sendDueReminders();
         }
         $db = db_connect();
         $builder = $db->table('bookings b')

@@ -46,14 +46,16 @@ class Dashboard extends BaseController
     }
 
     /**
-     * Best-effort cron-less sweep. Throttled to 1× per 5 minutes via
-     * cache so a busy admin page doesn't run it on every click.
-     * Production should still schedule `php spark bookings:auto-cancel`.
+     * Cron-less sweep tick — runs auto-cancel + due reminders once per
+     * 5 minutes via cache. Production should still schedule both
+     * `php spark bookings:auto-cancel` and `bookings:send-reminders`.
      */
     private function autoCancelSweep(): void
     {
-        if (cache('auto_cancel_last_run')) return;
-        cache()->save('auto_cancel_last_run', time(), 300);
-        (new BookingService())->autoCancelExpired();
+        if (cache('notify_tick_last_run')) return;
+        cache()->save('notify_tick_last_run', time(), 300);
+        $svc = new BookingService();
+        $svc->autoCancelExpired();
+        $svc->sendDueReminders();
     }
 }

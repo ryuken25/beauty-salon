@@ -185,12 +185,11 @@ class BookingService
     public function autoCancelExpired(): int
     {
         $db = db_connect();
-        $now = date('Y-m-d H:i:s');
-        // Raw query: builder mis-quotes a CONCAT(...) on the LHS of a where().
+        // Pakai NOW() langsung — PHP & MySQL bisa beda timezone.
         $expired = $db->query(
-            "SELECT id FROM bookings WHERE status = 'pending_verification' AND CONCAT(tanggal, ' ', slot_mulai) < ?",
-            [$now]
+            "SELECT id FROM bookings WHERE status = 'pending_verification' AND CONCAT(tanggal, ' ', slot_mulai) < NOW()"
         )->getResultArray();
+        $now = date('Y-m-d H:i:s');
         $count = 0;
         foreach ($expired as $row) {
             $bookingId = (int) $row['id'];
@@ -214,6 +213,52 @@ class BookingService
             $this->logEvent($bookingId, 'cancelled', 'system', 'system', [
                 'reason' => 'expired_no_verification',
             ]);
+            $count++;
+        }
+        return $count;
+    }
+
+    /**
+     * FASE 14C — kirim email pengingat 30 menit sebelum sesi.
+     * Kandidat: status='accepted' DAN email_pelanggan ada DAN
+     * email_reminder_sent_at NULL DAN slot_mulai ada dalam (now, now+30min].
+     *
+     * Flag email_reminder_sent_at di-set walaupun NotificationService
+     * disabled atau alamat kosong — supaya satu booking tidak terus
+     * ikut polling setiap 5 menit selama 30 menit ke depan.
+     *
+     * @return int Jumlah baris yang sudah ditangani (terkirim atau di-skip).
+     */
+    public function sendDueReminders(): int
+    {
+        $db = db_connect();
+        // Pakai NOW() langsung di SQL — PHP & MySQL bisa beda timezone
+        // (PHP default UTC vs MySQL server lokal); kedua sisi window harus
+        // datang dari clock yang sama.
+        $candidates = $db->query(
+            "SELECT b.id FROM bookings b
+             WHERE b.status = 'accepted'
+               AND b.email_pelanggan IS NOT NULL AND b.email_pelanggan <> ''
+               AND b.email_reminder_sent_at IS NULL
+               AND CONCAT(b.tanggal, ' ', b.slot_mulai) > NOW()
+               AND CONCAT(b.tanggal, ' ', b.slot_mulai) <= DATE_ADD(NOW(), INTERVAL 30 MINUTE)"
+        )->getResultArray();
+        if (empty($candidates)) return 0;
+
+        $notif = new NotificationService();
+        $model = new BookingModel();
+        $count = 0;
+        foreach ($candidates as $row) {
+            $bookingId = (int) $row['id'];
+            $detail = $model->detail($bookingId);
+            if (! $detail) continue;
+            try {
+                $notif->sendBookingReminder($detail);
+            } catch (\Throwable $e) {
+                log_message('error', 'sendBookingReminder gagal: ' . $e->getMessage());
+            }
+            // Set flag apa pun hasilnya — supaya tidak terus diproses.
+            $model->update($bookingId, ['email_reminder_sent_at' => date('Y-m-d H:i:s')]);
             $count++;
         }
         return $count;
