@@ -75,11 +75,18 @@ test('pelanggan login → /pelanggan/dashboard shows own bookings', async ({ pag
 test('register dengan nomor WA terdaftar ditolak', async ({ page }) => {
   await page.goto('/register');
   await page.fill('input[name="nama"]', 'Coba Dobel');
+  await page.fill('input[name="email"]', `coba-${Date.now()}@gmail.com`);
   await page.fill('input[name="nomor_hp"]', PEL_HP);
   await page.fill('input[name="password"]', 'rahasia123');
   await page.fill('input[name="password_confirm"]', 'rahasia123');
   await page.click('button[type="submit"]');
   await expect(page.locator('text=/sudah terdaftar/i')).toBeVisible();
+});
+
+// ── 5b. Register form requires email ─────────────────────────────
+test('register: email field wajib di form', async ({ page }) => {
+  await page.goto('/register');
+  await expect(page.locator('input[name="email"][required]')).toBeVisible();
 });
 
 // ── 6. /lupa-password is info only (no reset form) ───────────────
