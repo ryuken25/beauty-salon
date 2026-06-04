@@ -73,8 +73,16 @@ class Booking extends BaseController
         }
 
         $rangeHari = $slot->rangeHari();
+        // Awareness: salon hampir tutup hari ini → start dari besok.
+        $jamTutup = $slot->salonHours()['jam_tutup'];
+        $nowMin = (int) date('H') * 60 + (int) date('i');
+        [$hT, $mT] = array_map('intval', explode(':', $jamTutup));
+        $closeMin = $hT * 60 + $mT;
+        // Tutup kalau jam sekarang ≥ jam tutup, atau sisa waktu < 30 menit (1 slot).
+        $closedToday = ($nowMin + SlotService::SLOT_MINUTES) > $closeMin;
+        $offset = $closedToday ? 1 : 0;
         $dates = [];
-        for ($i = 0; $i <= $rangeHari; $i++) {
+        for ($i = $offset; $i <= $rangeHari; $i++) {
             $dates[] = date('Y-m-d', strtotime("+{$i} days"));
         }
         return view('public/booking_form', [
@@ -86,6 +94,8 @@ class Booking extends BaseController
             'qris_image_path' => $settings->getValue('qris_image_path', ''),
             'akun_nama' => session('user_nama'),
             'akun_hp' => session('user_hp'),
+            'closed_today' => $closedToday,
+            'jam_tutup' => $jamTutup,
         ]);
     }
 

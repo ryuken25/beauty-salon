@@ -6,6 +6,13 @@ $hariShort = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 $today = date('Y-m-d');
 ?>
 
+<?php if (! empty($closed_today)): ?>
+  <div class="alert-salon alert-salon--info" style="position:sticky; top:0.5rem; z-index:5; border-left:4px solid var(--gold); font-weight:500;">
+    <i class="bi bi-exclamation-triangle" style="color:var(--gold);"></i>
+    Salon hampir tutup (tutup pukul <?= esc($jam_tutup) ?>). Booking untuk hari ini sudah dialihkan ke hari berikutnya.
+  </div>
+<?php endif ?>
+
 <section class="section-header">
   <div class="h1">Booking Layanan</div>
   <span class="tagline">Pilih layanan, tanggal, dan jam yang nyaman untuk Anda</span>
