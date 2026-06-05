@@ -4,6 +4,7 @@ setlocal EnableDelayedExpansion
 echo === SW Beauty Salon - Auto Setup (Windows) ===
 echo.
 
+REM ── 1. Cek PHP & Composer ────────────────────────────────────
 where php >nul 2>nul
 if errorlevel 1 (
     echo [X] PHP tidak ditemukan di PATH.
@@ -20,14 +21,33 @@ if errorlevel 1 (
     exit /b 1
 )
 
+REM ── 2. Cari mysql.exe (PATH ^| Laragon ^| XAMPP) ──────────────
+set "MYSQL_EXE="
 where mysql >nul 2>nul
-if errorlevel 1 (
-    echo [!] Peringatan: 'mysql' CLI tidak ditemukan. Pastikan MySQL/MariaDB
-    echo     sudah jalan ^(Laragon: tombol Start All; XAMPP: Start MySQL^),
-    echo     lalu lanjutkan dengan menekan ENTER. Jika belum, batalkan dengan Ctrl+C.
-    pause
+if not errorlevel 1 (
+    set "MYSQL_EXE=mysql"
+) else (
+    if exist "C:\xampp\mysql\bin\mysql.exe" set "MYSQL_EXE=C:\xampp\mysql\bin\mysql.exe"
+    if not defined MYSQL_EXE (
+        for /d %%d in ("C:\laragon\bin\mysql\mysql-*") do (
+            if exist "%%d\bin\mysql.exe" set "MYSQL_EXE=%%d\bin\mysql.exe"
+        )
+    )
+    if not defined MYSQL_EXE if exist "D:\xampp\mysql\bin\mysql.exe" set "MYSQL_EXE=D:\xampp\mysql\bin\mysql.exe"
 )
 
+if defined MYSQL_EXE (
+    echo [i] mysql ditemukan: !MYSQL_EXE!
+) else (
+    echo [!] mysql CLI tidak ketemu otomatis di PATH/Laragon/XAMPP.
+    echo     Skrip akan coba lanjut, tapi pembuatan database mungkin gagal.
+    echo     Pastikan MySQL nyala ^(Laragon: Start All; XAMPP: Start MySQL^).
+    echo     Tekan ENTER untuk lanjut atau Ctrl+C untuk batal.
+    pause >nul
+)
+
+REM ── 3. composer install ─────────────────────────────────────
+echo.
 echo [1/5] composer install...
 call composer install --no-interaction
 if errorlevel 1 (
@@ -36,44 +56,72 @@ if errorlevel 1 (
     exit /b 1
 )
 
+REM ── 4. Siapkan .env ─────────────────────────────────────────
 echo.
 echo [2/5] Menyiapkan file .env...
 if not exist .env (
     copy .env.localhost .env >nul
     echo     .env disalin dari .env.localhost.
 ) else (
-    echo     .env sudah ada — dilewati.
+    echo     .env sudah ada - dilewati.
 )
 
+REM ── 5. Bikin database (coba root tanpa password, lalu password root) ─
 echo.
-echo [3/5] Membuat database sw_beauty_salon ^(akan dilewati jika sudah ada^)...
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>nul
-if errorlevel 1 (
-    echo [!] mysql CLI gagal — pastikan MySQL nyala dan user root tidak butuh password,
-    echo     atau buat manual lewat phpMyAdmin: database "sw_beauty_salon".
-    echo     Skrip akan lanjut; kalau migrate gagal di langkah berikutnya, perbaiki dulu.
+echo [3/5] Membuat database sw_beauty_salon...
+set "DB_CREATED="
+if defined MYSQL_EXE (
+    "!MYSQL_EXE!" -u root -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>nul
+    if not errorlevel 1 (
+        set "DB_CREATED=1"
+        echo     OK ^(root tanpa password^).
+    ) else (
+        "!MYSQL_EXE!" -u root -proot -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>nul
+        if not errorlevel 1 (
+            set "DB_CREATED=1"
+            echo     OK ^(root password 'root' - edit .env: database.default.password = root^).
+        )
+    )
+)
+if not defined DB_CREATED (
+    echo.
+    echo [X] Gagal bikin database otomatis. Bikin manual lewat phpMyAdmin:
+    echo     1. Buka http://localhost/phpmyadmin
+    echo     2. Tab "Databases" - nama: sw_beauty_salon - collation: utf8mb4_unicode_ci - klik Create
+    echo     3. Sesudah dibikin, jalankan ulang setup-windows.bat
+    echo.
+    pause
+    exit /b 1
 )
 
+REM ── 6. Migrate + seed ───────────────────────────────────────
 echo.
 echo [4/5] Migrate + seed ^(membuat tabel + data demo^)...
 call php spark migrate
 if errorlevel 1 (
-    echo [X] Migrate gagal. Pastikan MySQL jalan dan kredensial di .env benar.
+    echo.
+    echo [X] Migrate gagal. Cek .env - database.default.username/password
+    echo     harus cocok dengan MySQL Anda.
     pause
     exit /b 1
 )
 call php spark db:seed SalonSeeder
+if errorlevel 1 (
+    echo [!] db:seed gagal - tapi tabel sudah ada. Coba ulang manual:
+    echo       php spark db:seed SalonSeeder
+)
 
+REM ── 7. Info + jalankan server ───────────────────────────────
 echo.
 echo [5/5] Menjalankan server di http://localhost:8080
 echo     Akun demo:
-echo       Pemilik:   owner@swbeautysalon.local / Password123!
-echo       Admin:     admin@swbeautysalon.local / Password123!
-echo       Pelanggan: WA 6281338109102 / Password123! (email: winayagatar@gmail.com)
+echo       Pemilik:   owner@swbeautysalon.local / Password123! ^(di /admin/login^)
+echo       Admin:     admin@swbeautysalon.local / Password123! ^(di /admin/login^)
+echo       Pelanggan: WA 6281338109102          / Password123! ^(di /login^)
 echo.
-echo [i] Notifikasi email (opsional): buka .env, isi email.SMTPUser/fromEmail
+echo [i] Notifikasi email ^(opsional^): buka .env, isi email.SMTPUser/fromEmail
 echo     dengan akun Gmail salon + email.SMTPPass dengan Gmail App Password
-echo     (16 huruf, https://myaccount.google.com/apppasswords).
+echo     ^(16 huruf, https://myaccount.google.com/apppasswords^).
 echo     Tanpa ini, booking tetap jalan, hanya email yang nonaktif.
 echo.
 echo [i] Untuk reminder + auto-cancel di produksi, jadwalkan tiap 5 menit:

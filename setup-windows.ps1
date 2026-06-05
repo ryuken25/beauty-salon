@@ -7,17 +7,54 @@ function Require-Command($name, $hint) {
     }
 }
 
+function Find-MysqlExe {
+    $cmd = Get-Command 'mysql' -ErrorAction SilentlyContinue
+    if ($cmd) { return $cmd.Source }
+    $candidates = @(
+        'C:\xampp\mysql\bin\mysql.exe',
+        'D:\xampp\mysql\bin\mysql.exe'
+    )
+    foreach ($p in $candidates) {
+        if (Test-Path $p) { return $p }
+    }
+    $laragon = Get-ChildItem -Path 'C:\laragon\bin\mysql' -Directory -ErrorAction SilentlyContinue
+    foreach ($d in $laragon) {
+        $p = Join-Path $d.FullName 'bin\mysql.exe'
+        if (Test-Path $p) { return $p }
+    }
+    return $null
+}
+
+function Try-CreateDatabase($mysqlExe) {
+    foreach ($pwArgs in @(@('-u','root'), @('-u','root','-proot'))) {
+        $args = $pwArgs + @('-e', "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
+        try {
+            & $mysqlExe @args 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                $note = if ($pwArgs.Count -eq 4) { "(root password 'root' — edit .env: database.default.password = root)" } else { "(root tanpa password)" }
+                return $note
+            }
+        } catch {}
+    }
+    return $null
+}
+
 Write-Host '=== SW Beauty Salon - Auto Setup (Windows / PowerShell) ===' -ForegroundColor Cyan
 Write-Host ''
 
 Require-Command 'php' 'Install Laragon atau XAMPP, lalu pastikan PHP di PATH.'
 Require-Command 'composer' 'Download dari https://getcomposer.org/download/.'
 
-if (-not (Get-Command 'mysql' -ErrorAction SilentlyContinue)) {
-    Write-Host "[!] 'mysql' CLI tidak ditemukan — pastikan MySQL/MariaDB sudah jalan di Laragon/XAMPP." -ForegroundColor Yellow
+$mysqlExe = Find-MysqlExe
+if ($mysqlExe) {
+    Write-Host "[i] mysql ditemukan: $mysqlExe"
+} else {
+    Write-Host "[!] mysql CLI tidak ketemu otomatis di PATH/Laragon/XAMPP." -ForegroundColor Yellow
+    Write-Host "    Pastikan MySQL nyala (Laragon: Start All; XAMPP: Start MySQL)." -ForegroundColor Yellow
     Read-Host 'Tekan ENTER untuk lanjut, atau Ctrl+C untuk batal'
 }
 
+Write-Host ''
 Write-Host '[1/5] composer install...' -ForegroundColor Cyan
 composer install --no-interaction
 if ($LASTEXITCODE -ne 0) { Write-Host '[X] composer install gagal.' -ForegroundColor Red; exit 1 }
@@ -28,29 +65,46 @@ if (-not (Test-Path .env)) {
     Copy-Item .env.localhost .env
     Write-Host '    .env disalin dari .env.localhost.'
 } else {
-    Write-Host '    .env sudah ada — dilewati.'
+    Write-Host '    .env sudah ada - dilewati.'
 }
 
 Write-Host ''
 Write-Host '[3/5] Membuat database sw_beauty_salon...' -ForegroundColor Cyan
-try {
-    & mysql -u root -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>$null
-} catch {
-    Write-Host "[!] mysql CLI gagal — buat manual lewat phpMyAdmin (nama: sw_beauty_salon)." -ForegroundColor Yellow
+$dbCreated = $false
+if ($mysqlExe) {
+    $note = Try-CreateDatabase $mysqlExe
+    if ($note) {
+        $dbCreated = $true
+        Write-Host "    OK $note"
+    }
+}
+if (-not $dbCreated) {
+    Write-Host ''
+    Write-Host '[X] Gagal bikin database otomatis. Bikin manual lewat phpMyAdmin:' -ForegroundColor Red
+    Write-Host '    1. Buka http://localhost/phpmyadmin'
+    Write-Host '    2. Tab "Databases" - nama: sw_beauty_salon - collation: utf8mb4_unicode_ci - klik Create'
+    Write-Host '    3. Sesudah dibikin, jalankan ulang .\setup-windows.ps1'
+    exit 1
 }
 
 Write-Host ''
 Write-Host '[4/5] Migrate + seed...' -ForegroundColor Cyan
 php spark migrate
-if ($LASTEXITCODE -ne 0) { Write-Host '[X] Migrate gagal. Cek .env + status MySQL.' -ForegroundColor Red; exit 1 }
+if ($LASTEXITCODE -ne 0) {
+    Write-Host '[X] Migrate gagal. Cek .env - database.default.username/password harus cocok.' -ForegroundColor Red
+    exit 1
+}
 php spark db:seed SalonSeeder
+if ($LASTEXITCODE -ne 0) {
+    Write-Host '[!] db:seed gagal - tabel sudah ada. Coba ulang: php spark db:seed SalonSeeder' -ForegroundColor Yellow
+}
 
 Write-Host ''
 Write-Host '[5/5] Menjalankan server di http://localhost:8080' -ForegroundColor Green
 Write-Host '    Akun demo:'
-Write-Host '      Pemilik:   owner@swbeautysalon.local / Password123!'
-Write-Host '      Admin:     admin@swbeautysalon.local / Password123!'
-Write-Host '      Pelanggan: WA 6281338109102 / Password123! (email: winayagatar@gmail.com)'
+Write-Host '      Pemilik:   owner@swbeautysalon.local / Password123! (di /admin/login)'
+Write-Host '      Admin:     admin@swbeautysalon.local / Password123! (di /admin/login)'
+Write-Host '      Pelanggan: WA 6281338109102          / Password123! (di /login)'
 Write-Host ''
 Write-Host '[i] Notifikasi email (opsional): buka .env, isi email.SMTPUser/fromEmail' -ForegroundColor Yellow
 Write-Host '    dengan akun Gmail salon + email.SMTPPass dengan Gmail App Password (16 huruf,' -ForegroundColor Yellow
