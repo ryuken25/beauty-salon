@@ -84,31 +84,49 @@ if not exist .env (
     echo     .env sudah ada - dilewati.
 )
 
-REM ── 5. Bikin database (coba root tanpa password, lalu password root) ─
+REM ── 5. Bikin database (auto-start MySQL kalau belum nyala) ──
 echo.
 echo [3/5] Membuat database sw_beauty_salon...
 set "DB_CREATED="
+set "DB_NOTE="
 set "DB_ERR=%TEMP%\sw_db_err.txt"
-if defined MYSQL_EXE (
-    "!MYSQL_EXE!" -u root -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>"!DB_ERR!"
-    if not errorlevel 1 (
-        set "DB_CREATED=1"
-        echo     OK ^(root tanpa password^).
-    ) else (
-        "!MYSQL_EXE!" -u root -proot -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>"!DB_ERR!"
-        if not errorlevel 1 (
-            set "DB_CREATED=1"
-            echo     OK ^(root password 'root' - edit .env: database.default.password = root^).
+
+REM Percobaan pertama (mungkin MySQL sudah nyala)
+call :try_create_db
+if defined DB_CREATED echo     OK ^(!DB_NOTE!^).
+
+REM Kalau gagal, coba nyalakan mysqld XAMPP/Laragon otomatis lalu ulang
+if not defined DB_CREATED (
+    set "MYSQLD="
+    set "MYSQLD_DIR="
+    if exist "C:\xampp\mysql\bin\mysqld.exe" ( set "MYSQLD=C:\xampp\mysql\bin\mysqld.exe" & set "MYSQLD_DIR=C:\xampp\mysql\bin" )
+    if not defined MYSQLD if exist "D:\xampp\mysql\bin\mysqld.exe" ( set "MYSQLD=D:\xampp\mysql\bin\mysqld.exe" & set "MYSQLD_DIR=D:\xampp\mysql\bin" )
+    if not defined MYSQLD for /d %%d in ("C:\laragon\bin\mysql\mysql-*") do if exist "%%d\bin\mysqld.exe" ( set "MYSQLD=%%d\bin\mysqld.exe" & set "MYSQLD_DIR=%%d\bin" )
+
+    if defined MYSQLD (
+        echo     [i] MySQL belum nyala - menyalakan otomatis...
+        if exist "!MYSQLD_DIR!\my.ini" (
+            start "MySQL - SW Beauty Salon" /min "!MYSQLD!" --defaults-file="!MYSQLD_DIR!\my.ini" --standalone
+        ) else (
+            start "MySQL - SW Beauty Salon" /min "!MYSQLD!" --standalone
         )
+        echo     [i] Menunggu MySQL siap ^(maks ~40 detik^)...
+        for /l %%w in (1,1,20) do (
+            if not defined DB_CREATED (
+                timeout /t 2 /nobreak >nul
+                call :try_create_db
+            )
+        )
+        if defined DB_CREATED echo     OK ^(!DB_NOTE!^) - MySQL dinyalakan otomatis.
     )
 )
+
 if not defined DB_CREATED (
     echo.
     echo [X] Gagal bikin database otomatis. Pesan asli dari MySQL:
     echo     ----------------------------------------------------------
     if exist "!DB_ERR!" type "!DB_ERR!"
     echo     ----------------------------------------------------------
-    REM Deteksi penyebab umum dari pesan error MySQL
     set "DB_HINT="
     if exist "!DB_ERR!" (
         findstr /i "2002 2003 can't connect refused 10061" "!DB_ERR!" >nul 2>nul
@@ -118,22 +136,21 @@ if not defined DB_CREATED (
     )
     echo.
     if "!DB_HINT!"=="SERVER_DOWN" (
-        echo [^!] Sepertinya MySQL BELUM NYALA. Buka XAMPP Control Panel,
-        echo     klik Start pada baris "MySQL" sampai hijau, lalu jalankan
-        echo     ulang setup-windows.bat.
+        echo [^!] MySQL tidak bisa dinyalakan otomatis. Buka XAMPP Control Panel,
+        echo     klik Start pada baris "MySQL" sampai hijau ^(kalau gagal start,
+        echo     biasanya port 3306 dipakai aplikasi lain^), lalu jalankan ulang.
     ) else if "!DB_HINT!"=="BAD_PASS" (
         echo [^!] Password root MySQL bukan kosong/'root'. Buka .env dan isi
-        echo     database.default.password sesuai password MySQL kamu, lalu
-        echo     bikin database manual via phpMyAdmin ^(lihat di bawah^).
+        echo     database.default.password sesuai password MySQL kamu.
     ) else (
         echo [^!] Pastikan MySQL nyala di XAMPP ^(klik Start pada "MySQL"^).
     )
     echo.
     echo     Alternatif - bikin database manual lewat phpMyAdmin:
-    echo     1. Pastikan Apache + MySQL di XAMPP sudah Start ^(hijau^).
+    echo     1. Start Apache + MySQL di XAMPP ^(hijau^).
     echo     2. Buka http://localhost/phpmyadmin
     echo     3. Tab "Databases" - nama: sw_beauty_salon - collation: utf8mb4_unicode_ci - klik Create
-    echo     4. Sesudah dibikin, jalankan ulang setup-windows.bat
+    echo     4. Jalankan ulang setup-windows.bat
     echo.
     if exist "!DB_ERR!" del "!DB_ERR!" >nul 2>nul
     pause
@@ -179,3 +196,22 @@ echo     Tutup server dengan Ctrl+C kapan saja.
 echo.
 php spark serve
 endlocal
+goto :eof
+
+REM ── Subroutine: coba bikin DB (root tanpa password, lalu password 'root') ─
+:try_create_db
+if not defined MYSQL_EXE goto :eof
+if defined DB_CREATED goto :eof
+"!MYSQL_EXE!" -u root -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>"!DB_ERR!"
+if not errorlevel 1 (
+    set "DB_CREATED=1"
+    set "DB_NOTE=root tanpa password"
+    goto :eof
+)
+"!MYSQL_EXE!" -u root -proot -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>"!DB_ERR!"
+if not errorlevel 1 (
+    set "DB_CREATED=1"
+    set "DB_NOTE=root password 'root' - edit .env: database.default.password = root"
+    goto :eof
+)
+goto :eof

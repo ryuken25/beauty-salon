@@ -25,6 +25,34 @@ function Find-MysqlExe {
     return $null
 }
 
+function Find-MysqldExe {
+    $candidates = @(
+        'C:\xampp\mysql\bin\mysqld.exe',
+        'D:\xampp\mysql\bin\mysqld.exe'
+    )
+    foreach ($p in $candidates) {
+        if (Test-Path $p) { return $p }
+    }
+    $laragon = Get-ChildItem -Path 'C:\laragon\bin\mysql' -Directory -ErrorAction SilentlyContinue
+    foreach ($d in $laragon) {
+        $p = Join-Path $d.FullName 'bin\mysqld.exe'
+        if (Test-Path $p) { return $p }
+    }
+    return $null
+}
+
+function Start-Mysqld($mysqldExe) {
+    $dir = Split-Path $mysqldExe -Parent
+    $ini = Join-Path $dir 'my.ini'
+    $args = if (Test-Path $ini) { @("--defaults-file=$ini", '--standalone') } else { @('--standalone') }
+    try {
+        Start-Process -FilePath $mysqldExe -ArgumentList $args -WindowStyle Minimized | Out-Null
+        return $true
+    } catch {
+        return $false
+    }
+}
+
 $script:DbError = ''
 function Try-CreateDatabase($mysqlExe) {
     foreach ($pwArgs in @(@('-u','root'), @('-u','root','-proot'))) {
@@ -101,6 +129,24 @@ if ($mysqlExe) {
         Write-Host "    OK $note"
     }
 }
+# Kalau gagal, coba nyalakan mysqld otomatis lalu ulang
+if (-not $dbCreated) {
+    $mysqldExe = Find-MysqldExe
+    if ($mysqldExe) {
+        Write-Host '    [i] MySQL belum nyala - menyalakan otomatis...' -ForegroundColor Yellow
+        if (Start-Mysqld $mysqldExe) {
+            Write-Host '    [i] Menunggu MySQL siap (maks ~40 detik)...'
+            for ($w = 0; $w -lt 20 -and -not $dbCreated; $w++) {
+                Start-Sleep -Seconds 2
+                $note = Try-CreateDatabase $mysqlExe
+                if ($note) {
+                    $dbCreated = $true
+                    Write-Host "    OK $note - MySQL dinyalakan otomatis."
+                }
+            }
+        }
+    }
+}
 if (-not $dbCreated) {
     Write-Host ''
     Write-Host '[X] Gagal bikin database otomatis. Pesan asli dari MySQL:' -ForegroundColor Red
@@ -109,8 +155,9 @@ if (-not $dbCreated) {
     Write-Host '    ----------------------------------------------------------'
     Write-Host ''
     if ($script:DbError -match '2002|2003|refused|10061|can.t connect') {
-        Write-Host '[!] Sepertinya MySQL BELUM NYALA. Buka XAMPP Control Panel,' -ForegroundColor Yellow
-        Write-Host '    klik Start pada baris "MySQL" sampai hijau, lalu jalankan ulang.' -ForegroundColor Yellow
+        Write-Host '[!] MySQL tidak bisa dinyalakan otomatis. Buka XAMPP Control Panel,' -ForegroundColor Yellow
+        Write-Host '    klik Start pada baris "MySQL" sampai hijau (kalau gagal start,' -ForegroundColor Yellow
+        Write-Host '    biasanya port 3306 dipakai aplikasi lain), lalu jalankan ulang.' -ForegroundColor Yellow
     } elseif ($script:DbError -match '1045|Access denied') {
         Write-Host '[!] Password root MySQL bukan kosong/''root''. Edit .env:' -ForegroundColor Yellow
         Write-Host '    database.default.password sesuai password MySQL kamu.' -ForegroundColor Yellow
