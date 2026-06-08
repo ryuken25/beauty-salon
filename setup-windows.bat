@@ -46,12 +46,30 @@ if defined MYSQL_EXE (
     pause >nul
 )
 
-REM ── 3. composer install ─────────────────────────────────────
+REM ── 3. composer install (retry untuk lock OneDrive/antivirus) ─
 echo.
 echo [1/5] composer install...
-call composer install --no-interaction
-if errorlevel 1 (
-    echo [X] composer install gagal.
+set "COMPOSER_OK="
+for /l %%i in (1,1,3) do (
+    if not defined COMPOSER_OK (
+        if %%i gtr 1 (
+            echo     [!] Percobaan %%i/3 ^(coba ulang setelah jeda^)...
+            timeout /t 3 /nobreak >nul
+        )
+        call composer install --no-interaction
+        if not errorlevel 1 set "COMPOSER_OK=1"
+    )
+)
+if not defined COMPOSER_OK (
+    echo.
+    echo [X] composer install gagal setelah 3 percobaan.
+    echo     Error "Resource temporarily unavailable" biasanya file vendor
+    echo     terkunci oleh OneDrive atau antivirus. Solusi:
+    echo       1. PINDAHKAN folder ini KE LUAR Documents/OneDrive,
+    echo          misal: C:\laragon\www\beauty-salon  ^(paling ampuh^).
+    echo       2. Atau pause sync OneDrive ^(klik ikon OneDrive ^> Pause^),
+    echo          lalu jalankan ulang setup-windows.bat.
+    echo       3. Atau kecualikan folder vendor dari scan Windows Defender.
     pause
     exit /b 1
 )

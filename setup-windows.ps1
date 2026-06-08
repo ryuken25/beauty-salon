@@ -56,8 +56,27 @@ if ($mysqlExe) {
 
 Write-Host ''
 Write-Host '[1/5] composer install...' -ForegroundColor Cyan
-composer install --no-interaction
-if ($LASTEXITCODE -ne 0) { Write-Host '[X] composer install gagal.' -ForegroundColor Red; exit 1 }
+$composerOk = $false
+for ($i = 1; $i -le 3; $i++) {
+    if ($i -gt 1) {
+        Write-Host "    [!] Percobaan $i/3 (coba ulang setelah jeda)..." -ForegroundColor Yellow
+        Start-Sleep -Seconds 3
+    }
+    composer install --no-interaction
+    if ($LASTEXITCODE -eq 0) { $composerOk = $true; break }
+}
+if (-not $composerOk) {
+    Write-Host ''
+    Write-Host '[X] composer install gagal setelah 3 percobaan.' -ForegroundColor Red
+    Write-Host '    Error "Resource temporarily unavailable" biasanya file vendor' -ForegroundColor Red
+    Write-Host '    terkunci oleh OneDrive atau antivirus. Solusi:' -ForegroundColor Red
+    Write-Host '      1. PINDAHKAN folder ini KE LUAR Documents/OneDrive,'
+    Write-Host '         misal: C:\laragon\www\beauty-salon  (paling ampuh).'
+    Write-Host '      2. Atau pause sync OneDrive (klik ikon OneDrive > Pause),'
+    Write-Host '         lalu jalankan ulang .\setup-windows.ps1.'
+    Write-Host '      3. Atau kecualikan folder vendor dari scan Windows Defender.'
+    exit 1
+}
 
 Write-Host ''
 Write-Host '[2/5] Menyiapkan .env...' -ForegroundColor Cyan
