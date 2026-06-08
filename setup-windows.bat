@@ -165,6 +165,8 @@ call php "%~dp0scripts\patch_env_db.php" "!DB_PASS!"
 REM ── 6. Migrate + seed ───────────────────────────────────────
 echo.
 echo [4/5] Migrate + seed ^(membuat tabel + data demo^)...
+REM Pastikan folder writable yang dibutuhkan CI4 ada (cache/session/logs/...)
+for %%d in (cache logs session uploads debugbar) do if not exist "writable\%%d" mkdir "writable\%%d" >nul 2>nul
 call php spark migrate
 if errorlevel 1 (
     echo.

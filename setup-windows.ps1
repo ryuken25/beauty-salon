@@ -180,6 +180,11 @@ php (Join-Path $PSScriptRoot 'scripts\patch_env_db.php') $script:DbPass
 
 Write-Host ''
 Write-Host '[4/5] Migrate + seed...' -ForegroundColor Cyan
+# Pastikan folder writable yang dibutuhkan CI4 ada (cache/session/logs/...)
+foreach ($d in 'cache','logs','session','uploads','debugbar') {
+    $p = Join-Path 'writable' $d
+    if (-not (Test-Path $p)) { New-Item -ItemType Directory -Path $p | Out-Null }
+}
 php spark migrate
 if ($LASTEXITCODE -ne 0) {
     Write-Host '[X] Migrate gagal. Cek .env - database.default.username/password harus cocok.' -ForegroundColor Red
