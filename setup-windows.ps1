@@ -54,14 +54,15 @@ function Start-Mysqld($mysqldExe) {
 }
 
 $script:DbError = ''
+$script:DbPass  = ''
 function Try-CreateDatabase($mysqlExe) {
     foreach ($pwArgs in @(@('-u','root'), @('-u','root','-proot'))) {
         $cmdArgs = $pwArgs + @('-e', "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
         try {
             $out = & $mysqlExe @cmdArgs 2>&1
             if ($LASTEXITCODE -eq 0) {
-                $note = if ($pwArgs.Count -eq 4) { "(root password 'root' — edit .env: database.default.password = root)" } else { "(root tanpa password)" }
-                return $note
+                if ($pwArgs.Count -eq 4) { $script:DbPass = 'root'; return "(root password 'root')" }
+                $script:DbPass = ''; return "(root tanpa password)"
             }
             $script:DbError = ($out | Out-String).Trim()
         } catch {
@@ -172,6 +173,10 @@ if (-not $dbCreated) {
     Write-Host '    4. Sesudah dibikin, jalankan ulang .\setup-windows.ps1'
     exit 1
 }
+
+# Sinkronkan .env dgn kredensial yg bekerja (host 127.0.0.1) sebelum migrate,
+# supaya mysqli tidak gagal via named-pipe 'localhost'.
+php (Join-Path $PSScriptRoot 'scripts\patch_env_db.php') $script:DbPass
 
 Write-Host ''
 Write-Host '[4/5] Migrate + seed...' -ForegroundColor Cyan

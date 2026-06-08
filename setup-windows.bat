@@ -158,6 +158,10 @@ if not defined DB_CREATED (
 )
 if exist "!DB_ERR!" del "!DB_ERR!" >nul 2>nul
 
+REM ── 5b. Sinkronkan .env dgn kredensial yg bekerja (host 127.0.0.1) ─
+REM Mencegah "Migrate gagal" karena mysqli pakai named-pipe via 'localhost'.
+call php "%~dp0scripts\patch_env_db.php" "!DB_PASS!"
+
 REM ── 6. Migrate + seed ───────────────────────────────────────
 echo.
 echo [4/5] Migrate + seed ^(membuat tabel + data demo^)...
@@ -205,13 +209,15 @@ if defined DB_CREATED goto :eof
 "!MYSQL_EXE!" -u root -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>"!DB_ERR!"
 if not errorlevel 1 (
     set "DB_CREATED=1"
+    set "DB_PASS="
     set "DB_NOTE=root tanpa password"
     goto :eof
 )
 "!MYSQL_EXE!" -u root -proot -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>"!DB_ERR!"
 if not errorlevel 1 (
     set "DB_CREATED=1"
-    set "DB_NOTE=root password 'root' - edit .env: database.default.password = root"
+    set "DB_PASS=root"
+    set "DB_NOTE=root password 'root'"
     goto :eof
 )
 goto :eof
