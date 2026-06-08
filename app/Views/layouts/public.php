@@ -49,7 +49,7 @@
       </div>
     <?php else: ?>
       <a class="nav-salon__link" href="<?= base_url('admin/dashboard') ?>">Panel Admin</a>
-      <a class="btn-salon-secondary" style="padding:0.571rem 1.143rem;" href="<?= base_url('admin/logout') ?>"><i class="bi bi-box-arrow-right"></i> Logout</a>
+      <a class="btn-salon-secondary" style="padding:0.571rem 1.143rem;" href="<?= base_url('logout') ?>"><i class="bi bi-box-arrow-right"></i> Logout</a>
     <?php endif ?>
   </div>
 </nav>

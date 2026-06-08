@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**SW Beauty Salon** — CodeIgniter 4 booking app for a salon in Tabanan, Bali. As of 2026-06-04: customers **must have accounts**. Pelanggan login at `/login` (nomor WA + password); staff (admin/pemilik) login at `/admin/login` (email + password). Stack: PHP 8.1+, MySQL/MariaDB, Bootstrap 5 + Bootstrap Icons + Chart.js via CDN, WhatsApp manual via `wa.me`. **No Telegram integration, no stylist.**
+**SW Beauty Salon** — CodeIgniter 4 booking app for a salon in Tabanan, Bali. As of 2026-06-04: customers **must have accounts**. **Login terpadu di `/login` untuk semua role**: satu field "Email atau Nomor WhatsApp" + password — pelanggan pakai nomor WA, staff (admin/pemilik) pakai email; redirect otomatis sesuai role. `/admin/login` lama di-redirect ke `/login`. Stack: PHP 8.1+, MySQL/MariaDB, Bootstrap 5 + Bootstrap Icons + Chart.js via CDN, WhatsApp manual via `wa.me`. **No Telegram integration, no stylist.**
 
 ## Common Commands
 
@@ -24,16 +24,17 @@ PHP lint sweep:
 php -r "foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator('.')) as $f) { if ($f->isFile() && strtolower($f->getExtension()) === 'php' && strpos($f->getPathname(), DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR) === false) { passthru('php -l ' . escapeshellarg($f->getPathname()), $code); if ($code !== 0) exit($code); } }"
 ```
 
-Demo accounts (password `Password123!`):
-- Pemilik: `owner@swbeautysalon.local` (via `/admin/login`)
-- Admin: `admin@swbeautysalon.local` (via `/admin/login`)
-- Pelanggan: nomor WA `6281338109102` (via `/login`)
+Demo accounts (password `Password123!`) — semua login di `/login`:
+- Pemilik: email `owner@swbeautysalon.local`
+- Admin: email `admin@swbeautysalon.local`
+- Pelanggan: nomor WA `6281338109102`
 
 ## Architecture
 
 ### Roles & access
-- **Pelanggan = customer accounts.** Register `/register` (nama + nomor WA + password), login `/login` (nomor WA + password). Reset password admin-only (`/admin/pelanggan`); `/lupa-password` is info-only.
-- **Staff** (admin/pemilik) login separately at `/admin/login` (email + password). Two-form split so neither side can authenticate the other role.
+- **Login terpadu** (`Auth::login`, view [auth/login.php](app/Views/auth/login.php)): satu form, field `identifier` = email ATAU nomor WA + `password`. Deteksi: mengandung `@` → cari by email; selain itu → `normalizePhone()` lalu cari by `nomor_hp`. Cocok → `issueSession()` → redirect by role (`pelanggan` → `/pelanggan/dashboard`; `admin`/`pemilik` → `/admin/dashboard`). Rate-limit 8 gagal / 15 menit / IP via cache `login_fail_*`. Sudah login lalu buka `/login` → auto-redirect ke dashboard sesuai role. `logout` selalu kembali ke `/login`. URL lama `/admin/login` & `/admin/logout` di-redirect demi kompatibilitas.
+- **Pelanggan = customer accounts.** Register `/register` (nama + nomor WA + password). Reset password admin-only (`/admin/pelanggan`); `/lupa-password` is info-only.
+- **Staff** (admin/pemilik) login dengan email lewat form `/login` yang sama.
 - Booking (`/booking` + `/booking/sukses/{kode}`) sits behind the `customer` filter — guests bounce to `/login`. Pelanggan dashboard `/pelanggan/dashboard` is history-only (booking own + 'Cek/Batal' deep link).
 - **Pemilik = Admin superset.** One unified [layouts/panel.php](app/Views/layouts/panel.php) with a role-aware sidebar. `/admin/*` (filter `admin` = admin + pemilik): dashboard, booking verify/reject/cancel/complete + DP-verify, walk-in, jadwal, pelanggan account management, transaksi, pengaturan. `/owner/*` (filter `owner` = pemilik only): laporan (analytics), layanan CRUD. Admin typing `/owner/*` gets bounced to `/admin/dashboard`.
 - Public `/cek-booking` (no auth): **kode booking only** (dikirim ke pelanggan via email setelah booking sukses) → tampil read-only detail booking. Tombol "Batalkan" hanya muncul kalau session pelanggan aktif (redirect ke `/pelanggan/booking/{kode}/batal`). Walk-in tanpa akun dibatalkan oleh admin. Brute-force enumerasi kode dibatasi: 5 kegagalan / 15 menit / IP via cache `cek_fail_*`.

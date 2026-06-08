@@ -11,54 +11,61 @@ class Auth extends BaseController
     private const RATE_LIMIT = 8;
     private const RATE_WINDOW_SEC = 900; // 15 menit
 
-    // ── Login admin / pemilik (email + password) ─────────────────
+    // ── Login terpadu: satu halaman untuk semua role ─────────────
+    // Identifier bisa email (staff/pemilik) ATAU nomor WA (pelanggan).
+    // Redirect otomatis sesuai role setelah login berhasil.
     public function login()
     {
+        if (session('is_logged_in')) {
+            return $this->redirectByRole(session('user_role'));
+        }
         if ($this->request->getMethod() === 'POST') {
             $failKey = 'login_fail_' . md5($this->request->getIPAddress());
             $fails = (int) (cache($failKey) ?? 0);
             if ($fails >= self::RATE_LIMIT) {
                 return redirect()->back()->withInput()->with('error', 'Terlalu banyak percobaan gagal. Coba lagi dalam 15 menit.');
             }
-            $email = trim((string) $this->request->getPost('email'));
+            $identifier = trim((string) $this->request->getPost('identifier'));
             $password = (string) $this->request->getPost('password');
-            $user = (new UserModel())
-                ->where('email', $email)
-                ->where('is_active', 1)
-                ->whereIn('role', ['admin', 'pemilik'])
-                ->first();
+            $user = $this->findUserByIdentifier($identifier);
             if ($user && password_verify($password, $user['password_hash'])) {
                 cache()->delete($failKey);
                 $this->issueSession($user);
-                return redirect()->to('/admin/dashboard');
+                return $this->redirectByRole($user['role']);
             }
             cache()->save($failKey, $fails + 1, self::RATE_WINDOW_SEC);
-            return redirect()->back()->withInput()->with('error', 'Email atau password salah.');
+            return redirect()->back()->withInput()->with('error', 'Email/Nomor WhatsApp atau password salah.');
         }
         return view('auth/login');
     }
 
-    // ── Login pelanggan (nomor WA + password) ────────────────────
-    public function loginPelanggan()
+    // Cari user aktif berdasarkan email (kalau mengandung '@') atau nomor WA.
+    private function findUserByIdentifier(string $identifier): ?array
     {
-        if ($this->request->getMethod() === 'POST') {
-            $failKey = 'login_fail_' . md5($this->request->getIPAddress());
-            $fails = (int) (cache($failKey) ?? 0);
-            if ($fails >= self::RATE_LIMIT) {
-                return redirect()->back()->withInput()->with('error', 'Terlalu banyak percobaan gagal. Coba lagi dalam 15 menit.');
-            }
-            $phone = (new BookingService())->normalizePhone((string) $this->request->getPost('nomor_hp'));
-            $password = (string) $this->request->getPost('password');
-            $user = $phone !== '' ? (new UserModel())->findPelangganByPhone($phone) : null;
-            if ($user && password_verify($password, $user['password_hash'])) {
-                cache()->delete($failKey);
-                $this->issueSession($user);
-                return redirect()->to('/pelanggan/dashboard');
-            }
-            cache()->save($failKey, $fails + 1, self::RATE_WINDOW_SEC);
-            return redirect()->back()->withInput()->with('error', 'Nomor WhatsApp atau password salah.');
+        if ($identifier === '') {
+            return null;
         }
-        return view('auth/login_pelanggan');
+        $model = new UserModel();
+        if (str_contains($identifier, '@')) {
+            return $model->where('email', strtolower($identifier))
+                ->where('is_active', 1)
+                ->first();
+        }
+        $phone = (new BookingService())->normalizePhone($identifier);
+        if ($phone === '') {
+            return null;
+        }
+        return $model->where('nomor_hp', $phone)
+            ->where('is_active', 1)
+            ->first();
+    }
+
+    private function redirectByRole(?string $role)
+    {
+        if (in_array($role, ['admin', 'pemilik'], true)) {
+            return redirect()->to('/admin/dashboard');
+        }
+        return redirect()->to('/pelanggan/dashboard');
     }
 
     // ── Register pelanggan ───────────────────────────────────────
@@ -111,10 +118,8 @@ class Auth extends BaseController
 
     public function logout()
     {
-        $role = session('user_role');
         session()->destroy();
-        $target = in_array($role, ['admin', 'pemilik'], true) ? '/admin/login' : '/login';
-        return redirect()->to($target)->with('success', 'Anda telah logout.');
+        return redirect()->to('/login')->with('success', 'Anda telah logout.');
     }
 
     private function issueSession(array $user): void
