@@ -88,13 +88,14 @@ REM ── 5. Bikin database (coba root tanpa password, lalu password root) ─
 echo.
 echo [3/5] Membuat database sw_beauty_salon...
 set "DB_CREATED="
+set "DB_ERR=%TEMP%\sw_db_err.txt"
 if defined MYSQL_EXE (
-    "!MYSQL_EXE!" -u root -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>nul
+    "!MYSQL_EXE!" -u root -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>"!DB_ERR!"
     if not errorlevel 1 (
         set "DB_CREATED=1"
         echo     OK ^(root tanpa password^).
     ) else (
-        "!MYSQL_EXE!" -u root -proot -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>nul
+        "!MYSQL_EXE!" -u root -proot -e "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >nul 2>"!DB_ERR!"
         if not errorlevel 1 (
             set "DB_CREATED=1"
             echo     OK ^(root password 'root' - edit .env: database.default.password = root^).
@@ -103,14 +104,42 @@ if defined MYSQL_EXE (
 )
 if not defined DB_CREATED (
     echo.
-    echo [X] Gagal bikin database otomatis. Bikin manual lewat phpMyAdmin:
-    echo     1. Buka http://localhost/phpmyadmin
-    echo     2. Tab "Databases" - nama: sw_beauty_salon - collation: utf8mb4_unicode_ci - klik Create
-    echo     3. Sesudah dibikin, jalankan ulang setup-windows.bat
+    echo [X] Gagal bikin database otomatis. Pesan asli dari MySQL:
+    echo     ----------------------------------------------------------
+    if exist "!DB_ERR!" type "!DB_ERR!"
+    echo     ----------------------------------------------------------
+    REM Deteksi penyebab umum dari pesan error MySQL
+    set "DB_HINT="
+    if exist "!DB_ERR!" (
+        findstr /i "2002 2003 can't connect refused 10061" "!DB_ERR!" >nul 2>nul
+        if not errorlevel 1 set "DB_HINT=SERVER_DOWN"
+        findstr /i "1045 Access denied" "!DB_ERR!" >nul 2>nul
+        if not errorlevel 1 set "DB_HINT=BAD_PASS"
+    )
     echo.
+    if "!DB_HINT!"=="SERVER_DOWN" (
+        echo [^!] Sepertinya MySQL BELUM NYALA. Buka XAMPP Control Panel,
+        echo     klik Start pada baris "MySQL" sampai hijau, lalu jalankan
+        echo     ulang setup-windows.bat.
+    ) else if "!DB_HINT!"=="BAD_PASS" (
+        echo [^!] Password root MySQL bukan kosong/'root'. Buka .env dan isi
+        echo     database.default.password sesuai password MySQL kamu, lalu
+        echo     bikin database manual via phpMyAdmin ^(lihat di bawah^).
+    ) else (
+        echo [^!] Pastikan MySQL nyala di XAMPP ^(klik Start pada "MySQL"^).
+    )
+    echo.
+    echo     Alternatif - bikin database manual lewat phpMyAdmin:
+    echo     1. Pastikan Apache + MySQL di XAMPP sudah Start ^(hijau^).
+    echo     2. Buka http://localhost/phpmyadmin
+    echo     3. Tab "Databases" - nama: sw_beauty_salon - collation: utf8mb4_unicode_ci - klik Create
+    echo     4. Sesudah dibikin, jalankan ulang setup-windows.bat
+    echo.
+    if exist "!DB_ERR!" del "!DB_ERR!" >nul 2>nul
     pause
     exit /b 1
 )
+if exist "!DB_ERR!" del "!DB_ERR!" >nul 2>nul
 
 REM ── 6. Migrate + seed ───────────────────────────────────────
 echo.

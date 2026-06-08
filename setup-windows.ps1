@@ -25,16 +25,20 @@ function Find-MysqlExe {
     return $null
 }
 
+$script:DbError = ''
 function Try-CreateDatabase($mysqlExe) {
     foreach ($pwArgs in @(@('-u','root'), @('-u','root','-proot'))) {
-        $args = $pwArgs + @('-e', "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
+        $cmdArgs = $pwArgs + @('-e', "CREATE DATABASE IF NOT EXISTS sw_beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
         try {
-            & $mysqlExe @args 2>$null
+            $out = & $mysqlExe @cmdArgs 2>&1
             if ($LASTEXITCODE -eq 0) {
                 $note = if ($pwArgs.Count -eq 4) { "(root password 'root' — edit .env: database.default.password = root)" } else { "(root tanpa password)" }
                 return $note
             }
-        } catch {}
+            $script:DbError = ($out | Out-String).Trim()
+        } catch {
+            $script:DbError = $_.Exception.Message
+        }
     }
     return $null
 }
@@ -99,10 +103,26 @@ if ($mysqlExe) {
 }
 if (-not $dbCreated) {
     Write-Host ''
-    Write-Host '[X] Gagal bikin database otomatis. Bikin manual lewat phpMyAdmin:' -ForegroundColor Red
-    Write-Host '    1. Buka http://localhost/phpmyadmin'
-    Write-Host '    2. Tab "Databases" - nama: sw_beauty_salon - collation: utf8mb4_unicode_ci - klik Create'
-    Write-Host '    3. Sesudah dibikin, jalankan ulang .\setup-windows.ps1'
+    Write-Host '[X] Gagal bikin database otomatis. Pesan asli dari MySQL:' -ForegroundColor Red
+    Write-Host '    ----------------------------------------------------------'
+    if ($script:DbError) { Write-Host ("    " + ($script:DbError -replace "`n", "`n    ")) }
+    Write-Host '    ----------------------------------------------------------'
+    Write-Host ''
+    if ($script:DbError -match '2002|2003|refused|10061|can.t connect') {
+        Write-Host '[!] Sepertinya MySQL BELUM NYALA. Buka XAMPP Control Panel,' -ForegroundColor Yellow
+        Write-Host '    klik Start pada baris "MySQL" sampai hijau, lalu jalankan ulang.' -ForegroundColor Yellow
+    } elseif ($script:DbError -match '1045|Access denied') {
+        Write-Host '[!] Password root MySQL bukan kosong/''root''. Edit .env:' -ForegroundColor Yellow
+        Write-Host '    database.default.password sesuai password MySQL kamu.' -ForegroundColor Yellow
+    } else {
+        Write-Host '[!] Pastikan MySQL nyala di XAMPP (klik Start pada "MySQL").' -ForegroundColor Yellow
+    }
+    Write-Host ''
+    Write-Host '    Alternatif - bikin database manual lewat phpMyAdmin:'
+    Write-Host '    1. Pastikan Apache + MySQL di XAMPP sudah Start (hijau).'
+    Write-Host '    2. Buka http://localhost/phpmyadmin'
+    Write-Host '    3. Tab "Databases" - nama: sw_beauty_salon - collation: utf8mb4_unicode_ci - klik Create'
+    Write-Host '    4. Sesudah dibikin, jalankan ulang .\setup-windows.ps1'
     exit 1
 }
 
