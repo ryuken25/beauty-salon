@@ -400,19 +400,32 @@ class SalonSeeder extends Seeder
                 }
             }
 
-            // — Hari ini: 4–6 booking campur —
+            // — Hari ini: 4–6 booking campur + 2 pending TODAY dgn DP uploaded
+            //   supaya owner buka /admin/dashboard langsung lihat card
+            //   'Pending Verifikasi' menyala merah-soft & ada bukti DP siap
+            //   diverifikasi (demo dpVerify auto-accept).
             $todayMix = [
                 ['mulai' => 9 * 60,  'status' => 'completed'],
                 ['mulai' => 10 * 60, 'status' => 'accepted'],
                 ['mulai' => 13 * 60, 'status' => 'accepted'],
                 ['mulai' => 14 * 60, 'status' => 'pending_verification'],
                 ['mulai' => 16 * 60, 'status' => 'completed'],
+                ['mulai' => 17 * 60, 'status' => 'pending_verification'], // demo dpVerify
             ];
             foreach ($todayMix as $i => $m) {
                 $l = $layananArr[($i + 3) % count($layananArr)];
                 $phone = $phones[$i % count($phones)];
                 $insertFiller($today, $m['mulai'], $l, $phone, $m['status'], $metode[$i % 3]);
             }
+            // Pastikan SEMUA pending today punya bukti DP yang siap diverifikasi
+            // (insertFiller default-nya 'unpaid' utk non-accepted/completed).
+            $this->db->table('bookings')
+                ->where('tanggal', $today)
+                ->where('status', 'pending_verification')
+                ->update([
+                    'payment_status' => 'dp_uploaded',
+                    'dp_proof_path' => 'uploads/dp/sample.jpg',
+                ]);
 
             // — Besok: 3 pending + 2 accepted —
             $besokMix = [
