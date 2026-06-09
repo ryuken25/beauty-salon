@@ -275,6 +275,17 @@ function renderGrid() {
       d.classList.add('slot--past');
     } else if (state.booked.includes(slot)) {
       d.classList.add('slot--booked');
+      d.style.cursor = 'not-allowed';
+      d.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        if (!window.Swal) return;
+        Swal.fire({
+          toast: true, position: 'top-end', timer: 2200, showConfirmButton: false,
+          icon: 'warning', title: 'Slot ini sudah terisi — pilih jam lain',
+          background: '#1F1B18', color: '#F5EBDC',
+          customClass: { popup: 'salon-swal' }
+        });
+      });
     } else if (isInsufficient(slot) && !(state.slot && slot === state.slot)) {
       d.classList.add('slot--insufficient');
     } else {

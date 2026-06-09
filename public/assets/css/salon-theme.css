@@ -32,6 +32,7 @@
   --color-pending:       #E07070;
   --color-pending-bg:    rgba(224,112,138,0.15);
   --color-danger:        #E07070;
+  --color-danger-strong: #C0392B;
   --color-completed-bg:  rgba(37,211,102,0.12);
   --color-completed-fg:  #5DD37C;
 
@@ -216,7 +217,20 @@ a:hover { color: var(--text-primary); text-decoration: underline; text-underline
 .card-salon--featured .tagline,
 .card-salon--featured .caption { color: rgba(20,17,15,0.75); }
 /* Status left-border variants */
-.card-salon--pending   { border-left: 3px solid var(--gold); }
+.card-salon--pending {
+  background: var(--color-danger-strong);
+  border-color: var(--color-danger-strong);
+  border-left: 3px solid #8E2A20;
+  box-shadow: 0 4px 14px rgba(192,57,43,0.35);
+}
+.card-salon--pending .label,
+.card-salon--pending .metric__value,
+.card-salon--pending .metric__caption,
+.card-salon--pending .metric-pending-strong { color: #fff; }
+.card-salon--pending:hover {
+  background: #A8332A;
+  border-color: #A8332A;
+}
 .card-salon--accepted  { border-left: 3px solid var(--gold); }
 .card-salon--completed { border-left: 3px solid var(--color-completed-fg); }
 .card-salon--rejected,
@@ -1081,3 +1095,8 @@ a.card-salon:hover,
 a.metric-link { text-decoration: none; color: inherit; display: block; }
 a.metric-link:hover { color: inherit; }
 .metric-pending-strong { color: var(--color-pending); font-weight: 600; }
+
+/* SweetAlert2 — selaras tema black-gold */
+.salon-swal { border: 1px solid var(--gold-border); border-radius: 14px; font-family: var(--font-body); }
+.salon-swal .swal2-title { font-family: var(--font-display); color: var(--text-primary); }
+.salon-swal .swal2-confirm { font-weight: 600; border-radius: 999px; }

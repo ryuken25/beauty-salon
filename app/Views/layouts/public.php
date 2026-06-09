@@ -7,6 +7,7 @@
   <title><?= esc($title ?? 'SW Beauty Salon') ?></title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -59,7 +60,8 @@
     <div class="alert-salon alert-salon--success"><?= esc(session()->getFlashdata('success')) ?></div>
   <?php endif ?>
   <?php if (session()->getFlashdata('error')): ?>
-    <div class="alert-salon alert-salon--error"><?= esc(session()->getFlashdata('error')) ?></div>
+    <noscript><div class="alert-salon alert-salon--error"><?= esc(session()->getFlashdata('error')) ?></div></noscript>
+    <script>window.__salonFlashError = <?= json_encode(session()->getFlashdata('error')) ?>;</script>
   <?php endif ?>
   <?= $this->renderSection('content') ?>
 </main>
@@ -73,7 +75,25 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?= base_url('assets/js/salon-ui.js') ?>"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (!window.Swal || !window.__salonFlashError) return;
+  var msg = window.__salonFlashError;
+  var taken = /terisi/i.test(msg);
+  Swal.fire({
+    icon: taken ? 'warning' : 'error',
+    title: taken ? 'Slot sudah terisi' : 'Ups, gagal',
+    text: msg,
+    confirmButtonText: taken ? 'Pilih jam lain' : 'Mengerti',
+    confirmButtonColor: '#C9A66B',
+    background: '#1F1B18',
+    color: '#F5EBDC',
+    customClass: { popup: 'salon-swal' }
+  });
+});
+</script>
 <?= $this->include('partials/promo_popup') ?>
 </body>
 </html>
