@@ -133,5 +133,9 @@ class Auth extends BaseController
             'user_hp' => $user['nomor_hp'] ?? '',
             'user_role' => $user['role'],
         ]);
+        // Trigger popup promo sekali, hanya untuk pelanggan.
+        if (($user['role'] ?? '') === 'pelanggan') {
+            session()->set('promo_popup_once', true);
+        }
     }
 }

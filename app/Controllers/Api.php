@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\LayananModel;
 use App\Services\SlotService;
 use RuntimeException;
 
@@ -24,5 +25,26 @@ class Api extends BaseController
             'all_slots' => $av['all_slots'],
             'booked' => $av['booked'],
         ]);
+    }
+
+    /** Daftar layanan promo aktif untuk popup login (publik). */
+    public function promos()
+    {
+        $items = (new LayananModel())->promoAktif(12);
+        $out = [];
+        foreach ($items as $l) {
+            $out[] = [
+                'id' => (int) $l['id'],
+                'nama' => $l['nama'],
+                'kategori' => $l['kategori'],
+                'ikon' => $l['ikon'] ?? 'bi-stars',
+                'harga' => (int) $l['harga'],
+                'promo_persen' => (int) $l['promo_persen'],
+                'promo_deskripsi' => $l['promo_deskripsi'] ?? null,
+                'harga_final' => LayananModel::hargaFinal($l),
+                'cover' => LayananModel::cover($l),
+            ];
+        }
+        return $this->response->setJSON(['promos' => $out]);
     }
 }
