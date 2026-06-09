@@ -30,8 +30,11 @@ class BookingService
             throw new RuntimeException('Layanan tidak valid.');
         }
 
+        // Harga FINAL setelah promo — dipakai konsisten untuk harga_layanan
+        // (booking) + dp_amount + nominal transaksi nanti (di complete()).
+        // Hilangin promo? Cukup unset promo_persen — hargaFinal() balik ke harga asli.
+        $hargaInt = LayananModel::hargaFinal($layanan);
         // DP rule: harga ≤ 50.000 → DP = full; harga > 50.000 → DP = 50.000.
-        $hargaInt = (int) $layanan['harga'];
         $sumberRaw = ($data['sumber'] ?? 'online') === 'walkin' ? 'walkin' : 'online';
         $dpAmount = $sumberRaw === 'walkin' ? 0 : min($hargaInt, 50_000);
         $dpProof = $sumberRaw === 'walkin' ? null : ($data['dp_proof_path'] ?? null);
