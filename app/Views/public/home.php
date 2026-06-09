@@ -57,16 +57,34 @@
 </section>
 
 <div class="row-salon cols-3">
-  <?php foreach ($services as $s): ?>
-    <div class="card-salon">
-      <div class="service-icon mb-2"><i class="bi <?= esc($s['ikon'] ?: 'bi-stars') ?>"></i></div>
+  <?php foreach ($services as $s):
+    $cover = \App\Models\LayananModel::cover($s);
+    $isPromo = \App\Models\LayananModel::isPromo($s);
+    $hargaFinal = \App\Models\LayananModel::hargaFinal($s);
+  ?>
+    <a class="card-salon <?= $isPromo ? 'card-salon--promo' : '' ?>" href="<?= base_url('layanan/' . (int) $s['id']) ?>" style="text-decoration:none; color:inherit; display:block;">
+      <?php if ($cover): ?>
+        <img class="layanan-cover" src="<?= base_url($cover) ?>" alt="<?= esc($s['nama']) ?>">
+      <?php else: ?>
+        <div class="service-icon mb-2"><i class="bi <?= esc($s['ikon'] ?: 'bi-stars') ?>"></i></div>
+      <?php endif ?>
+      <?php if ($isPromo): ?>
+        <span class="badge-promo mb-1"><i class="bi bi-tag"></i> Promo <?= (int) $s['promo_persen'] ?>%</span>
+      <?php endif ?>
       <div class="h3"><?= esc($s['nama']) ?></div>
       <div class="tagline mb-2"><?= esc($s['kategori']) ?></div>
       <div class="flex justify-between items-center">
         <span class="caption"><?= esc($s['durasi_menit']) ?> menit</span>
-        <span class="label" style="font-size:0.9286rem; letter-spacing:0;">Rp <?= number_format((int) $s['harga'], 0, ',', '.') ?></span>
+        <span class="label" style="font-size:0.9286rem; letter-spacing:0;">
+          <?php if ($isPromo): ?>
+            <span class="price-strike">Rp <?= number_format((int) $s['harga'], 0, ',', '.') ?></span>
+            <span style="color:var(--gold);">Rp <?= number_format($hargaFinal, 0, ',', '.') ?></span>
+          <?php else: ?>
+            Rp <?= number_format((int) $s['harga'], 0, ',', '.') ?>
+          <?php endif ?>
+        </span>
       </div>
-    </div>
+    </a>
   <?php endforeach ?>
 </div>
 
