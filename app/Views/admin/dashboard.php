@@ -23,7 +23,7 @@ $tgl = $hariId[(int) date('w')] . ', ' . date('j') . ' ' . $bulanId[(int) date('
     <div class="metric">
       <span class="label">Pending verifikasi</span>
       <span class="metric__value <?= $pending > 0 ? 'metric-pending-strong' : '' ?>"><?= esc($pending) ?></span>
-      <span class="metric__caption" style="<?= $pending > 0 ? 'color:var(--color-pending);' : '' ?>">
+      <span class="metric__caption">
         <?= $pending > 0 ? 'Perlu aksi — klik untuk lihat' : 'Aman' ?>
       </span>
     </div>
