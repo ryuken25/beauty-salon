@@ -20,45 +20,54 @@ $statusLabels = [
   </div>
 </div>
 
-<!-- Revenue metrics -->
-<div class="row-salon cols-3 mb-3">
-  <div class="card-salon card-salon--featured">
+<!-- Revenue metrics — clickable jadi switch mode grafik -->
+<div class="row-salon cols-3 mb-3" id="revenueModeRow">
+  <button type="button" class="card-salon revenue-mode" data-mode="hari" data-offset="0">
     <div class="metric">
       <span class="label">Pendapatan hari ini</span>
       <span class="metric__value">Rp <?= number_format($pendapatan_hari_ini, 0, ',', '.') ?></span>
-      <span class="metric__caption" style="color:rgba(20,17,15,0.7);">
+      <span class="metric__caption">
         <?php if ($trend === null): ?>
-          Belum ada pembanding kemarin
+          Klik untuk lihat per jam
         <?php else: ?>
           <i class="bi bi-arrow-<?= $trend >= 0 ? 'up' : 'down' ?>"></i>
-          <?= esc($trend) ?>% vs kemarin
+          <?= esc($trend) ?>% vs kemarin · klik untuk per jam
         <?php endif ?>
       </span>
     </div>
-  </div>
-  <div class="card-salon">
+  </button>
+  <button type="button" class="card-salon card-salon--featured revenue-mode revenue-mode--active" data-mode="minggu" data-offset="0">
     <div class="metric">
       <span class="label">Pendapatan 7 hari</span>
       <span class="metric__value">Rp <?= number_format($total_minggu, 0, ',', '.') ?></span>
-      <span class="metric__caption">Tren mingguan</span>
+      <span class="metric__caption" style="color:rgba(20,17,15,0.7);">Tren mingguan · aktif</span>
     </div>
-  </div>
-  <div class="card-salon">
+  </button>
+  <button type="button" class="card-salon revenue-mode" data-mode="bulan" data-offset="0">
     <div class="metric">
       <span class="label">Pendapatan bulan ini</span>
       <span class="metric__value">Rp <?= number_format($pendapatan_bulan_ini, 0, ',', '.') ?></span>
-      <span class="metric__caption"><?= esc(date('F Y')) ?></span>
+      <span class="metric__caption"><?= esc(date('F Y')) ?> · klik untuk grafik bulan</span>
     </div>
-  </div>
+  </button>
 </div>
+
+<style>
+  .revenue-mode { cursor:pointer; text-align:left; appearance:none; width:100%; font:inherit; color:inherit; }
+  .revenue-mode--active { box-shadow: 0 0 0 2px var(--gold) inset; }
+</style>
 
 <!-- Chart + Top services -->
 <div class="split-60-40 mb-3">
   <div class="card-salon">
-    <div class="flex justify-between items-center mb-1">
+    <div class="flex justify-between items-center mb-1" style="flex-wrap:wrap; gap:0.5rem;">
       <div>
-        <span class="label">Pendapatan 7 hari terakhir</span>
-        <div class="tagline">Bar terakhir = hari ini</div>
+        <span class="label" id="chartTitle">7 hari terakhir</span>
+        <div class="tagline">Total: <span id="chartTotal">Rp <?= number_format($total_minggu, 0, ',', '.') ?></span></div>
+      </div>
+      <div class="flex gap-1">
+        <button type="button" class="btn-salon-ghost btn-salon--sm" id="chartPrev"><i class="bi bi-chevron-left"></i> Prev</button>
+        <button type="button" class="btn-salon-ghost btn-salon--sm" id="chartNext" disabled>Next <i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
     <canvas id="chart7days" height="120"></canvas>
@@ -126,18 +135,28 @@ $statusBoxCls = [
 <script>
 (function () {
   const ctx = document.getElementById('chart7days').getContext('2d');
-  const values = <?= json_encode($chart_values) ?>;
-  const lastIdx = values.length - 1;
-  new Chart(ctx, {
+  const titleEl = document.getElementById('chartTitle');
+  const totalEl = document.getElementById('chartTotal');
+  const prevBtn = document.getElementById('chartPrev');
+  const nextBtn = document.getElementById('chartNext');
+  const modeBtns = document.querySelectorAll('.revenue-mode');
+  const REVENUE_URL = '<?= base_url('owner/laporan/revenue') ?>';
+
+  const initialLabels = <?= json_encode($chart_labels) ?>;
+  const initialValues = <?= json_encode($chart_values) ?>;
+
+  let state = { mode: 'minggu', offset: 0 };
+
+  const chart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: <?= json_encode($chart_labels) ?>,
+      labels: initialLabels,
       datasets: [{
-        data: values,
-        backgroundColor: values.map((_, i) => i === lastIdx ? '#C9A66B' : 'rgba(201,166,107,0.35)'),
+        data: initialValues,
+        backgroundColor: initialValues.map((_, i) => i === initialValues.length - 1 ? '#C9A66B' : 'rgba(201,166,107,0.35)'),
         borderRadius: 6,
         borderSkipped: false,
-      }]
+      }],
     },
     options: {
       plugins: {
@@ -160,6 +179,37 @@ $statusBoxCls = [
       },
     },
   });
+
+  async function loadRevenue(mode, offset) {
+    state = { mode, offset };
+    try {
+      const res = await fetch(REVENUE_URL + '?mode=' + encodeURIComponent(mode) + '&offset=' + offset);
+      const data = await res.json();
+      chart.data.labels = data.labels;
+      chart.data.datasets[0].data = data.values;
+      const lastIdx = data.values.length - 1;
+      chart.data.datasets[0].backgroundColor = data.values.map((_, i) =>
+        offset === 0 && i === lastIdx ? '#C9A66B' : 'rgba(201,166,107,0.35)'
+      );
+      chart.update();
+      titleEl.textContent = data.title;
+      totalEl.textContent = 'Rp ' + Number(data.total).toLocaleString('id-ID');
+      prevBtn.disabled = ! data.can_prev;
+      nextBtn.disabled = ! data.can_next;
+    } catch (e) {
+      console.error('Gagal load revenue', e);
+    }
+  }
+
+  modeBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      modeBtns.forEach((b) => b.classList.remove('revenue-mode--active'));
+      btn.classList.add('revenue-mode--active');
+      loadRevenue(btn.dataset.mode, 0);
+    });
+  });
+  prevBtn.addEventListener('click', () => loadRevenue(state.mode, state.offset - 1));
+  nextBtn.addEventListener('click', () => loadRevenue(state.mode, state.offset + 1));
 })();
 </script>
 
