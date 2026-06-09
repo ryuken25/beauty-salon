@@ -92,26 +92,44 @@ class SalonSeeder extends Seeder
         }
         $gdAvailable = function_exists('imagecreatetruecolor') && function_exists('imagejpeg');
 
+        $seedDir = FCPATH . 'uploads/layanan/seed';
+        if (! is_dir($seedDir)) {
+            @mkdir($seedDir, 0775, true);
+        }
+        $slugify = static fn (string $s) => trim(preg_replace('/[^a-zA-Z0-9]+/', '-', strtolower($s)), '-');
+
         foreach ($layananByNama as $nama => $l) {
             $update = [];
+
+            // Promo
             if (isset($promos[$nama])) {
                 [$persen, $deskripsi] = $promos[$nama];
                 $update['promo_persen'] = (int) $persen;
                 $update['promo_deskripsi'] = $deskripsi !== '' ? $deskripsi : null;
             }
-            if (in_array($nama, $galleryFor, true) && $gdAvailable) {
-                $paths = [];
-                $count = 2 + ((int) $l['id'] % 2);
-                for ($i = 1; $i <= $count; $i++) {
-                    $fname = $this->generatePlaceholderImage($uploadDir, $nama, $i);
-                    if ($fname !== null) {
-                        $paths[] = 'uploads/layanan/' . $fname;
-                    }
-                }
-                if ($paths) {
-                    $update['gambar'] = \App\Models\LayananModel::encodeGambar($paths);
+
+            // Foto real dari uploads/layanan/seed/<slug>.jpg.
+            // Gallery → s/d 3 foto, lainnya → 1 cover. Fallback placeholder
+            // GD bila file tak ada (seeder tetap jalan walau foto belum di-download).
+            $slug = $slugify($nama);
+            $maxImg = in_array($nama, $galleryFor, true) ? 3 : 1;
+            $paths = [];
+            for ($i = 1; $i <= $maxImg; $i++) {
+                $fname = $i === 1 ? "{$slug}.jpg" : "{$slug}-{$i}.jpg";
+                if (is_file($seedDir . '/' . $fname)) {
+                    $paths[] = 'uploads/layanan/seed/' . $fname;
                 }
             }
+            if (! $paths && $gdAvailable) {
+                $fname = $this->generatePlaceholderImage($uploadDir, $nama, 1);
+                if ($fname !== null) {
+                    $paths[] = 'uploads/layanan/' . $fname;
+                }
+            }
+            if ($paths) {
+                $update['gambar'] = \App\Models\LayananModel::encodeGambar($paths);
+            }
+
             if ($update) {
                 $this->db->table('layanan')->where('id', (int) $l['id'])->update($update);
             }
