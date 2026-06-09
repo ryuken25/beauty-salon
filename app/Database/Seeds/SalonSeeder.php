@@ -75,6 +75,56 @@ class SalonSeeder extends Seeder
             $layananByNama[$l['nama']] = $l;
         }
 
+        // ── Promo + galeri (kolom JSON, tanpa tabel baru) ────────
+        $promos = [
+            'Facial'             => [20, 'Promo bulan ini!'],
+            'Hair Spa'           => [15, 'Spa relaks weekend'],
+            'Creambath'          => [25, 'Spesial pelanggan baru'],
+            'Make Up'            => [10, 'Diskon event'],
+            'Nail Art'           => [30, 'Promo flash 7 hari'],
+            'Manicure / Pedicure'=> [15, ''],
+        ];
+        $galleryFor = ['Facial', 'Hair Spa', 'Creambath', 'Make Up', 'Nail Art', 'Sulam Alis', 'Eyelash Extension'];
+        $uploadDir = FCPATH . 'uploads/layanan';
+        if (! is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0775, true);
+            @file_put_contents($uploadDir . '/index.html', '');
+        }
+        $gdAvailable = function_exists('imagecreatetruecolor') && function_exists('imagejpeg');
+
+        foreach ($layananByNama as $nama => $l) {
+            $update = [];
+            if (isset($promos[$nama])) {
+                [$persen, $deskripsi] = $promos[$nama];
+                $update['promo_persen'] = (int) $persen;
+                $update['promo_deskripsi'] = $deskripsi !== '' ? $deskripsi : null;
+            }
+            if (in_array($nama, $galleryFor, true) && $gdAvailable) {
+                $paths = [];
+                $count = 2 + ((int) $l['id'] % 2);
+                for ($i = 1; $i <= $count; $i++) {
+                    $fname = $this->generatePlaceholderImage($uploadDir, $nama, $i);
+                    if ($fname !== null) {
+                        $paths[] = 'uploads/layanan/' . $fname;
+                    }
+                }
+                if ($paths) {
+                    $update['gambar'] = \App\Models\LayananModel::encodeGambar($paths);
+                }
+            }
+            if ($update) {
+                $this->db->table('layanan')->where('id', (int) $l['id'])->update($update);
+            }
+        }
+        if (! $gdAvailable) {
+            log_message('warning', 'GD extension tidak tersedia — galeri placeholder dilewati.');
+        }
+        // Refresh map untuk dipakai hitung harga final di blok booking.
+        $layananByNama = [];
+        foreach ($this->db->table('layanan')->get()->getResultArray() as $l) {
+            $layananByNama[$l['nama']] = $l;
+        }
+
         // ── Settings ─────────────────────────────────────────────
         $defaults = [
             'nama_salon' => 'SW Beauty Salon',
@@ -142,7 +192,7 @@ class SalonSeeder extends Seeder
 
         foreach ($bookings as $b) {
             $l = $layananByNama[$b['layanan']];
-            $harga = (int) $l['harga'];
+            $harga = \App\Models\LayananModel::hargaFinal($l);
             $kodeStr = $kode($b['tanggal'], $b['seq']);
             $this->db->table('bookings')->insert([
                 'kode_booking' => $kodeStr,
@@ -197,12 +247,204 @@ class SalonSeeder extends Seeder
                     'base_price' => $harga,
                     'additional_price' => 0,
                     'metode_bayar' => 'cash',
-                    'tanggal_transaksi' => $now,
+                    'tanggal_transaksi' => $b['tanggal'] . ' 14:00:00',
                     'catatan' => 'Seeded sample transaction.',
                     'created_at' => $now,
                 ]);
             }
         }
+
+        // ── Multi-bulan filler: ~50 booking 3 bulan lalu s/d besok ─
+        // Tujuan utama: data grafik laporan (mode bulan + prev/next, mode
+        // hari per jam, mode minggu) ada isi. Pakai harga final (promo)
+        // di harga_layanan/dp_amount/transaksi.nominal — konsisten dgn
+        // BookingService::create.
+        $phones = array_keys($pelangganIds);
+        if ($phones) {
+            $layananArr = array_values($layananByNama);
+            $metode = ['cash', 'transfer', 'qris'];
+
+            // Slot tracker per tanggal — anti double-booking.
+            $usedSlotsByDate = [];
+            $usedKodeSeqByDate = [];
+
+            $insertFiller = function (string $tanggal, int $startMin, array $l, string $phone, string $status, ?string $metodeBayar = null) use (
+                $kode, $emailForPhone, $now, &$usedSlotsByDate, &$usedKodeSeqByDate
+            ): bool {
+                $slotsNeeded = max(1, (int) ceil((int) $l['durasi_menit'] / 30));
+                // Cek bentrok slot
+                $used = $usedSlotsByDate[$tanggal] ?? [];
+                for ($i = 0; $i < $slotsNeeded; $i++) {
+                    $m = $startMin + 30 * $i;
+                    if (in_array($m, $used, true)) return false;
+                    if ($m + 30 > 19 * 60) return false; // jangan lewat tutup
+                }
+                // Tandai slot terpakai HANYA untuk status non-final
+                if (in_array($status, ['pending_verification', 'accepted'], true)) {
+                    for ($i = 0; $i < $slotsNeeded; $i++) {
+                        $usedSlotsByDate[$tanggal][] = $startMin + 30 * $i;
+                    }
+                }
+
+                $seq = ($usedKodeSeqByDate[$tanggal] ?? 100) + 1;
+                $usedKodeSeqByDate[$tanggal] = $seq;
+                $startTime = sprintf('%02d:%02d:00', intdiv($startMin, 60), $startMin % 60);
+                $endMin = $startMin + ($slotsNeeded * 30);
+                $endTime = sprintf('%02d:%02d:00', intdiv($endMin, 60), $endMin % 60);
+
+                $harga = \App\Models\LayananModel::hargaFinal($l);
+                $dp = min($harga, 50_000);
+                $isFinal = in_array($status, ['rejected', 'cancelled', 'completed'], true);
+
+                $row = [
+                    'kode_booking' => $kode($tanggal, $seq),
+                    'user_id' => null,
+                    'nama_pelanggan' => $this->namaForPhone($phone),
+                    'nomor_hp_pelanggan' => $phone,
+                    'email_pelanggan' => $emailForPhone[$phone] ?? null,
+                    'layanan_id' => (int) $l['id'],
+                    'tanggal' => $tanggal,
+                    'slot_mulai' => $startTime,
+                    'slot_selesai' => $endTime,
+                    'jumlah_slot' => $slotsNeeded,
+                    'harga_layanan' => $harga,
+                    'dp_amount' => $dp,
+                    'dp_proof_path' => null,
+                    'payment_status' => $status === 'completed' || $status === 'accepted' ? 'dp_verified' : 'unpaid',
+                    'status' => $status,
+                    'sumber' => 'online',
+                    'catatan' => null,
+                    'verified_via' => in_array($status, ['accepted', 'completed'], true) ? 'dashboard:seeder' : null,
+                    'verified_at' => in_array($status, ['accepted', 'completed'], true) ? $tanggal . ' ' . $startTime : null,
+                    'completed_at' => $status === 'completed' ? $tanggal . ' ' . $endTime : null,
+                    'cancelled_at' => $status === 'cancelled' ? $tanggal . ' ' . $startTime : null,
+                    'cancelled_by' => $status === 'cancelled' ? 'pelanggan' : null,
+                    'rejection_reason' => $status === 'rejected' ? 'Slot bentrok' : null,
+                    'cancellation_reason' => $status === 'cancelled' ? 'Berhalangan hadir.' : null,
+                    'created_at' => $tanggal . ' ' . $startTime,
+                    'updated_at' => $now,
+                ];
+                $this->db->table('bookings')->insert($row);
+                $bookingId = (int) $this->db->insertID();
+
+                // Hold slots untuk non-final
+                if (! $isFinal) {
+                    for ($i = 0; $i < $slotsNeeded; $i++) {
+                        $m = $startMin + 30 * $i;
+                        $slotStr = sprintf('%02d:%02d:00', intdiv($m, 60), $m % 60);
+                        $this->db->table('booking_slots')->insert([
+                            'booking_id' => $bookingId,
+                            'tanggal' => $tanggal,
+                            'slot_waktu' => $slotStr,
+                            'status' => 'held',
+                            'created_at' => $now,
+                        ]);
+                    }
+                }
+
+                // Transaksi untuk completed
+                if ($status === 'completed') {
+                    $jamTrans = sprintf('%02d:%02d:00', max(9, intdiv($startMin, 60)) + (intdiv($startMin, 60) % 3), 0);
+                    $this->db->table('transaksi')->insert([
+                        'booking_id' => $bookingId,
+                        'nominal' => $harga,
+                        'base_price' => $harga,
+                        'additional_price' => 0,
+                        'metode_bayar' => $metodeBayar ?? 'cash',
+                        'tanggal_transaksi' => $tanggal . ' ' . $jamTrans,
+                        'catatan' => null,
+                        'created_at' => $now,
+                    ]);
+                }
+                return true;
+            };
+
+            // — Booking 3 bulan ke belakang (mayoritas completed) —
+            $deterministic = 17;
+            for ($daysAgo = 90; $daysAgo >= 2; $daysAgo--) {
+                $tgl = date('Y-m-d', strtotime("-{$daysAgo} days"));
+                // Skip Minggu kadang (buat variasi)
+                if ((int) date('w', strtotime($tgl)) === 0 && ($daysAgo % 4) === 0) continue;
+                // 0..2 booking per hari
+                $jumlah = ($daysAgo * $deterministic) % 3;
+                for ($k = 0; $k < $jumlah; $k++) {
+                    $l = $layananArr[($daysAgo + $k * 7) % count($layananArr)];
+                    $phone = $phones[($daysAgo + $k) % count($phones)];
+                    // jam 09:00–17:30 tersebar
+                    $startMin = (9 + (($daysAgo + $k * 3) % 9)) * 60;
+                    // mayoritas completed (85%), sisanya cancelled/rejected
+                    $r = ($daysAgo * 7 + $k) % 20;
+                    $status = $r < 17 ? 'completed' : ($r < 19 ? 'cancelled' : 'rejected');
+                    $insertFiller($tgl, $startMin, $l, $phone, $status, $metode[($daysAgo + $k) % 3]);
+                }
+            }
+
+            // — Hari ini: 4–6 booking campur —
+            $todayMix = [
+                ['mulai' => 9 * 60,  'status' => 'completed'],
+                ['mulai' => 10 * 60, 'status' => 'accepted'],
+                ['mulai' => 13 * 60, 'status' => 'accepted'],
+                ['mulai' => 14 * 60, 'status' => 'pending_verification'],
+                ['mulai' => 16 * 60, 'status' => 'completed'],
+            ];
+            foreach ($todayMix as $i => $m) {
+                $l = $layananArr[($i + 3) % count($layananArr)];
+                $phone = $phones[$i % count($phones)];
+                $insertFiller($today, $m['mulai'], $l, $phone, $m['status'], $metode[$i % 3]);
+            }
+
+            // — Besok: 3 pending + 2 accepted —
+            $besokMix = [
+                ['mulai' => 9 * 60,  'status' => 'pending_verification'],
+                ['mulai' => 11 * 60, 'status' => 'accepted'],
+                ['mulai' => 14 * 60, 'status' => 'pending_verification'],
+                ['mulai' => 16 * 60, 'status' => 'accepted'],
+                ['mulai' => 17 * 60, 'status' => 'pending_verification'],
+            ];
+            foreach ($besokMix as $i => $m) {
+                $l = $layananArr[($i + 7) % count($layananArr)];
+                $phone = $phones[($i + 1) % count($phones)];
+                $insertFiller($tomorrow, $m['mulai'], $l, $phone, $m['status']);
+            }
+        }
+
+        // ── Ringkasan kode booking untuk tester ──────────────────
+        $summary = $this->db->table('bookings')->select('kode_booking, status, email_pelanggan')->orderBy('id', 'DESC')->limit(15)->get()->getResultArray();
+        if (class_exists(\CodeIgniter\CLI\CLI::class)) {
+            \CodeIgniter\CLI\CLI::newLine();
+            \CodeIgniter\CLI\CLI::write('Booking terakhir (15) hasil seeder:', 'cyan');
+            foreach ($summary as $row) {
+                \CodeIgniter\CLI\CLI::write(sprintf('  %-22s %-22s %s', $row['kode_booking'], $row['status'], $row['email_pelanggan'] ?? '-'));
+            }
+            \CodeIgniter\CLI\CLI::newLine();
+        }
+    }
+
+    /**
+     * Generate placeholder JPG 800x600 (onyx bg + gold text) via GD untuk
+     * layanan promo. Kembalikan nama file relatif, atau null kalau gagal.
+     */
+    private function generatePlaceholderImage(string $dir, string $namaLayanan, int $idx): ?string
+    {
+        $im = @imagecreatetruecolor(800, 600);
+        if (! $im) return null;
+        $bg = imagecolorallocate($im, 20, 17, 15);            // #14110F
+        $gold = imagecolorallocate($im, 201, 166, 107);        // #C9A66B
+        $champagne = imagecolorallocate($im, 232, 213, 168);   // #E8D5A8
+        imagefilledrectangle($im, 0, 0, 800, 600, $bg);
+
+        // Ornament rule horizontal
+        imagefilledrectangle($im, 200, 200, 600, 202, $gold);
+        imagefilledrectangle($im, 200, 398, 600, 400, $gold);
+
+        $title = $namaLayanan;
+        imagestring($im, 5, 320, 280, $title, $champagne);
+        imagestring($im, 3, 280, 330, 'SW Beauty Salon - foto ' . $idx, $gold);
+
+        $fname = 'seed-' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $namaLayanan)) . '-' . $idx . '-' . substr(md5($namaLayanan . $idx), 0, 6) . '.jpg';
+        $ok = @imagejpeg($im, $dir . '/' . $fname, 85);
+        imagedestroy($im);
+        return $ok ? $fname : null;
     }
 
     private function namaForPhone(string $phone): string
