@@ -160,7 +160,24 @@ class BookingController extends BaseController
             return redirect()->to('/admin/booking')->with('error', 'Booking tidak ditemukan.');
         }
         $model->update($id, ['payment_status' => 'dp_verified']);
-        return redirect()->to('/admin/booking/' . $id)->with('success', 'DP ditandai terverifikasi.');
+
+        // Pembayaran DP terverifikasi → sekalian terima booking kalau masih
+        // pending. Service::verify menangani transisi + log + email konfirmasi.
+        $accepted = false;
+        if ($row['status'] === 'pending_verification') {
+            try {
+                (new BookingService())->verify($id, (int) session('user_id'));
+                $accepted = true;
+            } catch (RuntimeException $e) {
+                // Race condition (sudah berubah status di tab lain) — lanjut tanpa
+                // accept; admin bisa coba ulang dari aksi 'Verifikasi'.
+                log_message('warning', 'dpVerify auto-accept gagal: ' . $e->getMessage());
+            }
+        }
+        $msg = $accepted
+            ? 'DP terverifikasi & booking otomatis diterima.'
+            : 'DP terverifikasi.';
+        return redirect()->to('/admin/booking/' . $id)->with('success', $msg);
     }
 
     public function walkin()
