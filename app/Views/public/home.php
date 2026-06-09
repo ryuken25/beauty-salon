@@ -89,7 +89,7 @@
 </div>
 
 <div class="text-center mt-3">
-  <a class="btn-salon-secondary" href="<?= base_url('layanan') ?>">Lihat semua layanan</a>
+  <a class="btn-salon-primary" href="<?= base_url('layanan') ?>">Lihat semua layanan</a>
 </div>
 
 <!-- ── Why Us ──────────────────────────────────────────────── -->

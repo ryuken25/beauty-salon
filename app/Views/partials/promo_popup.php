@@ -48,7 +48,7 @@ if (! $show || empty($promos)) return;
         <?php endforeach ?>
       </div>
       <div class="modal-footer">
-        <a class="btn-salon-secondary" href="<?= base_url('layanan') ?>">Lihat semua layanan</a>
+        <a class="btn-salon-primary" href="<?= base_url('layanan') ?>">Lihat semua layanan</a>
         <button type="button" class="btn-salon-ghost" data-bs-dismiss="modal">Tutup</button>
       </div>
     </div>
