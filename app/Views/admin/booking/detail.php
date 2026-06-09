@@ -39,7 +39,7 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
       <div class="h2 mb-2">Pesan WhatsApp manual</div>
       <textarea id="waMsg" class="form-salon-textarea" rows="7" readonly><?= esc($wa_message) ?></textarea>
       <div class="flex flex-wrap gap-1 mt-2">
-        <button type="button" class="btn-salon-secondary" onclick="navigator.clipboard.writeText(document.getElementById('waMsg').value).then(()=>alert('Pesan disalin.'))"><i class="bi bi-clipboard"></i> Salin pesan</button>
+        <button type="button" class="btn-salon-secondary" data-copy="#waMsg"><i class="bi bi-clipboard"></i> Salin pesan</button>
         <a class="btn-salon-success" target="_blank" rel="noopener" href="<?= esc($wa_link) ?>"><i class="bi bi-whatsapp"></i> Buka WhatsApp</a>
         <form method="post" action="<?= base_url('admin/booking/' . $booking['id'] . '/wa-sent') ?>">
           <?= csrf_field() ?>
@@ -108,7 +108,7 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
         </button>
       <?php endif ?>
       <?php if (in_array($booking['status'], ['pending_verification', 'accepted'], true)): ?>
-        <form method="post" action="<?= base_url('admin/booking/' . $booking['id'] . '/cancel') ?>" onsubmit="return confirm('Batalkan booking ini?');">
+        <form method="post" action="<?= base_url('admin/booking/' . $booking['id'] . '/cancel') ?>" data-confirm="Batalkan booking ini? Slot akan dilepas dan tidak bisa dikembalikan." data-confirm-title="Batalkan booking" data-confirm-danger="1" data-confirm-yes="Ya, batalkan">
           <?= csrf_field() ?>
           <button class="btn-salon-danger btn-salon--full" type="submit"><i class="bi bi-slash-circle"></i> Batalkan</button>
         </form>
