@@ -7,6 +7,8 @@ use CodeIgniter\Router\RouteCollection;
 // ── Public ────────────────────────────────────────────────
 $routes->get('/', 'Home::index');
 $routes->get('layanan', 'Home::layanan');
+$routes->get('layanan/(:num)', 'Home::detail/$1');
+$routes->get('api/promos', 'Api::promos');
 
 $routes->match(['GET', 'POST'], 'booking', 'Booking::form', ['filter' => 'customer']);
 $routes->get('booking/sukses/(:any)', 'Booking::sukses/$1', ['filter' => 'customer']);
@@ -65,6 +67,7 @@ $routes->group('admin', ['filter' => 'admin'], static function ($routes) {
 // ── Owner area — manajerial (pemilik only) ────────────────
 $routes->group('owner', ['filter' => 'owner'], static function ($routes) {
     $routes->get('laporan', 'Owner\LaporanController::index');
+    $routes->get('laporan/revenue', 'Owner\LaporanController::revenueData');
 
     $routes->get('layanan', 'Owner\LayananController::index');
     $routes->post('layanan', 'Owner\LayananController::store');

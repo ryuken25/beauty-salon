@@ -29,11 +29,18 @@
 
   /* Status */
   --color-success:       #25D366;
-  --color-pending:       #C9A66B;
-  --color-pending-bg:    rgba(201,166,107,0.15);
+  --color-pending:       #E07070;
+  --color-pending-bg:    rgba(224,112,138,0.15);
   --color-danger:        #E07070;
   --color-completed-bg:  rgba(37,211,102,0.12);
   --color-completed-fg:  #5DD37C;
+
+  /* v2 — galeri / promo / aksen tambahan */
+  --gold-deep:        #8F7938;
+  --champagne:        #E8D5A8;
+  --promo:            #E0708A;
+  --promo-bg:         rgba(224,112,138,0.14);
+  --promo-border:     rgba(224,112,138,0.4);
 
   /* Typography */
   --font-display: 'Playfair Display', Georgia, serif;
@@ -837,3 +844,240 @@ input[type="date"], input[type="time"], input[type="datetime-local"], input[type
   color: var(--gold);
   border-color: rgba(201,166,107,0.2);
 }
+
+/* ════════════════════════════════════════════════════════════════
+   v2 — Card highlight + promo + galeri + icon picker + toast/modal
+   ════════════════════════════════════════════════════════════════ */
+
+/* Subtle highlight for any card-salon — gradient + hover lift */
+.card-salon {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+a.card-salon:hover,
+.card-salon:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+.card-salon--highlight {
+  box-shadow: 0 0 0 1px var(--gold-border), 0 0 24px rgba(201,166,107,0.12);
+}
+.card-salon--promo {
+  border-color: var(--promo-border);
+  background: linear-gradient(180deg, var(--card), #2A2320);
+}
+
+/* Promo badge & strike-through price */
+.badge-promo {
+  display: inline-block;
+  background: var(--promo-bg);
+  color: var(--promo);
+  border: 1px solid var(--promo-border);
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.price-strike {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  font-size: 0.85em;
+  margin-right: 0.4em;
+}
+
+/* Layanan card cover image */
+.layanan-cover {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold-border);
+  margin-bottom: 0.5rem;
+  background: var(--surface);
+}
+
+/* Detail galeri carousel */
+.layanan-gallery {
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg);
+}
+.layanan-gallery .carousel-inner img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  display: block;
+}
+.layanan-gallery .carousel-control-prev-icon,
+.layanan-gallery .carousel-control-next-icon {
+  background-color: rgba(20,17,15,0.75);
+  border-radius: 50%;
+  padding: 12px;
+  background-size: 60%;
+  filter: invert(74%) sepia(36%) saturate(460%) hue-rotate(2deg) brightness(92%) contrast(88%);
+}
+.layanan-gallery .carousel-indicators [data-bs-target] {
+  background-color: var(--gold);
+}
+.layanan-gallery--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 420px;
+  font-size: 6rem;
+  color: var(--gold);
+  background: linear-gradient(135deg, var(--surface), #1A1612);
+}
+
+/* Owner — thumb grid + icon picker */
+.galeri-thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.galeri-thumb {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--gold-border);
+  background: var(--surface);
+}
+.galeri-thumb img {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  display: block;
+}
+.galeri-thumb__hapus {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(20,17,15,0.85);
+  border: 1px solid var(--promo-border);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  color: var(--promo);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.galeri-thumb__hapus input { margin: 0; accent-color: var(--promo); }
+
+.icon-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 0.4rem;
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.icon-pick {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--gold);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.icon-pick:hover { border-color: var(--gold-border); }
+.icon-pick--active {
+  border-color: var(--gold);
+  background: var(--gold-soft);
+  transform: scale(1.05);
+}
+
+/* Salon toast (notification) */
+.toast-salon__wrap {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+.toast-salon {
+  pointer-events: auto;
+  min-width: 240px;
+  max-width: 360px;
+  background: var(--card);
+  color: var(--text-primary);
+  border: 1px solid var(--gold-border);
+  border-left-width: 4px;
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.9rem;
+  font-size: 0.875rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.toast-salon--shown { opacity: 1; transform: translateY(0); }
+.toast-salon--success { border-left-color: var(--color-completed-fg); }
+.toast-salon--error   { border-left-color: var(--color-danger); }
+.toast-salon--info    { border-left-color: var(--gold); }
+
+/* Reusable salon confirm modal */
+.modal-salon .modal-content {
+  background: var(--card);
+  border: 1px solid var(--gold-border);
+  color: var(--text-primary);
+}
+.modal-salon .modal-header,
+.modal-salon .modal-footer { border-color: var(--gold-border); }
+.modal-salon .btn-close { filter: invert(1); }
+
+/* Status box (laporan — bulan ini) */
+.status-box {
+  display: block;
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.2rem;
+  text-decoration: none;
+  border: 1px solid var(--gold-border);
+  background: linear-gradient(180deg, var(--card), #1A1612);
+  color: var(--text-primary);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.status-box:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  color: var(--text-primary);
+}
+.status-box__count {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.status-box__label { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+.status-box--pending   { border-left: 4px solid var(--color-pending); }
+.status-box--pending .status-box__count { color: var(--color-pending); }
+.status-box--accepted  { border-left: 4px solid var(--gold); }
+.status-box--accepted .status-box__count { color: var(--gold); }
+.status-box--completed { border-left: 4px solid var(--color-completed-fg); }
+.status-box--completed .status-box__count { color: var(--color-completed-fg); }
+.status-box--rejected,
+.status-box--cancelled { border-left: 4px solid var(--text-muted); }
+.status-box--rejected .status-box__count,
+.status-box--cancelled .status-box__count { color: var(--text-muted); }
+
+/* Dashboard clickable metric card variant */
+a.metric-link { text-decoration: none; color: inherit; display: block; }
+a.metric-link:hover { color: inherit; }
+.metric-pending-strong { color: var(--color-pending); font-weight: 600; }
