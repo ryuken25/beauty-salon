@@ -16,31 +16,32 @@ $tgl = $hariId[(int) date('w')] . ', ' . date('j') . ' ' . $bulanId[(int) date('
   <?php endif ?>
 </div>
 
-<!-- 3 metric operational: pending, hari ini, accepted -->
+<!-- 3 metric operational: pending, hari ini, accepted — semua clickable -->
+<?php $today = date('Y-m-d'); ?>
 <div class="row-salon cols-3 mb-3">
-  <div class="card-salon <?= $pending > 0 ? 'card-salon--pending' : '' ?>">
+  <a class="card-salon metric-link <?= $pending > 0 ? 'card-salon--pending' : '' ?>" href="<?= base_url('admin/booking?status=pending_verification') ?>">
     <div class="metric">
       <span class="label">Pending verifikasi</span>
-      <span class="metric__value"><?= esc($pending) ?></span>
+      <span class="metric__value <?= $pending > 0 ? 'metric-pending-strong' : '' ?>"><?= esc($pending) ?></span>
       <span class="metric__caption" style="<?= $pending > 0 ? 'color:var(--color-pending);' : '' ?>">
-        <?= $pending > 0 ? 'Perlu aksi' : 'Aman' ?>
+        <?= $pending > 0 ? 'Perlu aksi — klik untuk lihat' : 'Aman' ?>
       </span>
     </div>
-  </div>
-  <div class="card-salon">
+  </a>
+  <a class="card-salon metric-link" href="<?= base_url('admin/booking?tanggal=' . $today) ?>">
     <div class="metric">
       <span class="label">Booking hari ini</span>
       <span class="metric__value"><?= esc($booking_hari_ini) ?></span>
-      <span class="metric__caption"><?= esc($booking_hari_ini_selesai) ?> selesai</span>
+      <span class="metric__caption"><?= esc($booking_hari_ini_selesai) ?> selesai — klik untuk daftar</span>
     </div>
-  </div>
-  <div class="card-salon">
+  </a>
+  <a class="card-salon metric-link" href="<?= base_url('admin/booking?status=accepted&tanggal=' . $today) ?>">
     <div class="metric">
       <span class="label">Sudah diterima</span>
       <span class="metric__value"><?= esc($accepted_hari_ini) ?></span>
-      <span class="metric__caption">Antri hari ini</span>
+      <span class="metric__caption">Antri hari ini — klik untuk lihat</span>
     </div>
-  </div>
+  </a>
 </div>
 
 <!-- Quick actions -->

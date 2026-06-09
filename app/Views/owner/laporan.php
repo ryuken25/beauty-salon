@@ -87,17 +87,38 @@ $statusLabels = [
   </div>
 </div>
 
-<!-- Status distribution -->
+<!-- Status distribution — clickable per status, warna sesuai status -->
+<?php
+$bulanThis = date('Y-m');
+$statusIcon = [
+    'pending_verification' => 'bi-hourglass-split',
+    'accepted' => 'bi-check2-circle',
+    'completed' => 'bi-trophy',
+    'rejected' => 'bi-x-circle',
+    'cancelled' => 'bi-slash-circle',
+];
+$statusBoxCls = [
+    'pending_verification' => 'status-box status-box--pending',
+    'accepted' => 'status-box status-box--accepted',
+    'completed' => 'status-box status-box--completed',
+    'rejected' => 'status-box status-box--rejected',
+    'cancelled' => 'status-box status-box--cancelled',
+];
+?>
 <div class="card-salon">
-  <div class="h2 mb-2">Status booking bulan ini</div>
+  <div class="flex justify-between items-center mb-2" style="flex-wrap:wrap; gap:0.5rem;">
+    <div>
+      <div class="h2" style="margin:0;">Status booking bulan ini</div>
+      <div class="caption">Bulan ini, klik untuk lihat detail.</div>
+    </div>
+    <span class="badge-salon badge-salon--accepted"><?= esc(date('F Y')) ?></span>
+  </div>
   <div class="row-salon cols-5">
-    <?php foreach ($status_map as $st => $jumlah):
-      $cls = 'badge-salon--' . ($st === 'pending_verification' ? 'pending' : str_replace('_', '-', $st));
-    ?>
-      <div style="border:1px solid var(--gold-border); border-radius:var(--radius-md); padding:0.857rem;">
-        <span class="badge-salon <?= $cls ?>"><?= esc($statusLabels[$st]) ?></span>
-        <div style="font-family:var(--font-display); font-size:1.714rem; color:var(--text-primary); margin-top:0.4rem;"><?= esc($jumlah) ?></div>
-      </div>
+    <?php foreach ($status_map as $st => $jumlah): ?>
+      <a class="<?= $statusBoxCls[$st] ?? 'status-box' ?>" href="<?= base_url('admin/booking?status=' . urlencode($st) . '&bulan=' . urlencode($bulanThis)) ?>">
+        <div class="status-box__label"><i class="bi <?= esc($statusIcon[$st] ?? 'bi-circle') ?>"></i> <?= esc($statusLabels[$st]) ?></div>
+        <div class="status-box__count"><?= esc($jumlah) ?></div>
+      </a>
     <?php endforeach ?>
   </div>
 </div>

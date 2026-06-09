@@ -31,10 +31,25 @@ class BookingController extends BaseController
         if ($status) $builder->where('b.status', $status);
         $tanggal = (string) $this->request->getGet('tanggal');
         if ($tanggal) $builder->where('b.tanggal', $tanggal);
+        $bulan = (string) $this->request->getGet('bulan');
+        if ($bulan && preg_match('/^\d{4}-\d{2}$/', $bulan)) {
+            // Range awal–akhir bulan, pakai tanggal booking (bukan created_at).
+            $start = $bulan . '-01';
+            $end = date('Y-m-t', strtotime($start));
+            $builder->where('b.tanggal >=', $start)->where('b.tanggal <=', $end);
+        } else {
+            $bulan = '';
+        }
         $q = (string) $this->request->getGet('q');
         if ($q) $builder->groupStart()->like('b.nama_pelanggan', $q)->orLike('b.kode_booking', $q)->orLike('b.nomor_hp_pelanggan', $q)->groupEnd();
         $rows = $builder->orderBy('b.tanggal', 'DESC')->orderBy('b.slot_mulai', 'DESC')->limit(200)->get()->getResultArray();
-        return view('admin/booking/index', ['rows' => $rows, 'filter_status' => $status, 'filter_tanggal' => $tanggal, 'filter_q' => $q]);
+        return view('admin/booking/index', [
+            'rows' => $rows,
+            'filter_status' => $status,
+            'filter_tanggal' => $tanggal,
+            'filter_bulan' => $bulan,
+            'filter_q' => $q,
+        ]);
     }
 
     public function detail(int $id)

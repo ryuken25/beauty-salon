@@ -46,7 +46,7 @@ class LaporanController extends BaseController
             ->join('layanan l', 'l.id = b.layanan_id')
             ->where('b.status', 'completed')
             ->where('b.completed_at >=', date('Y-m-01 00:00:00'))
-            ->groupBy('l.id')
+            ->groupBy('l.id, l.nama')
             ->orderBy('jumlah', 'DESC')
             ->limit(5)
             ->get()->getResultArray();
