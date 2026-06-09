@@ -80,6 +80,8 @@ class Booking extends BaseController
         $closeMin = $hT * 60 + $mT;
         // Tutup kalau jam sekarang ≥ jam tutup, atau sisa waktu < 30 menit (1 slot).
         $closedToday = ($nowMin + SlotService::SLOT_MINUTES) > $closeMin;
+        // Awareness "mau tutup" — dalam 2 jam tapi belum closed.
+        $closingSoon = (! $closedToday) && ($nowMin >= $closeMin - 120) && ($nowMin + SlotService::SLOT_MINUTES <= $closeMin);
         $offset = $closedToday ? 1 : 0;
         $dates = [];
         for ($i = $offset; $i <= $rangeHari; $i++) {
@@ -95,6 +97,7 @@ class Booking extends BaseController
             'akun_nama' => session('user_nama'),
             'akun_hp' => session('user_hp'),
             'closed_today' => $closedToday,
+            'closing_soon' => $closingSoon,
             'jam_tutup' => $jamTutup,
         ]);
     }

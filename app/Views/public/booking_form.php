@@ -13,6 +13,30 @@ $today = date('Y-m-d');
   </div>
 <?php endif ?>
 
+<?php if (! empty($closing_soon)): ?>
+  <!-- Closing-soon awareness modal (custom, BUKAN browser confirm) -->
+  <div class="modal fade modal-salon" id="closingSoonModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" style="font-family:var(--font-display); color:var(--color-pending);">
+            <i class="bi bi-clock-history"></i> Salon mau tutup
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          Salon sudah mau tutup pukul <strong style="color:var(--gold);"><?= esc($jam_tutup) ?></strong>.
+          Yakin tetap booking untuk hari ini? Kamu juga bisa pilih hari lain.
+        </div>
+        <div class="modal-footer" style="gap:0.5rem;">
+          <button type="button" class="btn-salon-secondary" id="closingSoonPickOther">Pilih hari lain</button>
+          <button type="button" class="btn-salon-primary" data-bs-dismiss="modal">Ya, lanjut hari ini</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<?php endif ?>
+
 <section class="section-header">
   <div class="h1">Booking Layanan</div>
   <span class="tagline">Pilih layanan, tanggal, dan jam yang nyaman untuk Anda</span>
@@ -157,7 +181,33 @@ function pickDate(item) {
   state.slot = null;
   document.getElementById('slotInput').value = '';
   refreshSlots();
+  maybeShowClosingSoon();
 }
+
+// Closing-soon modal — muncul kalau tanggal terpilih = hari ini & jam sekarang
+// < 2 jam sebelum jam tutup. Awareness only; submit tetap divalidasi server.
+const CLOSING_SOON = <?= $closing_soon ? 'true' : 'false' ?>;
+function maybeShowClosingSoon() {
+  if (! CLOSING_SOON) return;
+  if (state.tanggal !== todayISO()) return;
+  const el = document.getElementById('closingSoonModal');
+  if (! el || ! window.bootstrap) return;
+  bootstrap.Modal.getOrCreateInstance(el).show();
+}
+
+// Tombol "Pilih hari lain" di modal closing-soon → klik tanggal berikutnya
+// (skip today). Lalu tutup modal.
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('closingSoonPickOther');
+  if (! btn) return;
+  btn.addEventListener('click', () => {
+    const next = Array.from(document.querySelectorAll('#dateStrip .date-strip-item'))
+      .find((x) => x.dataset.tanggal && x.dataset.tanggal !== todayISO());
+    if (next) next.click();
+    const m = bootstrap.Modal.getInstance(document.getElementById('closingSoonModal'));
+    if (m) m.hide();
+  });
+});
 
 async function refreshSlots() {
   const grid = document.getElementById('slotGrid');
