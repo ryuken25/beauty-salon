@@ -21,7 +21,12 @@ users(id PK, email UQ NULL, password_hash, nama, nomor_hp UQ NULL,
       role ENUM[admin,pemilik,pelanggan], is_active, timestamps)
 
 layanan(id PK, nama, kategori, deskripsi, durasi_menit, harga, ikon,
+        gambar JSON NULL,         -- array path foto, [0] = cover (v2 2026-06-09)
+        promo_persen TINYINT NULL,-- 0/NULL = tanpa promo (v2)
+        promo_deskripsi NULL,     -- teks marketing opsional (v2)
         is_active, deleted_at, timestamps)
+-- Catatan: jumlah tabel tetap 7. Galeri sengaja JSON (denormalisasi
+-- terkontrol) supaya tidak perlu tabel layanan_gambar.
 
 bookings(
   id PK, kode_booking UQ, user_id FK NULL -> users,

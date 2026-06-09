@@ -52,9 +52,10 @@ Demo accounts (password `Password123!`) — semua login di `/login`:
 - [SlotService](app/Services/SlotService.php) — availability + slot validation.
 - [WhatsAppTemplateService](app/Services/WhatsAppTemplateService.php) — renders templates from settings, builds `wa.me` links. Manual-only — never integrate a paid WhatsApp API.
 
-### Schema (Indonesian column names)
-- `users` (roles admin/pemilik/pelanggan; `email` nullable; `nomor_hp` UNIQUE — MySQL allows many NULLs for staff rows), `layanan` (soft delete), `bookings` (`kode_booking` format `SW-YYYYMMDD-NNN`, `user_id` FK→users nullable for walk-in, `nama_pelanggan`, `nomor_hp_pelanggan`, `email_pelanggan` nullable, `layanan_id`, `slot_mulai`, `slot_selesai`, `jumlah_slot`, `harga_layanan`, `dp_amount`, `dp_proof_path`, `payment_status` ENUM('unpaid','dp_uploaded','dp_verified'), status, `cancellation_reason`, …), `booking_slots` (the column is `slot_waktu`, not `slot` — bites in seeders), `transaksi` (`booking_id`, `nominal`, `base_price`, `additional_price`, `metode_bayar`, `tanggal_transaksi`, `catatan` — no `kode_transaksi`), `settings` (key/value), `booking_logs`.
-- Baseline: `2026-05-12-100000_ResetAndCreateSalonSchema.php`. Latest: `2026-06-04-100000_AuthPelangganDpRemoveStylist.php`. Add NEW dated migrations for any further schema change — **never** rely on `$db->getFieldNames()` inside a migration (CI4 caches it for the whole migrate run; probe `information_schema` instead).
+### Schema (Indonesian column names) — **7 tabel, jumlah tidak berubah**
+- `users` (roles admin/pemilik/pelanggan; `email` nullable; `nomor_hp` UNIQUE — MySQL allows many NULLs for staff rows), `layanan` (soft delete; **`gambar` JSON nullable** = galeri foto, array path relatif, `[0]` = cover; **`promo_persen` TINYINT nullable**, 0/NULL = tanpa promo; **`promo_deskripsi` VARCHAR(255) nullable**), `bookings` (`kode_booking` format `SW-YYYYMMDD-NNN`, `user_id` FK→users nullable for walk-in, `nama_pelanggan`, `nomor_hp_pelanggan`, `email_pelanggan` nullable, `layanan_id`, `slot_mulai`, `slot_selesai`, `jumlah_slot`, `harga_layanan` (FINAL setelah promo), `dp_amount`, `dp_proof_path`, `payment_status` ENUM('unpaid','dp_uploaded','dp_verified'), `email_reminder_sent_at`, status, `cancellation_reason`, …), `booking_slots` (the column is `slot_waktu`, not `slot` — bites in seeders), `transaksi` (`booking_id`, `nominal`, `base_price`, `additional_price`, `metode_bayar`, `tanggal_transaksi`, `catatan` — no `kode_transaksi`), `settings` (key/value), `booking_logs`.
+- Galeri layanan sengaja disimpan sebagai **JSON di kolom `gambar`** (bukan tabel terpisah) — denormalisasi terkontrol untuk menjaga jumlah tabel minimal. Helper di `LayananModel`: `gambarList()`, `cover()`, `encodeGambar()`, `isPromo()`, `hargaFinal()`.
+- Baseline: `2026-05-12-100000_ResetAndCreateSalonSchema.php`. Latest: `2026-06-09-100000_AddLayananPromoIconGambar.php`. Add NEW dated migrations for any further schema change — **never** rely on `$db->getFieldNames()` inside a migration (CI4 caches it for the whole migrate run; probe `information_schema` instead).
 
 ### Booking status vocabulary
 | Internal | UI label | Slot held? |
@@ -83,6 +84,22 @@ Logic di [BookingService::cancel](app/Services/BookingService.php). Admin juga b
 - **Auto-cancel**: booking pending yang lewat jadwal dibatalkan via `php spark bookings:auto-cancel` (jadwalkan Task Scheduler/cron) + lazy sweep (max 1× per 5 menit) di admin dashboard + booking index.
 - **Jam operasional & range hari** dapat diubah di Pengaturan; default 08:00–19:00 dan 7 hari ke depan.
 - **Bahasa Indonesia** di semua label UI dan error message.
+
+## Fitur v2 (2026-06-09)
+
+- **Detail layanan** `/layanan/{id}` (`Home::detail`): galeri Bootstrap carousel + harga (coret kalau promo) + CTA login-aware. Listing & home: cover image + badge promo + promo duluan.
+- **Galeri foto layanan** disimpan di kolom JSON `gambar` (TIDAK ada tabel terpisah). Owner CRUD lewat form edit: thumb grid existing dengan checkbox hapus + file input multiple untuk tambah. Hard delete layanan = file ikut dihapus.
+- **Icon picker visual** di form layanan (grid 30 ikon Bootstrap).
+- **Promo per layanan**: `promo_persen` 0–100 + `promo_deskripsi`. Harga FINAL setelah promo dipakai konsisten oleh BookingService::create (harga_layanan + dp_amount + transaksi.nominal) — single source of truth `LayananModel::hargaFinal()`.
+- **Popup promo saat login** (pelanggan, sekali per session login): flag `promo_popup_once` di session, dikonsumsi & dihapus oleh `partials/promo_popup` saat render. Modal Bootstrap auto-show.
+- **Dashboard cards clickable**: pending → list pending; hari ini → list hari ini; accepted hari ini → list accepted hari ini. Teks pending merah saat > 0 (`--color-pending = #E07070`).
+- **Filter `?bulan=YYYY-MM`** di `Admin\BookingController::index` (regex-validated). Status box di Laporan link ke `/admin/booking?status=<st>&bulan=<YYYY-MM>`.
+- **DP terverifikasi = booking diterima**: `dpVerify` set `payment_status=dp_verified` + kalau status masih pending, delegate ke `BookingService::verify()` (transisi accepted + log + email).
+- **Grafik pendapatan dinamis** (`Owner\LaporanController::revenueData`): mode `hari|minggu|bulan` + `offset` int ≤ 0 (clamp future). Hari = per jam jam_buka..jam_tutup; minggu = 7 hari berakhir di today+offset*7; bulan = tgl 1..akhir bulan (bulan berjalan: 1..today). `can_next` lock di periode terkini.
+- **Awareness popup tutup**: `closing_soon = nowMin ∈ [closeMin-120, closeMin-30]`. Modal Bootstrap (BUKAN browser confirm) saat pilih tanggal = hari ini.
+- **salon-ui.js** — `window.salonToast(msg, type)` + `window.salonConfirm({title,body,danger})` (Promise<bool>) + deklaratif `form[data-confirm]` dan `[data-copy='#id']`. Pengganti semua `alert()/confirm()`.
+
+## Docs
 
 ## Docs
 - [docs/ERD.md](docs/ERD.md) — schema overview.
