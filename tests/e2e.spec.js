@@ -20,9 +20,11 @@ const OWNER = { email: 'owner@swbeautysalon.local', pass: 'Password123!' };
 const PEL_HP = '6281338109102';
 const PEL_PASS = 'Password123!';
 
+// Single unified login form di /login (terima email ATAU nomor WA di field 'identifier').
+// /admin/login dipertahankan sebagai redirect ke /login (kompatibilitas URL).
 async function loginStaff(page, email, password) {
-  await page.goto('/admin/login');
-  await page.fill('input[name="email"]', email);
+  await page.goto('/login');
+  await page.fill('input[name="identifier"]', email);
   await page.fill('input[name="password"]', password);
   await Promise.all([
     page.waitForURL((url) => !/\/login$/.test(url.pathname), { timeout: 8000 }),
@@ -32,7 +34,7 @@ async function loginStaff(page, email, password) {
 
 async function loginPelanggan(page, phone, password) {
   await page.goto('/login');
-  await page.fill('input[name="nomor_hp"]', phone);
+  await page.fill('input[name="identifier"]', phone);
   await page.fill('input[name="password"]', password);
   await Promise.all([
     page.waitForURL((url) => !/\/login$/.test(url.pathname), { timeout: 8000 }),
@@ -53,15 +55,15 @@ test('guest is bounced from /booking to /login', async ({ page }) => {
   await expect(page).toHaveURL(/\/login/);
 });
 
-// ── 3. Two login forms are independent ───────────────────────────
-test('/login is the customer form; /admin/login is the staff form', async ({ page }) => {
+// ── 3. Unified login form di /login (terima email ATAU nomor WA) ─
+test('/login unified form; /admin/login redirect ke /login', async ({ page }) => {
   await page.goto('/login');
-  await expect(page.locator('input[name="nomor_hp"]')).toBeVisible();
-  await expect(page.locator('input[name="email"]')).toHaveCount(0);
+  await expect(page.locator('input[name="identifier"]')).toBeVisible();
+  await expect(page.locator('input[name="password"]')).toBeVisible();
 
+  // /admin/login dipertahankan untuk kompatibilitas URL lama: redirect ke /login.
   await page.goto('/admin/login');
-  await expect(page.locator('input[name="email"]')).toBeVisible();
-  await expect(page.locator('input[name="nomor_hp"]')).toHaveCount(0);
+  await expect(page).toHaveURL(/\/login/);
 });
 
 // ── 4. Pelanggan login lands on dashboard with their bookings ────
@@ -143,10 +145,14 @@ test('/cek-booking: kode booking → tampil detail', async ({ page }) => {
   await expect(page.locator('input[name="kode_booking"]')).toBeVisible();
   await expect(page.locator('input[name="nomor_hp"]')).toHaveCount(0);
 
-  // Seeder menjamin SW-20260605-001 (pending_verification) selalu ada.
-  await page.fill('input[name="kode_booking"]', 'SW-20260605-001');
+  // Fixture #1 = pending_verification besok (seeder produces SW-{tomorrow}-001).
+  const tomorrow = new Date(Date.now() + 86400000);
+  const kode = 'SW-' + tomorrow.getFullYear()
+    + String(tomorrow.getMonth() + 1).padStart(2, '0')
+    + String(tomorrow.getDate()).padStart(2, '0') + '-001';
+  await page.fill('input[name="kode_booking"]', kode);
   await page.click('button[type="submit"]');
-  await expect(page.locator('text=SW-20260605-001').first()).toBeVisible();
+  await expect(page.locator(`text=${kode}`).first()).toBeVisible();
   // Guest tidak boleh bisa cancel — tombol Batalkan hanya muncul kalau login.
   await expect(page.locator('text=/Login untuk membatalkan/i')).toBeVisible();
 });

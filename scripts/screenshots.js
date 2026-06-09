@@ -19,10 +19,10 @@ const VIEWPORT = { width: 1920, height: 1080 };
     await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: false });
     console.log('  saved', name);
   }
-  async function login(email) {
-    await page.goto(BASE + '/admin/logout');
-    await page.goto(BASE + '/admin/login');
-    await page.fill('input[name="email"]', email);
+  async function login(identifier) {
+    await page.goto(BASE + '/logout');
+    await page.goto(BASE + '/login');
+    await page.fill('input[name="identifier"]', identifier);
     await page.fill('input[name="password"]', 'Password123!');
     await Promise.all([page.waitForURL(/dashboard/), page.click('button[type="submit"]')]);
   }
