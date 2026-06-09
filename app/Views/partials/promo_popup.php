@@ -23,6 +23,7 @@ if (! $show || empty($promos)) return;
         <?php foreach ($promos as $p):
           $hargaFinal = \App\Models\LayananModel::hargaFinal($p);
           $cover = \App\Models\LayananModel::cover($p);
+          $range = \App\Models\LayananModel::promoRange($p);
         ?>
           <a class="card-salon card-salon--promo mb-2" href="<?= base_url('layanan/' . (int) $p['id']) ?>" style="display:block; text-decoration:none; color:inherit;">
             <div class="flex items-center gap-2" style="flex-wrap:nowrap;">
@@ -40,6 +41,9 @@ if (! $show || empty($promos)) return;
                 </div>
                 <?php if (! empty($p['promo_deskripsi'])): ?>
                   <div class="caption" style="color:var(--promo);"><?= esc($p['promo_deskripsi']) ?></div>
+                <?php endif ?>
+                <?php if ($range): ?>
+                  <div class="caption" style="color:var(--text-secondary);"><i class="bi bi-calendar-range"></i> <?= esc($range) ?></div>
                 <?php endif ?>
               </div>
               <i class="bi bi-chevron-right" style="color:var(--gold);"></i>

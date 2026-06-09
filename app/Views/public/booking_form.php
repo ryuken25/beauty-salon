@@ -19,18 +19,18 @@ $today = date('Y-m-d');
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" style="font-family:var(--font-display); color:var(--color-pending);">
-            <i class="bi bi-clock-history"></i> Salon mau tutup
+          <h5 class="modal-title" style="font-family:var(--font-display); color:var(--color-danger);">
+            <i class="bi bi-clock-history"></i> Salon hampir tutup
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
         </div>
         <div class="modal-body">
-          Salon sudah mau tutup pukul <strong style="color:var(--gold);"><?= esc($jam_tutup) ?></strong>.
-          Yakin tetap booking untuk hari ini? Kamu juga bisa pilih hari lain.
+          Apakah Anda yakin ingin lanjut membooking di jam ini karena salon sudah hampir tutup pukul
+          <strong style="color:var(--gold);"><?= esc($jam_tutup) ?></strong>?
         </div>
         <div class="modal-footer" style="gap:0.5rem;">
-          <button type="button" class="btn-salon-secondary" id="closingSoonPickOther">Pilih hari lain</button>
-          <button type="button" class="btn-salon-primary" data-bs-dismiss="modal">Ya, lanjut hari ini</button>
+          <button type="button" class="btn-salon-danger" id="closingSoonPickOther"><i class="bi bi-x-circle"></i> Tidak, pilih hari lain</button>
+          <button type="button" class="btn-salon-primary" data-bs-dismiss="modal"><i class="bi bi-check2-circle"></i> Iya, lanjut</button>
         </div>
       </div>
     </div>

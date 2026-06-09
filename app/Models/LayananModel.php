@@ -6,7 +6,7 @@ class LayananModel extends BaseAppModel
     protected $table = 'layanan';
     protected $allowedFields = [
         'nama', 'kategori', 'deskripsi', 'durasi_menit', 'harga', 'ikon', 'is_active',
-        'gambar', 'promo_persen', 'promo_deskripsi',
+        'gambar', 'promo_persen', 'promo_deskripsi', 'promo_mulai', 'promo_selesai',
     ];
     protected $useSoftDeletes = true;
     protected $deletedField = 'deleted_at';
@@ -36,10 +36,40 @@ class LayananModel extends BaseAppModel
         return self::gambarList($l)[0] ?? null;
     }
 
-    /** True kalau layanan punya promo aktif. */
+    /**
+     * True kalau layanan punya promo aktif HARI INI.
+     * Aktif = promo_persen > 0 AND today ∈ [promo_mulai, promo_selesai]
+     * (NULL di salah satu sisi = tak terbatas di sisi itu).
+     */
     public static function isPromo(array $l): bool
     {
-        return isset($l['promo_persen']) && (int) $l['promo_persen'] > 0;
+        if (empty($l['promo_persen']) || (int) $l['promo_persen'] <= 0) {
+            return false;
+        }
+        $today = date('Y-m-d');
+        if (! empty($l['promo_mulai']) && $today < substr((string) $l['promo_mulai'], 0, 10)) {
+            return false;
+        }
+        if (! empty($l['promo_selesai']) && $today > substr((string) $l['promo_selesai'], 0, 10)) {
+            return false;
+        }
+        return true;
+    }
+
+    /** Format "1 Jun – 30 Jun 2026" atau null kalau tidak ada rentang. */
+    public static function promoRange(array $l): ?string
+    {
+        $start = ! empty($l['promo_mulai']) ? substr((string) $l['promo_mulai'], 0, 10) : null;
+        $end = ! empty($l['promo_selesai']) ? substr((string) $l['promo_selesai'], 0, 10) : null;
+        if (! $start && ! $end) return null;
+        $bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+        $fmt = static function (string $d) use ($bln): string {
+            $ts = strtotime($d);
+            return date('j', $ts) . ' ' . $bln[(int) date('n', $ts) - 1] . ' ' . date('Y', $ts);
+        };
+        if ($start && $end) return $fmt($start) . ' – ' . $fmt($end);
+        if ($start)        return 'Mulai ' . $fmt($start);
+        return 'Sampai ' . $fmt($end);
     }
 
     /** Harga final setelah promo (dibulatkan ke rupiah). */

@@ -27,6 +27,8 @@ class LayananController extends BaseController
             'harga' => 'required|is_natural',
             'promo_persen' => 'permit_empty|is_natural|less_than_equal_to[100]',
             'promo_deskripsi' => 'permit_empty|max_length[255]',
+            'promo_mulai' => 'permit_empty|valid_date[Y-m-d]',
+            'promo_selesai' => 'permit_empty|valid_date[Y-m-d]',
         ];
         if (! $this->validate($rules)) {
             return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
@@ -49,6 +51,8 @@ class LayananController extends BaseController
                 'gambar' => LayananModel::encodeGambar($paths),
                 'promo_persen' => $this->promoOrNull($this->request->getPost('promo_persen')),
                 'promo_deskripsi' => $this->emptyToNull($this->request->getPost('promo_deskripsi')),
+                'promo_mulai' => $this->emptyToNull($this->request->getPost('promo_mulai')),
+                'promo_selesai' => $this->emptyToNull($this->request->getPost('promo_selesai')),
             ]);
         } catch (\Throwable $e) {
             $this->rollbackFiles($paths);
@@ -99,6 +103,8 @@ class LayananController extends BaseController
                 'gambar' => LayananModel::encodeGambar($final),
                 'promo_persen' => $this->promoOrNull($this->request->getPost('promo_persen')),
                 'promo_deskripsi' => $this->emptyToNull($this->request->getPost('promo_deskripsi')),
+                'promo_mulai' => $this->emptyToNull($this->request->getPost('promo_mulai')),
+                'promo_selesai' => $this->emptyToNull($this->request->getPost('promo_selesai')),
             ]);
         } catch (\Throwable $e) {
             $this->rollbackFiles($newPaths);

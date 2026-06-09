@@ -101,11 +101,14 @@ class SalonSeeder extends Seeder
         foreach ($layananByNama as $nama => $l) {
             $update = [];
 
-            // Promo
+            // Promo — rentang default 30 hari ke depan supaya demo bisa lihat
+            // "Berlaku 1 Jun – 30 Jun" di popup & detail.
             if (isset($promos[$nama])) {
                 [$persen, $deskripsi] = $promos[$nama];
                 $update['promo_persen'] = (int) $persen;
                 $update['promo_deskripsi'] = $deskripsi !== '' ? $deskripsi : null;
+                $update['promo_mulai'] = date('Y-m-d');
+                $update['promo_selesai'] = date('Y-m-d', strtotime('+30 days'));
             }
 
             // Foto real dari uploads/layanan/seed/<slug>.jpg.

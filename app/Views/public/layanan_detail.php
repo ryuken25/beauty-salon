@@ -57,6 +57,10 @@
         <?php if (! empty($layanan['promo_deskripsi'])): ?>
           <div class="caption mt-1" style="color:var(--promo);"><i class="bi bi-tag"></i> <?= esc($layanan['promo_deskripsi']) ?></div>
         <?php endif ?>
+        <?php $range = \App\Models\LayananModel::promoRange($layanan); ?>
+        <?php if ($range): ?>
+          <div class="caption mt-1" style="color:var(--text-secondary);"><i class="bi bi-calendar-range"></i> Berlaku <?= esc($range) ?></div>
+        <?php endif ?>
       </div>
     <?php else: ?>
       <div class="h2" style="color:var(--gold);">Rp <?= number_format((int) $layanan['harga'], 0, ',', '.') ?></div>

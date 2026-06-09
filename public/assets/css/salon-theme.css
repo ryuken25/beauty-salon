@@ -32,7 +32,8 @@
   --color-pending:       #E07070;
   --color-pending-bg:    rgba(224,112,138,0.15);
   --color-danger:        #E07070;
-  --color-danger-strong: #C0392B;
+  --color-danger-soft:   rgba(224,112,112,0.18);
+  --color-danger-border: rgba(224,112,112,0.55);
   --color-completed-bg:  rgba(37,211,102,0.12);
   --color-completed-fg:  #5DD37C;
 
@@ -217,19 +218,27 @@ a:hover { color: var(--text-primary); text-decoration: underline; text-underline
 .card-salon--featured .tagline,
 .card-salon--featured .caption { color: rgba(20,17,15,0.75); }
 /* Status left-border variants */
+/* Pending — accent merah halus (bukan flat red). Tetap noticeable lewat
+   border-left tebal + nomor & label merah, tapi tidak menyilaukan. */
 .card-salon--pending {
-  background: var(--color-danger-strong);
-  border-color: var(--color-danger-strong);
-  border-left: 3px solid #8E2A20;
-  box-shadow: 0 4px 14px rgba(192,57,43,0.35);
+  background: linear-gradient(180deg, var(--card), #2A1F1F);
+  border-color: var(--color-danger-border);
+  border-left: 4px solid var(--color-danger);
+  box-shadow: 0 4px 14px rgba(224,112,112,0.12);
 }
-.card-salon--pending .label,
+.card-salon--pending .label {
+  color: var(--color-danger);
+  letter-spacing: 2px;
+}
 .card-salon--pending .metric__value,
-.card-salon--pending .metric__caption,
-.card-salon--pending .metric-pending-strong { color: #fff; }
+.card-salon--pending .metric-pending-strong {
+  color: var(--color-danger);
+}
+.card-salon--pending .metric__caption { color: var(--text-secondary); }
 .card-salon--pending:hover {
-  background: #A8332A;
-  border-color: #A8332A;
+  border-color: var(--color-danger);
+  box-shadow: 0 6px 20px rgba(224,112,112,0.22);
+  transform: translateY(-2px);
 }
 .card-salon--accepted  { border-left: 3px solid var(--gold); }
 .card-salon--completed { border-left: 3px solid var(--color-completed-fg); }

@@ -24,6 +24,11 @@ $ikonList = $ikon_list ?? ['bi-stars', 'bi-scissors', 'bi-flower1', 'bi-droplet'
       <div><label class="form-salon-label">Promo (%)</label><input class="form-salon-input" type="number" name="promo_persen" min="0" max="100" step="1" placeholder="0 / kosong = tanpa promo"></div>
       <div><label class="form-salon-label">Aktif</label><select class="form-salon-select" name="is_active"><option value="1">Aktif</option><option value="0">Non-aktif</option></select></div>
     </div>
+    <div class="row-salon cols-2 mt-2">
+      <div><label class="form-salon-label">Promo mulai (opsional)</label><input class="form-salon-input" type="date" name="promo_mulai"></div>
+      <div><label class="form-salon-label">Promo selesai (opsional)</label><input class="form-salon-input" type="date" name="promo_selesai"></div>
+    </div>
+    <div class="form-salon-help">Kosongkan kedua tanggal kalau promo tanpa batas waktu. Promo otomatis non-aktif setelah tanggal selesai.</div>
     <div class="mt-2"><label class="form-salon-label">Deskripsi promo (opsional)</label><input class="form-salon-input" name="promo_deskripsi" maxlength="255" placeholder="Misal: Spesial pembukaan!"></div>
     <div class="mt-2"><label class="form-salon-label">Deskripsi</label><textarea class="form-salon-textarea" name="deskripsi" rows="2"></textarea></div>
 
@@ -90,6 +95,10 @@ $ikonList = $ikon_list ?? ['bi-stars', 'bi-scissors', 'bi-flower1', 'bi-droplet'
 
               <label class="form-salon-label mt-1">Promo (%)</label>
               <input class="form-salon-input mb-1" type="number" min="0" max="100" name="promo_persen" value="<?= esc($r['promo_persen'] ?? '') ?>" placeholder="0 / kosong = tanpa promo">
+              <div class="row-salon cols-2 mb-1">
+                <div><label class="form-salon-label">Mulai</label><input class="form-salon-input" type="date" name="promo_mulai" value="<?= esc($r['promo_mulai'] ? substr($r['promo_mulai'], 0, 10) : '') ?>"></div>
+                <div><label class="form-salon-label">Selesai</label><input class="form-salon-input" type="date" name="promo_selesai" value="<?= esc($r['promo_selesai'] ? substr($r['promo_selesai'], 0, 10) : '') ?>"></div>
+              </div>
               <input class="form-salon-input mb-1" name="promo_deskripsi" maxlength="255" value="<?= esc($r['promo_deskripsi'] ?? '') ?>" placeholder="Deskripsi promo (opsional)">
 
               <select class="form-salon-select mb-1" name="is_active"><option value="1" <?= $r['is_active'] ? 'selected' : '' ?>>Aktif</option><option value="0" <?= ! $r['is_active'] ? 'selected' : '' ?>>Non-aktif</option></select>
