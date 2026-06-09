@@ -199,14 +199,19 @@ function maybeShowClosingSoon() {
 // (skip today). Lalu tutup modal.
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('closingSoonPickOther');
-  if (! btn) return;
-  btn.addEventListener('click', () => {
-    const next = Array.from(document.querySelectorAll('#dateStrip .date-strip-item'))
-      .find((x) => x.dataset.tanggal && x.dataset.tanggal !== todayISO());
-    if (next) next.click();
-    const m = bootstrap.Modal.getInstance(document.getElementById('closingSoonModal'));
-    if (m) m.hide();
-  });
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const next = Array.from(document.querySelectorAll('#dateStrip .date-strip-item'))
+        .find((x) => x.dataset.tanggal && x.dataset.tanggal !== todayISO());
+      if (next) next.click();
+      const m = bootstrap.Modal.getInstance(document.getElementById('closingSoonModal'));
+      if (m) m.hide();
+    });
+  }
+  // Page-load trigger — kalau closing_soon true & state.tanggal = hari ini,
+  // modal otomatis muncul tanpa harus klik tanggal lagi. Penting kalau user
+  // langsung mendarat di /booking dalam window 2 jam sebelum tutup.
+  setTimeout(() => maybeShowClosingSoon(), 250);
 });
 
 async function refreshSlots() {
