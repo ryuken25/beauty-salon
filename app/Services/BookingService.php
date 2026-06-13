@@ -121,7 +121,13 @@ class BookingService
             return $row ?: ['id' => $bookingId, 'kode_booking' => $kode];
         } catch (DatabaseException|RuntimeException $e) {
             $db->transRollback();
-            if (str_contains(strtolower($e->getMessage()), 'duplicate')) {
+            $msg = strtolower($e->getMessage());
+            if (str_contains($msg, 'duplicate')) {
+                // Bedakan constraint yang kena: tabrakan kode_booking (balapan
+                // pembuatan kode) BUKAN berarti slotnya terisi.
+                if (str_contains($msg, 'kode_booking')) {
+                    throw new RuntimeException('Sistem sedang sibuk, silakan tekan kirim sekali lagi.');
+                }
                 throw new RuntimeException('Slot sudah terisi, silakan pilih waktu lain.');
             }
             throw $e;
@@ -357,13 +363,17 @@ class BookingService
 
     private function generateKodeBooking(): string
     {
-        // Format: SW-YYYYMMDD-NNN (legacy BK- rows are still counted so the
-        // daily sequence never collides with pre-2026-05-20 bookings).
+        // Format: SW-YYYYMMDD-NNN. Sequence = MAX(suffix)+1, BUKAN COUNT+1:
+        // seeder menomori kode per tanggal booking (101, 102, ...) sehingga
+        // urutan harian punya celah — COUNT+1 menabrak kode yang sudah ada
+        // (UNIQUE kode_booking) dan salah dilaporkan "Slot sudah terisi"
+        // padahal slotnya kosong.
         $date = date('Ymd');
-        $count = db_connect()->table('bookings')
+        $row = db_connect()->table('bookings')
+            ->select("MAX(CAST(SUBSTRING_INDEX(kode_booking, '-', -1) AS UNSIGNED)) AS mx", false)
             ->groupStart()->like('kode_booking', "SW-{$date}-", 'after')->orLike('kode_booking', "BK-{$date}-", 'after')->groupEnd()
-            ->countAllResults();
-        $seq = str_pad((string) ($count + 1), 3, '0', STR_PAD_LEFT);
+            ->get()->getRowArray();
+        $seq = str_pad((string) (((int) ($row['mx'] ?? 0)) + 1), 3, '0', STR_PAD_LEFT);
         return "SW-{$date}-{$seq}";
     }
 
