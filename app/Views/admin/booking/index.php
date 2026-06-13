@@ -48,7 +48,7 @@ $statuses = ['' => 'Semua', 'pending_verification' => 'Pending', 'accepted' => '
           <?php foreach ($rows as $r):
             $cls = 'badge-salon--' . ($r['status'] === 'pending_verification' ? 'pending' : str_replace('_', '-', $r['status']));
             $lbl = ['pending_verification' => 'Pending', 'accepted' => 'Diterima', 'completed' => 'Selesai', 'rejected' => 'Ditolak', 'cancelled' => 'Batal'][$r['status']];
-            $rowStyle = $r['status'] === 'pending_verification' ? 'border-left: 3px solid var(--color-pending);' : ($r['status'] === 'cancelled' ? 'opacity: 0.7;' : '');
+            $rowStyle = $r['status'] === 'pending_verification' ? 'border-left: 3px solid var(--color-gold-dark);' : ($r['status'] === 'cancelled' ? 'opacity: 0.7;' : '');
           ?>
             <tr style="<?= $rowStyle ?>">
               <td><strong><?= esc($r['kode_booking']) ?></strong><?= $r['sumber'] === 'walkin' ? ' <span class="caption">walk-in</span>' : '' ?></td>
