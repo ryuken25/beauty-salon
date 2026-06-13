@@ -70,16 +70,27 @@ $today = date('Y-m-d');
   <div class="card-salon mb-3">
     <div class="h2 mb-2">Pilih layanan</div>
     <div class="row-salon cols-2" id="layananList">
-      <?php foreach ($layanans as $l): ?>
-        <label class="card-salon" data-id="<?= $l['id'] ?>" data-durasi="<?= (int) $l['durasi_menit'] ?>" style="cursor:pointer;">
+      <?php foreach ($layanans as $l):
+        $lp = \App\Models\LayananModel::isPromo($l);
+        $lf = \App\Models\LayananModel::hargaFinal($l);   // harga FINAL setelah promo
+      ?>
+        <label class="card-salon" data-id="<?= $l['id'] ?>" data-durasi="<?= (int) $l['durasi_menit'] ?>" data-harga="<?= $lf ?>" style="cursor:pointer;">
           <input type="radio" name="layanan_id" value="<?= $l['id'] ?>" style="display:none;" <?= ($preselect_layanan_id === (int) $l['id'] || old('layanan_id') == $l['id']) ? 'checked' : '' ?>>
           <div class="flex justify-between items-center gap-1">
             <div style="flex:1;">
               <div class="h3"><?= esc($l['nama']) ?></div>
               <div class="tagline"><?= esc($l['kategori']) ?> · <?= esc($l['durasi_menit']) ?> menit</div>
+              <?php if ($lp): ?>
+                <span class="badge-promo"><i class="bi bi-tag"></i> Promo <?= (int) $l['promo_persen'] ?>%</span>
+              <?php endif ?>
             </div>
             <div class="text-right">
-              <div class="h3">Rp <?= number_format((int) $l['harga'], 0, ',', '.') ?></div>
+              <?php if ($lp): ?>
+                <div class="price-strike caption">Rp <?= number_format((int) $l['harga'], 0, ',', '.') ?></div>
+                <div class="h3" style="color:var(--gold);">Rp <?= number_format($lf, 0, ',', '.') ?></div>
+              <?php else: ?>
+                <div class="h3">Rp <?= number_format($lf, 0, ',', '.') ?></div>
+              <?php endif ?>
               <i class="bi bi-check-circle-fill" style="color:var(--color-gold); display:none;"></i>
             </div>
           </div>
@@ -168,9 +179,9 @@ function pickLayanan(card) {
     c.querySelector('.bi-check-circle-fill').style.display = c === card ? 'inline-block' : 'none';
   });
   card.querySelector('input').checked = true;
-  // DP rule: ≤ 50k → full, else 50k.
-  const hargaStr = card.querySelectorAll('.h3')[1].textContent.replace(/[^0-9]/g, '');
-  const harga = parseInt(hargaStr, 10) || 0;
+  // DP rule: ≤ 50k → full, else 50k. Pakai harga FINAL (sudah termasuk promo)
+  // dari data-harga, bukan teks harga di kartu (yang bisa berupa harga coret).
+  const harga = parseInt(card.dataset.harga, 10) || 0;
   const dp = Math.min(harga, 50000);
   document.getElementById('dpAmountText').textContent = 'Rp ' + dp.toLocaleString('id-ID');
   refreshSlots();
@@ -317,7 +328,7 @@ function renderGrid() {
 function updateSummary() {
   const layananEl = state.layananId ? document.querySelector('#layananList .card-salon[data-id="' + state.layananId + '"]') : null;
   const layananName = layananEl ? layananEl.querySelector('.h3').textContent : '—';
-  const layananHarga = layananEl ? layananEl.querySelectorAll('.h3')[1].textContent : '';
+  const layananHarga = layananEl ? ('Rp ' + (parseInt(layananEl.dataset.harga, 10) || 0).toLocaleString('id-ID')) : '';
   const info = document.getElementById('slotInfo');
   if (state.slot && state.durasi) {
     const endMin = toMin(state.slot) + state.durasi;
