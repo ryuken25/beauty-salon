@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:y="http://www.yworks.com/xml/graphml"
+  xmlns:yed="http://www.yworks.com/xml/yed/3"
+  xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd">
+  <key for="node" id="d6" yfiles.type="nodegraphics"/>
+  <key for="edge" id="d10" yfiles.type="edgegraphics"/>
+  <graph edgedefault="directed" id="G">
+    <node id="staff">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="64" width="150" x="60" y="404"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">Staff</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="p5_1">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="140" width="140" x="450" y="60"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">5.1
+Input Keranjang</y:NodeLabel>
+        <y:Shape type="ellipse"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="p5_2">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="140" width="140" x="450" y="264"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">5.2
+Hitung Total</y:NodeLabel>
+        <y:Shape type="ellipse"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="p5_3">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="140" width="140" x="450" y="468"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">5.3
+Simpan Transaksi</y:NodeLabel>
+        <y:Shape type="ellipse"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="p5_4">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="140" width="140" x="450" y="672"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">5.4
+Cetak Struk</y:NodeLabel>
+        <y:Shape type="ellipse"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="d_barang">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="46" width="168" x="830" y="248"/>
+        <y:Fill color="#F5F5F5" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">D4  barang</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="d_sementara">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="46" width="168" x="830" y="358"/>
+        <y:Fill color="#F5F5F5" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">D5  sementara</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="d_transaksi">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="46" width="168" x="830" y="468"/>
+        <y:Fill color="#F5F5F5" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">D6  transaksi</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="d_detail">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="46" width="168" x="830" y="578"/>
+        <y:Fill color="#F5F5F5" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">D7  detail</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <edge id="e0" source="staff" target="p5_1">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_transaksi</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e1" source="d_barang" target="p5_1">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_barang</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e2" source="p5_1" target="d_sementara">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_sementara</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e3" source="d_sementara" target="p5_2">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_sementara</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e4" source="p5_2" target="p5_3">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_total</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e5" source="p5_3" target="d_transaksi">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_transaksi</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e6" source="p5_3" target="d_detail">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_detail</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e7" source="p5_3" target="p5_4">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_struk</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e8" source="p5_4" target="staff">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_struk</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+  </graph>
+</graphml>

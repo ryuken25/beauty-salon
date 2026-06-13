@@ -145,3 +145,7 @@ _modules/*
 *.pdf
 /builds/
 /builds
+
+# Python cache (skills/bab4-diagrams)
+__pycache__/
+*.pyc

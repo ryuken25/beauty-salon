@@ -1,0 +1,20 @@
+GAYA DFD YANG DIINGINKAN (referensi target)
+============================================
+Dua gambar di folder ini adalah CONTOH GAYA DFD Level 0 yang jadi acuan layout
+generator (skill bab4-diagrams):
+
+contoh_1_store-di-atas-proses.png   <-- UTAMA / paling rapi
+  - Proses berderet di KOLOM TENGAH (1.0, 2.0, 3.0, ...).
+  - Tiap data store diletakkan TEPAT DI ATAS proses pemiliknya, disambung
+    panah pendek baca (Data_/info_) + tulis (Update_/data_).
+  - Entitas eksternal jadi kotak TINGGI di KIRI & KANAN.
+  - TIAP store punya panah masuk DAN keluar (ditulis sekaligus dibaca).
+
+contoh_2_kolom-proses-tengah.png    <-- alternatif
+  - Proses di kolom tengah, eksternal di sekeliling, label aliran mengikuti garis.
+
+Generator meniru gaya contoh_1. Untuk sistem besar (banyak store / 3+ eksternal),
+generator otomatis: membungkus store milik satu proses jadi grid (maks 4/baris),
+menaruh eksternal yang sesisi dalam pita vertikal terpisah, dan merutekan store
+"milik bersama" lewat koridor kanan (ortogonal + line-jump). Lihat
+../BabIvAssets/dfd 0/dfd_level_0.png untuk hasil generator pada contoh ChelisNet.

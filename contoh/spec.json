@@ -1,0 +1,964 @@
+{
+  "system_name": "Sistem Informasi Penjualan ChelisNet",
+  "chapter": 4,
+  "bab_title": "Hasil dan Pembahasan",
+  "external_entities": [
+    {
+      "id": "owner",
+      "name": "Owner"
+    },
+    {
+      "id": "staff",
+      "name": "Staff"
+    },
+    {
+      "id": "pelanggan",
+      "name": "Pelanggan"
+    }
+  ],
+  "data_stores": [
+    {
+      "id": "d_user",
+      "code": "D1",
+      "name": "user"
+    },
+    {
+      "id": "d_jenis",
+      "code": "D2",
+      "name": "jenis"
+    },
+    {
+      "id": "d_merk",
+      "code": "D3",
+      "name": "merk"
+    },
+    {
+      "id": "d_barang",
+      "code": "D4",
+      "name": "barang"
+    },
+    {
+      "id": "d_sementara",
+      "code": "D5",
+      "name": "sementara"
+    },
+    {
+      "id": "d_transaksi",
+      "code": "D6",
+      "name": "transaksi"
+    },
+    {
+      "id": "d_detail",
+      "code": "D7",
+      "name": "detail"
+    }
+  ],
+  "context": {
+    "flows": [
+      {
+        "src": "owner",
+        "dst": "sys",
+        "label": "data_login_owner"
+      },
+      {
+        "src": "owner",
+        "dst": "sys",
+        "label": "data_user"
+      },
+      {
+        "src": "sys",
+        "dst": "owner",
+        "label": "info_laporan"
+      },
+      {
+        "src": "sys",
+        "dst": "owner",
+        "label": "info_dashboard"
+      },
+      {
+        "src": "pelanggan",
+        "dst": "sys",
+        "label": "data_pesanan"
+      },
+      {
+        "src": "sys",
+        "dst": "pelanggan",
+        "label": "info_struk"
+      },
+      {
+        "src": "staff",
+        "dst": "sys",
+        "label": "data_login_staff"
+      },
+      {
+        "src": "staff",
+        "dst": "sys",
+        "label": "data_transaksi"
+      },
+      {
+        "src": "sys",
+        "dst": "staff",
+        "label": "info_barang"
+      },
+      {
+        "src": "sys",
+        "dst": "staff",
+        "label": "info_transaksi"
+      }
+    ]
+  },
+  "level0": {
+    "processes": [
+      {
+        "id": "p1",
+        "no": "1.0",
+        "name": "Autentikasi & Sesi"
+      },
+      {
+        "id": "p2",
+        "no": "2.0",
+        "name": "Manajemen User"
+      },
+      {
+        "id": "p3",
+        "no": "3.0",
+        "name": "Master Data (Jenis & Merk)"
+      },
+      {
+        "id": "p4",
+        "no": "4.0",
+        "name": "Manajemen Barang & Jasa"
+      },
+      {
+        "id": "p5",
+        "no": "5.0",
+        "name": "Transaksi Penjualan"
+      },
+      {
+        "id": "p6",
+        "no": "6.0",
+        "name": "Laporan & Dashboard"
+      }
+    ],
+    "flows": [
+      {
+        "src": "staff",
+        "dst": "p1",
+        "label": "data_login_staff"
+      },
+      {
+        "src": "p1",
+        "dst": "staff",
+        "label": "info_sesi_login"
+      },
+      {
+        "src": "owner",
+        "dst": "p1",
+        "label": "data_login_owner"
+      },
+      {
+        "src": "p1",
+        "dst": "owner",
+        "label": "info_sesi_login"
+      },
+      {
+        "src": "p1",
+        "dst": "d_user",
+        "label": "data_user"
+      },
+      {
+        "src": "d_user",
+        "dst": "p1",
+        "label": "info_user"
+      },
+      {
+        "src": "owner",
+        "dst": "p2",
+        "label": "data_user"
+      },
+      {
+        "src": "p2",
+        "dst": "owner",
+        "label": "info_user"
+      },
+      {
+        "src": "p2",
+        "dst": "d_user",
+        "label": "data_user"
+      },
+      {
+        "src": "d_user",
+        "dst": "p2",
+        "label": "info_user"
+      },
+      {
+        "src": "staff",
+        "dst": "p3",
+        "label": "data_jenis"
+      },
+      {
+        "src": "staff",
+        "dst": "p3",
+        "label": "data_merk"
+      },
+      {
+        "src": "p3",
+        "dst": "staff",
+        "label": "info_jenis"
+      },
+      {
+        "src": "p3",
+        "dst": "d_jenis",
+        "label": "data_jenis"
+      },
+      {
+        "src": "d_jenis",
+        "dst": "p3",
+        "label": "info_jenis"
+      },
+      {
+        "src": "p3",
+        "dst": "d_merk",
+        "label": "data_merk"
+      },
+      {
+        "src": "d_merk",
+        "dst": "p3",
+        "label": "info_merk"
+      },
+      {
+        "src": "owner",
+        "dst": "p4",
+        "label": "data_barang"
+      },
+      {
+        "src": "p4",
+        "dst": "owner",
+        "label": "info_barang"
+      },
+      {
+        "src": "p4",
+        "dst": "d_barang",
+        "label": "data_barang"
+      },
+      {
+        "src": "d_barang",
+        "dst": "p4",
+        "label": "info_barang"
+      },
+      {
+        "src": "staff",
+        "dst": "p5",
+        "label": "data_transaksi"
+      },
+      {
+        "src": "p5",
+        "dst": "staff",
+        "label": "info_transaksi"
+      },
+      {
+        "src": "p5",
+        "dst": "d_sementara",
+        "label": "data_sementara"
+      },
+      {
+        "src": "d_sementara",
+        "dst": "p5",
+        "label": "info_sementara"
+      },
+      {
+        "src": "p5",
+        "dst": "d_transaksi",
+        "label": "data_transaksi"
+      },
+      {
+        "src": "d_transaksi",
+        "dst": "p5",
+        "label": "info_transaksi"
+      },
+      {
+        "src": "p5",
+        "dst": "d_detail",
+        "label": "data_detail"
+      },
+      {
+        "src": "d_detail",
+        "dst": "p5",
+        "label": "info_detail"
+      },
+      {
+        "src": "owner",
+        "dst": "p6",
+        "label": "data_permintaan_laporan"
+      },
+      {
+        "src": "p6",
+        "dst": "owner",
+        "label": "info_dashboard"
+      },
+      {
+        "src": "d_transaksi",
+        "dst": "p6",
+        "label": "info_transaksi"
+      },
+      {
+        "src": "d_detail",
+        "dst": "p6",
+        "label": "info_detail"
+      },
+      {
+        "src": "pelanggan",
+        "dst": "p5",
+        "label": "data_pesanan"
+      },
+      {
+        "src": "p5",
+        "dst": "pelanggan",
+        "label": "info_struk"
+      }
+    ]
+  },
+  "level1": [
+    {
+      "parent_no": "1.0",
+      "processes": [
+        {
+          "id": "p1_1",
+          "no": "1.1",
+          "name": "Validasi Login"
+        },
+        {
+          "id": "p1_2",
+          "no": "1.2",
+          "name": "Kelola Sesi"
+        },
+        {
+          "id": "p1_3",
+          "no": "1.3",
+          "name": "Logout"
+        }
+      ],
+      "flows": [
+        {
+          "src": "staff",
+          "dst": "p1_1",
+          "label": "data_login_staff"
+        },
+        {
+          "src": "owner",
+          "dst": "p1_1",
+          "label": "data_login_owner"
+        },
+        {
+          "src": "d_user",
+          "dst": "p1_1",
+          "label": "info_user"
+        },
+        {
+          "src": "p1_1",
+          "dst": "p1_2",
+          "label": "data_sesi"
+        },
+        {
+          "src": "p1_2",
+          "dst": "staff",
+          "label": "info_sesi_login"
+        },
+        {
+          "src": "p1_2",
+          "dst": "owner",
+          "label": "info_sesi_login"
+        },
+        {
+          "src": "staff",
+          "dst": "p1_3",
+          "label": "data_logout"
+        },
+        {
+          "src": "p1_3",
+          "dst": "p1_2",
+          "label": "data_hapus_sesi"
+        }
+      ]
+    },
+    {
+      "parent_no": "5.0",
+      "processes": [
+        {
+          "id": "p5_1",
+          "no": "5.1",
+          "name": "Input Keranjang"
+        },
+        {
+          "id": "p5_2",
+          "no": "5.2",
+          "name": "Hitung Total"
+        },
+        {
+          "id": "p5_3",
+          "no": "5.3",
+          "name": "Simpan Transaksi"
+        },
+        {
+          "id": "p5_4",
+          "no": "5.4",
+          "name": "Cetak Struk"
+        }
+      ],
+      "flows": [
+        {
+          "src": "staff",
+          "dst": "p5_1",
+          "label": "data_transaksi"
+        },
+        {
+          "src": "d_barang",
+          "dst": "p5_1",
+          "label": "info_barang"
+        },
+        {
+          "src": "p5_1",
+          "dst": "d_sementara",
+          "label": "data_sementara"
+        },
+        {
+          "src": "d_sementara",
+          "dst": "p5_2",
+          "label": "info_sementara"
+        },
+        {
+          "src": "p5_2",
+          "dst": "p5_3",
+          "label": "data_total"
+        },
+        {
+          "src": "p5_3",
+          "dst": "d_transaksi",
+          "label": "data_transaksi"
+        },
+        {
+          "src": "p5_3",
+          "dst": "d_detail",
+          "label": "data_detail"
+        },
+        {
+          "src": "p5_3",
+          "dst": "p5_4",
+          "label": "data_struk"
+        },
+        {
+          "src": "p5_4",
+          "dst": "staff",
+          "label": "info_struk"
+        }
+      ]
+    }
+  ],
+  "erd": {
+    "entities": [
+      {
+        "id": "user",
+        "name": "USER",
+        "pk": "iduser",
+        "attrs": [
+          "username",
+          "password",
+          "role",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      {
+        "id": "jenis",
+        "name": "JENIS",
+        "pk": "idjenis",
+        "attrs": [
+          "nama"
+        ]
+      },
+      {
+        "id": "merk",
+        "name": "MERK",
+        "pk": "idmerk",
+        "attrs": [
+          "nama"
+        ]
+      },
+      {
+        "id": "barang",
+        "name": "BARANG",
+        "pk": "idbarang",
+        "fks": [
+          "jenis",
+          "merk"
+        ],
+        "attrs": [
+          "nama",
+          "tipe",
+          "model",
+          "harga",
+          "harga_jasa"
+        ]
+      },
+      {
+        "id": "sementara",
+        "name": "SEMENTARA",
+        "pk": "idsementara",
+        "fks": [
+          "idbarang"
+        ],
+        "attrs": [
+          "jenis",
+          "merk",
+          "harga",
+          "qty",
+          "total"
+        ]
+      },
+      {
+        "id": "transaksi",
+        "name": "TRANSAKSI",
+        "pk": "idtransaksi",
+        "attrs": [
+          "nama",
+          "total",
+          "tanggal",
+          "payment"
+        ]
+      },
+      {
+        "id": "detail",
+        "name": "DETAIL",
+        "pk": "iddetail",
+        "fks": [
+          "idtransaksi",
+          "idbarang"
+        ],
+        "attrs": [
+          "harga",
+          "qty",
+          "total"
+        ]
+      }
+    ],
+    "relations": [
+      {
+        "src": "jenis",
+        "dst": "barang",
+        "label": "menaungi",
+        "src_card": "one",
+        "dst_card": "many"
+      },
+      {
+        "src": "merk",
+        "dst": "barang",
+        "label": "menaungi",
+        "src_card": "one",
+        "dst_card": "many"
+      },
+      {
+        "src": "barang",
+        "dst": "detail",
+        "label": "tercatat_pada",
+        "src_card": "one",
+        "dst_card": "many"
+      },
+      {
+        "src": "transaksi",
+        "dst": "detail",
+        "label": "memiliki",
+        "src_card": "one",
+        "dst_card": "many"
+      },
+      {
+        "src": "barang",
+        "dst": "sementara",
+        "label": "dipilih_pada",
+        "src_card": "one",
+        "dst_card": "many"
+      }
+    ],
+    "chen": true
+  },
+  "analisis": {
+    "kebutuhan_fungsional": [
+      {
+        "actor": "Owner",
+        "items": [
+          "Melakukan login ke dalam sistem.",
+          "Mengelola data master (jenis, merk, barang/jasa).",
+          "Mengelola data pengguna (user management).",
+          "Melihat dan mencetak laporan penjualan serta dashboard."
+        ]
+      },
+      {
+        "actor": "Staff",
+        "items": [
+          "Melakukan login ke dalam sistem.",
+          "Melakukan transaksi penjualan barang/jasa.",
+          "Mencetak struk transaksi untuk pelanggan."
+        ]
+      },
+      {
+        "actor": "Pelanggan",
+        "items": [
+          "Melihat informasi barang/jasa yang tersedia.",
+          "Menerima struk hasil pembelian."
+        ]
+      }
+    ],
+    "kebutuhan_nonfungsional": {
+      "deskripsi": "Kebutuhan non-fungsional meliputi spesifikasi perangkat keras dan perangkat lunak yang digunakan dalam membangun dan menjalankan sistem.",
+      "tabel": [
+        {
+          "judul": "Perangkat Keras",
+          "header": [
+            "No",
+            "Perangkat",
+            "Spesifikasi"
+          ],
+          "rows": [
+            [
+              "1",
+              "Processor",
+              "Intel Core i3 / setara"
+            ],
+            [
+              "2",
+              "RAM",
+              "8 GB"
+            ],
+            [
+              "3",
+              "Penyimpanan",
+              "SSD 256 GB"
+            ]
+          ],
+          "widths_cm": [
+            1.5,
+            5.0,
+            7.5
+          ]
+        },
+        {
+          "judul": "Perangkat Lunak",
+          "header": [
+            "No",
+            "Perangkat Lunak",
+            "Keterangan"
+          ],
+          "rows": [
+            [
+              "1",
+              "Sistem Operasi",
+              "Windows 10/11"
+            ],
+            [
+              "2",
+              "Web Server",
+              "Apache (XAMPP)"
+            ],
+            [
+              "3",
+              "Bahasa & Framework",
+              "PHP 8 / CodeIgniter 4"
+            ],
+            [
+              "4",
+              "Basis Data",
+              "MySQL / MariaDB"
+            ]
+          ],
+          "widths_cm": [
+            1.5,
+            5.0,
+            7.5
+          ]
+        }
+      ]
+    }
+  },
+  "struktur_tabel": [
+    {
+      "nama": "user",
+      "header": [
+        "Field",
+        "Tipe",
+        "Keterangan"
+      ],
+      "rows": [
+        [
+          "iduser",
+          "INT",
+          "Primary Key, Auto Increment"
+        ],
+        [
+          "username",
+          "VARCHAR(50)",
+          "Nama login pengguna"
+        ],
+        [
+          "password",
+          "VARCHAR(255)",
+          "Kata sandi (hash)"
+        ],
+        [
+          "role",
+          "VARCHAR(20)",
+          "owner / staff"
+        ]
+      ],
+      "widths_cm": [
+        4.0,
+        4.0,
+        6.0
+      ]
+    }
+  ],
+  "antarmuka": [
+    {
+      "title": "Halaman Login",
+      "desc": "Halaman login digunakan oleh pengguna untuk masuk ke dalam sistem sesuai dengan hak aksesnya (owner atau staff).",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "ChelisNet"
+        },
+        {
+          "type": "form",
+          "title": "Login Sistem",
+          "fields": [
+            {
+              "label": "Username"
+            },
+            {
+              "label": "Password",
+              "type": "password"
+            }
+          ],
+          "submit": "Masuk"
+        }
+      ]
+    },
+    {
+      "title": "Halaman Dashboard",
+      "desc": "Dashboard menampilkan ringkasan data penjualan serta menu navigasi utama sistem.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "ChelisNet",
+          "menu": [
+            "Dashboard",
+            "Barang",
+            "Transaksi",
+            "Laporan"
+          ]
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Master Data",
+            "Barang",
+            "Transaksi",
+            "Laporan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Dashboard"
+        },
+        {
+          "type": "cards",
+          "items": [
+            {
+              "title": "Total Barang",
+              "value": "248"
+            },
+            {
+              "title": "Transaksi Hari Ini",
+              "value": "17"
+            },
+            {
+              "title": "Pendapatan",
+              "value": "Rp 4.250.000"
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "label": "Grafik Penjualan",
+          "h": 160
+        }
+      ]
+    },
+    {
+      "title": "Halaman Transaksi",
+      "desc": "Halaman transaksi digunakan staff untuk memilih barang, menghitung total, dan menyimpan transaksi penjualan.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "ChelisNet",
+          "menu": [
+            "Dashboard",
+            "Barang",
+            "Transaksi",
+            "Laporan"
+          ]
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Master Data",
+            "Barang",
+            "Transaksi",
+            "Laporan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Transaksi Penjualan"
+        },
+        {
+          "type": "table",
+          "title": "Keranjang",
+          "columns": [
+            "No",
+            "Nama Barang",
+            "Qty",
+            "Harga",
+            "Subtotal",
+            "Aksi"
+          ],
+          "dummy_rows": 3
+        },
+        {
+          "type": "buttons",
+          "items": [
+            "Simpan Transaksi",
+            "Batal"
+          ]
+        }
+      ]
+    }
+  ],
+  "implementasi": [
+    {
+      "title": "Halaman Login",
+      "desc": "Tampilan hasil implementasi halaman login yang telah berfungsi sesuai rancangan."
+    },
+    {
+      "title": "Halaman Master Data",
+      "desc": "Tampilan hasil implementasi pengelolaan data jenis, merk, dan barang."
+    },
+    {
+      "title": "Halaman Transaksi",
+      "desc": "Tampilan hasil implementasi proses transaksi penjualan beserta cetak struk."
+    }
+  ],
+  "pengujian": {
+    "blackbox": [
+      {
+        "judul": "Autentikasi & Sesi (Login/Logout)",
+        "cases": [
+          {
+            "input": "Login dengan username & password benar",
+            "expect": "Sistem menerima login dan mengarahkan ke dashboard sesuai peran",
+            "observe": "Berhasil masuk ke dashboard sesuai peran",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Login dengan password salah",
+            "expect": "Sistem menolak login dan menampilkan pesan kesalahan",
+            "observe": "Muncul pesan \"Username atau password salah\"",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Klik logout",
+            "expect": "Sesi pengguna dihapus dan kembali ke halaman login",
+            "observe": "Sesi berakhir, kembali ke halaman login",
+            "result": "Sesuai"
+          }
+        ]
+      },
+      {
+        "judul": "Manajemen Data Barang",
+        "cases": [
+          {
+            "input": "Menambah barang dengan data lengkap",
+            "expect": "Data barang tersimpan dan tampil di daftar",
+            "observe": "Data barang berhasil tersimpan",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Menyimpan barang tanpa mengisi nama",
+            "expect": "Sistem menolak dan menampilkan pesan validasi",
+            "observe": "Muncul pesan \"Nama barang wajib diisi\"",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Mengubah harga barang",
+            "expect": "Harga ter-update sesuai input",
+            "observe": "Harga barang berhasil diperbarui",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Menghapus barang",
+            "expect": "Data barang terhapus dari daftar",
+            "observe": "Data barang berhasil dihapus",
+            "result": "Sesuai"
+          }
+        ]
+      },
+      {
+        "judul": "Transaksi Penjualan",
+        "cases": [
+          {
+            "input": "Menambahkan barang ke keranjang transaksi",
+            "expect": "Subtotal & total terhitung otomatis",
+            "observe": "Subtotal dan total tampil dengan benar",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Menyimpan transaksi dengan stok mencukupi",
+            "expect": "Transaksi tersimpan & struk dapat dicetak",
+            "observe": "Transaksi tersimpan, struk tercetak",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Menyimpan transaksi melebihi stok",
+            "expect": "Sistem menolak dan memberi peringatan stok",
+            "observe": "Muncul peringatan stok tidak mencukupi",
+            "result": "Sesuai"
+          }
+        ]
+      },
+      {
+        "judul": "Laporan & Dashboard",
+        "cases": [
+          {
+            "input": "Membuka dashboard",
+            "expect": "Ringkasan penjualan & grafik tampil sesuai data",
+            "observe": "Ringkasan dan grafik tampil sesuai data",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Memfilter laporan berdasarkan rentang tanggal",
+            "expect": "Laporan menampilkan data sesuai rentang",
+            "observe": "Data laporan sesuai rentang tanggal",
+            "result": "Sesuai"
+          }
+        ]
+      }
+    ]
+  },
+  "sus": {
+    "xlsx": "data.xlsx"
+  }
+}

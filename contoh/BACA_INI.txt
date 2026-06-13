@@ -1,0 +1,37 @@
+CONTOH OUTPUT — hasil nyata menjalankan pack ini
+=================================================
+
+Folder ini dibuat dengan perintah:
+
+    cd skills/bab4-diagrams
+    python build_babiv_assets.py spec.example.json --out ../../contoh
+    python verify_diagrams.py ../../contoh/BabIvAssets   # -> laporan_verifikasi.txt
+
+Isi:
+  spec.json              salinan spec yang dipakai (input)
+  BabIvAssets/           SEMUA output (diagram + BAB_IV.docx)
+  laporan_verifikasi.txt hasil cek keseimbangan diagram (semua lolos)
+
+Dibuat TANPA graphviz, jadi inilah tampilan yang akan kamu dapat di mesin biasa
+(Windows tanpa install apa-apa selain pip). Kalau graphviz terpasang, tata letak
+ERD bisa sedikit berbeda (tetap rapi).
+
+Yang bisa kamu cek di BAB_IV.docx (buka di Word, Ctrl+A -> F9 untuk update nomor):
+  4.1 Analisis            masalah + fungsional + non-fungsional (2 tabel HW/SW)
+  4.2 Perancangan         Diagram Konteks + DFD Level 0 + DFD Level 1.x  (ortogonal, arc jump)
+  4.3 Basis Data          ERD crow's foot + ERD Chen + struktur tabel (sel RATA KIRI, tanpa tab)
+  4.4 Antarmuka           wireframe lite (LOGO teks, kotak gambar bersilang X)
+  4.5 Implementasi        judul + deskripsi (screenshot asli ditambahkan via capture_screenshots.py)
+  4.6 Pengujian Black Box tabel skenario per fitur (No|Data Input|Diharapkan|Pengamatan|Kesimpulan)
+  4.7 Pengujian SUS       tabel kuesioner + tabel skor konversi per responden + interpretasi
+
+-------------------------------------------------------------------
+EDIT MANUAL DI DRAW.IO (kalau mau dirapikan lagi)
+-------------------------------------------------------------------
+Tiap folder diagram berisi file .drawio.xml (selain .png). Untuk DFD yang padat,
+hasil otomatis sudah terbaca, tapi perapian terakhir bisa digeser manual:
+  1. Buka https://app.diagrams.net  ->  Open Existing Diagram
+  2. Pilih  BabIvAssets/dfd 0/dfd_level_0.drawio.xml
+  3. Geser kotak/garis/label, lalu File -> Export as -> PNG (background putih)
+Graphviz hanya mempengaruhi tata letak ERD; DFD pakai engine draw.io dan
+sepenuhnya editable di draw.io.
