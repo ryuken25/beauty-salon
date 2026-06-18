@@ -47,4 +47,23 @@ class Api extends BaseController
         }
         return $this->response->setJSON(['promos' => $out]);
     }
+
+    /** Daftar layanan baru (14 hari terakhir) untuk popup login (publik). */
+    public function baru()
+    {
+        $items = (new LayananModel())->baruAktif(12);
+        $out = [];
+        foreach ($items as $l) {
+            $out[] = [
+                'id'       => (int) $l['id'],
+                'nama'     => $l['nama'],
+                'kategori' => $l['kategori'],
+                'ikon'     => $l['ikon'] ?? 'bi-stars',
+                'harga'    => (int) $l['harga'],
+                'cover'    => LayananModel::cover($l),
+                'umur_hari' => LayananModel::umurHariBaru($l),
+            ];
+        }
+        return $this->response->setJSON(['baru' => $out]);
+    }
 }

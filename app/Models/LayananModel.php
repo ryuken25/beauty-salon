@@ -3,6 +3,9 @@ namespace App\Models;
 
 class LayananModel extends BaseAppModel
 {
+    /** Jumlah hari sejak created_at supaya layanan dianggap "baru". Ganti angka ini untuk mengubah window. */
+    public const HARI_BARU = 14;
+
     protected $table = 'layanan';
     protected $allowedFields = [
         'nama', 'kategori', 'deskripsi', 'durasi_menit', 'harga', 'ikon', 'is_active',
@@ -106,6 +109,59 @@ class LayananModel extends BaseAppModel
         return $this->where('is_active', 1)
             ->where('promo_persen >', 0)
             ->orderBy('promo_persen', 'DESC')
+            ->limit($limit)
+            ->find();
+    }
+
+    // ── Layanan Baru (berdasarkan created_at) ─────────────────────────────
+
+    /**
+     * True kalau layanan ditambahkan dalam N hari terakhir (inklusif).
+     * created_at NULL/kosong/invalid → false (tidak dianggap baru).
+     */
+    public static function isBaru(array $l, ?int $hari = null): bool
+    {
+        $hari = $hari ?? self::HARI_BARU;
+        $ca   = $l['created_at'] ?? null;
+        if (! is_string($ca) || $ca === '') {
+            return false;
+        }
+        $ts = strtotime($ca);
+        if ($ts === false) {
+            return false;
+        }
+        $batas = strtotime("-{$hari} days 00:00:00");
+        return $ts >= $batas;
+    }
+
+    /**
+     * Selisih hari dari created_at ke hari ini. Null kalau created_at kosong/invalid.
+     * Berguna untuk label "ditambahkan X hari lalu".
+     */
+    public static function umurHariBaru(array $l): ?int
+    {
+        $ca = $l['created_at'] ?? null;
+        if (! is_string($ca) || $ca === '') {
+            return null;
+        }
+        $ts = strtotime($ca);
+        if ($ts === false) {
+            return null;
+        }
+        return (int) round((time() - $ts) / 86400);
+    }
+
+    /**
+     * Query layanan baru yang aktif: created_at dalam N hari terakhir.
+     * Aman walau created_at NULL (row tersebut tidak lolos WHERE).
+     */
+    public function baruAktif(int $limit = 12, ?int $hari = null): array
+    {
+        $hari = $hari ?? self::HARI_BARU;
+        return $this->where('is_active', 1)
+            ->where('created_at IS NOT NULL', null, false)
+            ->where('created_at >=', date('Y-m-d 00:00:00', strtotime("-{$hari} days")))
+            ->orderBy('created_at', 'DESC')
             ->limit($limit)
             ->find();
     }

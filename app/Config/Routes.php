@@ -9,6 +9,7 @@ $routes->get('/', 'Home::index');
 $routes->get('layanan', 'Home::layanan');
 $routes->get('layanan/(:num)', 'Home::detail/$1');
 $routes->get('api/promos', 'Api::promos');
+$routes->get('api/baru', 'Api::baru');
 
 $routes->match(['GET', 'POST'], 'booking', 'Booking::form', ['filter' => 'customer']);
 $routes->get('booking/sukses/(:any)', 'Booking::sukses/$1', ['filter' => 'customer']);
