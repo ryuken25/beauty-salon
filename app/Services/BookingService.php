@@ -43,10 +43,18 @@ class BookingService
 
         // DP rule: harga ≤ 50.000 → DP = full; harga > 50.000 → DP = 50.000.
         $sumberRaw = ($data['sumber'] ?? 'online') === 'walkin' ? 'walkin' : 'online';
-        $dpAmount = min($hargaFinal, 50_000);
-        $remainingPayment = max(0, $hargaFinal - $dpAmount);
-        $dpProof = $data['dp_proof_path'] ?? null;
-        $paymentStatus = $sumberRaw === 'walkin' ? 'dp_verified' : ($dpProof ? 'dp_uploaded' : 'unpaid');
+        if ($sumberRaw === 'walkin') {
+            $adaDp = isset($data['ada_dp']) && (bool)$data['ada_dp'];
+            $dpAmount = $adaDp ? min($hargaFinal, 50_000) : 0;
+            $remainingPayment = max(0, $hargaFinal - $dpAmount);
+            $dpProof = $adaDp ? ($data['dp_proof_path'] ?? null) : null;
+            $paymentStatus = $adaDp ? 'dp_verified' : 'unpaid';
+        } else {
+            $dpAmount = min($hargaFinal, 50_000);
+            $remainingPayment = max(0, $hargaFinal - $dpAmount);
+            $dpProof = $data['dp_proof_path'] ?? null;
+            $paymentStatus = $dpProof ? 'dp_uploaded' : 'unpaid';
+        }
 
         $email = isset($data['email_pelanggan']) ? trim((string) $data['email_pelanggan']) : '';
 
@@ -443,7 +451,7 @@ class BookingService
             if ($booking['sumber'] === 'online' && (int) $booking['dp_amount'] > 0) {
                 if (empty($booking['dp_proof_path'])) {
                     $db->transRollback();
-                    throw new RuntimeException('Verifikasi ditolak. Bukti pembayaran DP belum diunggah.');
+                    throw new RuntimeException('Bukti pembayaran DP belum diunggah.');
                 }
             }
 

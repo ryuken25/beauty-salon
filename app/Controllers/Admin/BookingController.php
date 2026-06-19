@@ -207,6 +207,7 @@ class BookingController extends BaseController
     public function walkin()
     {
         if ($this->request->getMethod() === 'POST') {
+            $adaDp = $this->request->getPost('ada_dp') === '1';
             $rules = [
                 'nama_pelanggan' => 'required',
                 'nomor_hp_pelanggan' => 'required|regex_match[/^(\+?62|0)8[0-9]{7,12}$/]',
@@ -214,8 +215,10 @@ class BookingController extends BaseController
                 'layanan_id' => 'required|is_natural_no_zero',
                 'tanggal' => 'required|valid_date[Y-m-d]',
                 'slot_mulai' => 'required|regex_match[/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/]',
-                'bukti_dp' => 'uploaded[bukti_dp]|is_image[bukti_dp]|mime_in[bukti_dp,image/png,image/jpg,image/jpeg,image/webp]',
             ];
+            if ($adaDp) {
+                $rules['bukti_dp'] = 'uploaded[bukti_dp]|is_image[bukti_dp]|mime_in[bukti_dp,image/png,image/jpg,image/jpeg,image/webp]';
+            }
             $errors = [
                 'layanan_id' => [
                     'required' => 'Silakan pilih layanan terlebih dahulu.',
@@ -239,15 +242,19 @@ class BookingController extends BaseController
                 return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
             }
 
-            // Move bukti DP into public/uploads/dp/.
-            $file = $this->request->getFile('bukti_dp');
+            $proofRelative = null;
+            $name = null;
             $uploadDir = FCPATH . 'uploads/dp';
-            if (! is_dir($uploadDir)) {
-                @mkdir($uploadDir, 0775, true);
+            if ($adaDp) {
+                // Move bukti DP into public/uploads/dp/.
+                $file = $this->request->getFile('bukti_dp');
+                if (! is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0775, true);
+                }
+                $name = $file->getRandomName();
+                $file->move($uploadDir, $name);
+                $proofRelative = 'uploads/dp/' . $name;
             }
-            $name = $file->getRandomName();
-            $file->move($uploadDir, $name);
-            $proofRelative = 'uploads/dp/' . $name;
 
             try {
                 $row = (new BookingService())->create([
@@ -258,6 +265,7 @@ class BookingController extends BaseController
                     'tanggal' => $this->request->getPost('tanggal'),
                     'slot_mulai' => $this->request->getPost('slot_mulai'),
                     'catatan' => $this->request->getPost('catatan'),
+                    'ada_dp' => $adaDp,
                     'dp_proof_path' => $proofRelative,
                     'sumber' => 'walkin',
                     'verified_via' => 'dashboard:' . session('user_id'),
@@ -266,7 +274,9 @@ class BookingController extends BaseController
                 ]);
                 return redirect()->to('/admin/booking/' . $row['id'])->with('success', 'Walk-in booking berhasil dibuat.');
             } catch (RuntimeException $e) {
-                @unlink($uploadDir . '/' . $name);
+                if ($name !== null) {
+                    @unlink($uploadDir . '/' . $name);
+                }
                 return redirect()->back()->withInput()->with('error', $e->getMessage());
             }
         }

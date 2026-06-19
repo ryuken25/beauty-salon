@@ -178,7 +178,7 @@ $statusBoxCls = [
     </div>
     <div class="card-salon" style="border-left: 3px solid var(--gold);">
       <div class="metric">
-        <span class="label" style="font-size:0.75rem;">DP Belum Treatment</span>
+        <span class="label" style="font-size:0.75rem;">Total DP Belum Treatment</span>
         <span class="metric__value" style="color:var(--gold); font-size:1.25rem;"><?= esc($booking_dp_belum_selesai) ?></span>
       </div>
     </div>
@@ -214,8 +214,11 @@ $statusBoxCls = [
       <tbody>
         <?php foreach ($transactions as $t): 
           $hargaFinal = (int) $t['final_price'];
-          $dpPaid = ($t['payment_status'] === 'dp_verified') ? (int) $t['dp_amount'] : 0;
-          $sisaBayar = ($t['booking_status'] === 'completed') ? (int) $t['sisa_bayar'] : 0;
+          $dpInPeriod = ($t['dp_verified_at'] && date('Y-m-d', strtotime($t['dp_verified_at'])) >= $start && date('Y-m-d', strtotime($t['dp_verified_at'])) <= $end);
+          $sisaInPeriod = ($t['completed_at'] && date('Y-m-d', strtotime($t['completed_at'])) >= $start && date('Y-m-d', strtotime($t['completed_at'])) <= $end);
+
+          $dpPaid = ($t['payment_status'] === 'dp_verified' && $dpInPeriod) ? (int) $t['dp_amount'] : 0;
+          $sisaBayar = ($t['booking_status'] === 'completed' && $sisaInPeriod) ? (int) $t['sisa_bayar'] : 0;
           $totalRevenue = $dpPaid + $sisaBayar;
         ?>
           <tr>
@@ -231,9 +234,23 @@ $statusBoxCls = [
             </td>
             <td class="text-right">Rp <?= number_format($hargaFinal, 0, ',', '.') ?></td>
             <td class="text-right" style="color:<?= $dpPaid > 0 ? 'var(--gold)' : 'var(--text-muted)' ?>;">
-              <?= $dpPaid > 0 ? 'Rp ' . number_format($dpPaid, 0, ',', '.') : '—' ?>
+              <?php if ($dpPaid > 0): ?>
+                Rp <?= number_format($dpPaid, 0, ',', '.') ?>
+              <?php elseif ($t['payment_status'] === 'dp_verified'): ?>
+                <span class="caption" style="font-size:0.8rem; color:var(--text-muted);" title="DP verified di luar periode ini">(Rp <?= number_format((int) $t['dp_amount'], 0, ',', '.') ?>)</span>
+              <?php else: ?>
+                —
+              <?php endif ?>
             </td>
-            <td class="text-right">Rp <?= number_format($sisaBayar, 0, ',', '.') ?></td>
+            <td class="text-right" style="color:<?= $sisaBayar > 0 ? 'var(--gold)' : 'var(--text-muted)' ?>;">
+              <?php if ($sisaBayar > 0): ?>
+                Rp <?= number_format($sisaBayar, 0, ',', '.') ?>
+              <?php elseif ($t['booking_status'] === 'completed'): ?>
+                <span class="caption" style="font-size:0.8rem; color:var(--text-muted);" title="Pelunasan di luar periode ini">(Rp <?= number_format((int) $t['sisa_bayar'], 0, ',', '.') ?>)</span>
+              <?php else: ?>
+                —
+              <?php endif ?>
+            </td>
             <td class="text-right" style="font-weight:600; color:var(--gold);">Rp <?= number_format($totalRevenue, 0, ',', '.') ?></td>
             <td><?= $t['dp_verified_at'] ? esc(date('d M Y H:i', strtotime($t['dp_verified_at']))) : '—' ?></td>
             <td><?= $t['completed_at'] ? esc(date('d M Y H:i', strtotime($t['completed_at']))) : '—' ?></td>

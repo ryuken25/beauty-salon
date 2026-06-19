@@ -49,6 +49,11 @@ $RECYCLE.BIN/
 # These should never be under version control,
 # as it poses a security risk.
 .env
+.env.*
+!.env.example
+.claude/settings.local.json
+.claude/*.local.json
+*settings.local.json
 .vagrant
 Vagrantfile
 

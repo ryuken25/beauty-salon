@@ -82,15 +82,24 @@ $today = date('Y-m-d');
     <input type="hidden" name="slot_mulai" id="slotInput" required>
   </div>
 
+  <!-- Toggle DP walk-in -->
+  <label class="card-salon mb-2 flex items-center gap-1" style="cursor:pointer; background:var(--card); border: 1px solid var(--gold-border);">
+    <input type="checkbox" id="adaDp" name="ada_dp" value="1" style="margin-right:0.6rem; width:18px; height:18px; accent-color:var(--gold);">
+    <span>
+      <span style="font-weight:600;">Ada Pembayaran DP</span>
+      <span class="caption" style="display:block;">Centang jika pelanggan walk-in membayar uang muka (DP).</span>
+    </span>
+  </label>
+
   <!-- DP Card -->
-  <div class="card-salon mb-2" id="dpCard">
+  <div class="card-salon mb-2 d-none" id="dpCard">
     <div class="h2 mb-1"><i class="bi bi-cash-coin" style="color:var(--gold);"></i> Pembayaran DP *</div>
     <div class="caption mb-2">
       DP yang harus dibayar: <strong id="dpAmountText" style="color:var(--gold);">Pilih layanan terlebih dahulu</strong>
       <span class="form-salon-help">Harga ≤ Rp 50.000 → DP penuh. Lebih dari itu → DP Rp 50.000.</span>
     </div>
     <label class="form-salon-label">Upload bukti bayar DP *</label>
-    <input class="form-salon-input" type="file" name="bukti_dp" accept="image/png,image/jpeg,image/jpg,image/webp" required>
+    <input class="form-salon-input" type="file" id="buktiDpInput" name="bukti_dp" accept="image/png,image/jpeg,image/jpg,image/webp">
     <div class="form-salon-help">PNG / JPG / WEBP. Bukti bayar DP yang diterima langsung saat walk-in.</div>
   </div>
 
@@ -271,6 +280,20 @@ function render() {
     grid.appendChild(d);
   });
 }
+
+document.getElementById('adaDp').onchange = (e) => {
+  const checked = e.target.checked;
+  const dpCard = document.getElementById('dpCard');
+  const fileInput = document.getElementById('buktiDpInput');
+  if (checked) {
+    dpCard.classList.remove('d-none');
+    fileInput.required = true;
+  } else {
+    dpCard.classList.add('d-none');
+    fileInput.required = false;
+    fileInput.value = '';
+  }
+};
 </script>
 
 <?= $this->endSection() ?>
