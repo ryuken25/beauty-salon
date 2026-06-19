@@ -115,6 +115,19 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
       <?php endif ?>
       <?php if (in_array($booking['status'], ['completed', 'rejected', 'cancelled'], true)): ?>
         <div class="caption">Booking sudah final. Lihat riwayat di timeline.</div>
+        <?php if ($booking['status'] === 'completed'): ?>
+          <?php
+            $db = db_connect();
+            $transaksi = $db->table('transaksi')->where('booking_id', $booking['id'])->get()->getRowArray();
+          ?>
+          <?php if ($transaksi): ?>
+            <div class="mt-2">
+              <a class="btn-salon-primary btn-salon--full" href="<?= base_url('admin/transaksi/' . $transaksi['id'] . '/nota') ?>">
+                <i class="bi bi-receipt"></i> Lihat &amp; Print Nota
+              </a>
+            </div>
+          <?php endif ?>
+        <?php endif ?>
       <?php endif ?>
     </div>
   </div>

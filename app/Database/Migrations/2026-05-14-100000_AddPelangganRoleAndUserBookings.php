@@ -32,10 +32,20 @@ class AddPelangganRoleAndUserBookings extends Migration
     public function down()
     {
         $db = $this->db;
-        $db->query('ALTER TABLE bookings DROP FOREIGN KEY bookings_user_id_fk');
-        $db->query('DROP INDEX bookings_user_id_idx ON bookings');
-        $this->forge->dropColumn('bookings', 'user_id');
-        $this->forge->dropColumn('users', 'nomor_hp');
-        $db->query("ALTER TABLE users MODIFY COLUMN role ENUM('admin','pemilik') NOT NULL");
+        try {
+            $db->query('ALTER TABLE bookings DROP FOREIGN KEY bookings_user_id_fk');
+        } catch (\Throwable $e) {}
+        try {
+            $db->query('DROP INDEX bookings_user_id_idx ON bookings');
+        } catch (\Throwable $e) {}
+        try {
+            $this->forge->dropColumn('bookings', 'user_id');
+        } catch (\Throwable $e) {}
+        try {
+            $this->forge->dropColumn('users', 'nomor_hp');
+        } catch (\Throwable $e) {}
+        try {
+            $db->query("ALTER TABLE users MODIFY COLUMN role ENUM('admin','pemilik') NOT NULL");
+        } catch (\Throwable $e) {}
     }
 }

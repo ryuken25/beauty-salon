@@ -171,6 +171,27 @@ class LaporanController extends BaseController
             ->get()->getResultArray();
         $totalTop = array_sum(array_column($topServices, 'jumlah')) ?: 1;
 
+        // --- Filter tanggal untuk laporan & tabel transaksi ---
+        $start = (string) ($this->request->getGet('start') ?: date('Y-m-01'));
+        $end = (string) ($this->request->getGet('end') ?: date('Y-m-d'));
+
+        $transactions = $db->table('transaksi t')
+            ->select('t.id, t.nominal, t.base_price, t.additional_price, t.dp_paid, t.sisa_bayar, t.metode_bayar, t.tanggal_transaksi, t.catatan, b.kode_booking, b.nama_pelanggan, l.nama AS nama_layanan')
+            ->join('bookings b', 'b.id = t.booking_id')
+            ->join('layanan l', 'l.id = b.layanan_id')
+            ->where('DATE(t.tanggal_transaksi) >=', $start)
+            ->where('DATE(t.tanggal_transaksi) <=', $end)
+            ->orderBy('t.tanggal_transaksi', 'DESC')
+            ->get()->getResultArray();
+
+        $statsRange = $db->table('transaksi')
+            ->selectSum('dp_paid', 'total_dp')
+            ->selectSum('sisa_bayar', 'total_sisa')
+            ->selectSum('nominal', 'total_pendapatan')
+            ->where('DATE(tanggal_transaksi) >=', $start)
+            ->where('DATE(tanggal_transaksi) <=', $end)
+            ->get()->getRowArray();
+
         return view('owner/laporan', [
             'pendapatan_hari_ini' => $pendapatanHariIni,
             'pendapatan_bulan_ini' => $pendapatanBulanIni,
@@ -181,6 +202,13 @@ class LaporanController extends BaseController
             'status_map' => $statusMap,
             'top_services' => $topServices,
             'total_top' => $totalTop,
+            // Param filter baru
+            'start' => $start,
+            'end' => $end,
+            'transactions' => $transactions,
+            'total_dp_range' => (int) ($statsRange['total_dp'] ?? 0),
+            'total_sisa_range' => (int) ($statsRange['total_sisa'] ?? 0),
+            'total_pendapatan_range' => (int) ($statsRange['total_pendapatan'] ?? 0),
         ]);
     }
 }

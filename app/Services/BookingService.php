@@ -310,6 +310,8 @@ class BookingService
             $additional = max(0, $additionalPrice);
         }
         $total = $basePrice + $additional;
+        $dpPaid = (int) ($booking['dp_amount'] ?? 0);
+        $sisaBayar = max(0, $total - $dpPaid);
 
         $existing = $db->table('transaksi')->where('booking_id', $bookingId)->countAllResults();
         if ($existing === 0) {
@@ -318,6 +320,8 @@ class BookingService
                 'nominal' => $total,
                 'base_price' => $basePrice,
                 'additional_price' => $additional,
+                'dp_paid' => $dpPaid,
+                'sisa_bayar' => $sisaBayar,
                 'metode_bayar' => $metodeBayar,
                 'tanggal_transaksi' => $now,
                 'catatan' => $catatan,

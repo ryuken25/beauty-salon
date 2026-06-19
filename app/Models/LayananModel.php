@@ -96,8 +96,9 @@ class LayananModel extends BaseAppModel
     /** Listing aktif; promo tampil duluan, lalu urutan kategori → nama. */
     public function activeForListing(): array
     {
+        $today = date('Y-m-d');
         return $this->where('is_active', 1)
-            ->orderBy('(promo_persen IS NOT NULL AND promo_persen > 0)', 'DESC', false)
+            ->orderBy("CASE WHEN promo_persen > 0 AND (promo_mulai IS NULL OR promo_mulai <= '{$today}') AND (promo_selesai IS NULL OR promo_selesai >= '{$today}') THEN 1 ELSE 0 END", 'DESC', false)
             ->orderBy('kategori', 'ASC')
             ->orderBy('nama', 'ASC')
             ->find();
@@ -106,11 +107,26 @@ class LayananModel extends BaseAppModel
     /** Layanan promo aktif (popup & strip). */
     public function promoAktif(int $limit = 12): array
     {
+        $today = date('Y-m-d');
         return $this->where('is_active', 1)
             ->where('promo_persen >', 0)
+            ->groupStart()
+                ->where('promo_mulai IS NULL')
+                ->orWhere('promo_mulai <=', $today)
+            ->groupEnd()
+            ->groupStart()
+                ->where('promo_selesai IS NULL')
+                ->orWhere('promo_selesai >=', $today)
+            ->groupEnd()
             ->orderBy('promo_persen', 'DESC')
             ->limit($limit)
             ->find();
+    }
+
+    /** Alias untuk promoAktif() sesuai spesifikasi. */
+    public function getActivePromos(int $limit = 12): array
+    {
+        return $this->promoAktif($limit);
     }
 
     // ── Layanan Baru (berdasarkan created_at) ─────────────────────────────

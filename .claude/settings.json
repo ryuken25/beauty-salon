@@ -1,0 +1,11 @@
+{
+  "hasCompletedOnboarding": true,
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://token-plan-sgp.xiaomimimo.com/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "tp-su43n5iwessk6b31slwgij94l2ypamuzdphx68ijt9ayx2lt",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "mimo-v2.5-pro",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "mimo-v2.5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "minimax-m3",
+    "ANTHROPIC_SMALL_FAST_MODEL": "minimax-m3"
+  }
+}

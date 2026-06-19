@@ -34,9 +34,10 @@
           <th>Pelanggan</th>
           <th>Layanan</th>
           <th>Metode</th>
-          <th class="text-right">Base</th>
-          <th class="text-right">Tambahan</th>
-          <th class="text-right">Total</th>
+          <th class="text-right">Total Layanan</th>
+          <th class="text-right">DP</th>
+          <th class="text-right">Sisa Bayar</th>
+          <th class="text-center">Aksi</th>
         </tr>
       </thead>
       <tbody>
@@ -44,6 +45,9 @@
           $base = (int) ($r['base_price'] ?? 0);
           $add  = (int) ($r['additional_price'] ?? 0);
           $catatan = trim((string) ($r['catatan'] ?? ''));
+          $dpPaid = (int) ($r['dp_paid'] ?? 0);
+          $sisaBayar = (int) ($r['sisa_bayar'] ?? 0);
+          $totalLayanan = $base + $add;
         ?>
           <tr>
             <td><?= esc(date('d M Y H:i', strtotime($r['tanggal_transaksi']))) ?></td>
@@ -56,11 +60,14 @@
             </td>
             <td><?= esc($r['nama_layanan']) ?></td>
             <td><?= esc(ucfirst($r['metode_bayar'])) ?></td>
-            <td class="text-right">Rp <?= number_format($base, 0, ',', '.') ?></td>
-            <td class="text-right" style="color:<?= $add > 0 ? 'var(--gold)' : 'var(--text-muted)' ?>;">
-              <?= $add > 0 ? '+ Rp ' . number_format($add, 0, ',', '.') : '—' ?>
+            <td class="text-right">Rp <?= number_format($totalLayanan, 0, ',', '.') ?></td>
+            <td class="text-right" style="color:<?= $dpPaid > 0 ? 'var(--gold)' : 'var(--text-muted)' ?>;">
+              <?= $dpPaid > 0 ? 'Rp ' . number_format($dpPaid, 0, ',', '.') : '—' ?>
             </td>
-            <td class="text-right" style="font-weight:600; color:var(--gold);">Rp <?= number_format((int) $r['nominal'], 0, ',', '.') ?></td>
+            <td class="text-right" style="font-weight:600; color:var(--gold);">Rp <?= number_format($sisaBayar, 0, ',', '.') ?></td>
+            <td class="text-center">
+              <a class="btn-salon-ghost btn-salon--sm" href="<?= base_url('admin/transaksi/' . $r['id'] . '/nota') ?>" style="padding: 0.25rem 0.5rem;"><i class="bi bi-receipt"></i> Nota</a>
+            </td>
           </tr>
         <?php endforeach ?>
       </tbody>

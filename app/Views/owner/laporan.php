@@ -132,6 +132,99 @@ $statusBoxCls = [
   </div>
 </div>
 
+<!-- ── Laporan Rincian Pendapatan (Filter Tanggal) ──────────────── -->
+<div class="card-salon mt-3">
+  <div class="flex justify-between items-center mb-2" style="flex-wrap:wrap; gap:0.5rem;">
+    <div>
+      <div class="h2" style="margin:0;">Rincian Pendapatan &amp; DP</div>
+      <div class="caption">Berdasarkan tanggal transaksi selesai.</div>
+    </div>
+  </div>
+
+  <form method="get" class="mb-3">
+    <div class="row-salon cols-3">
+      <div>
+        <label class="form-salon-label">Dari Tanggal</label>
+        <input class="form-salon-input" type="date" name="start" value="<?= esc($start) ?>">
+      </div>
+      <div>
+        <label class="form-salon-label">Sampai Tanggal</label>
+        <input class="form-salon-input" type="date" name="end" value="<?= esc($end) ?>">
+      </div>
+      <div style="display:flex; align-items:end;">
+        <button class="btn-salon-primary btn-salon--full" type="submit"><i class="bi bi-funnel"></i> Terapkan</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="row-salon cols-3 mb-3">
+    <div class="card-salon" style="border-left: 4px solid var(--gold);">
+      <div class="metric">
+        <span class="label">Total DP Diterima</span>
+        <span class="metric__value" style="color:var(--gold);">Rp <?= number_format($total_dp_range, 0, ',', '.') ?></span>
+      </div>
+    </div>
+    <div class="card-salon" style="border-left: 4px solid var(--gold);">
+      <div class="metric">
+        <span class="label">Total Pelunasan Diterima</span>
+        <span class="metric__value" style="color:var(--gold);">Rp <?= number_format($total_sisa_range, 0, ',', '.') ?></span>
+      </div>
+    </div>
+    <div class="card-salon card-salon--featured">
+      <div class="metric">
+        <span class="label">Total Pendapatan Keseluruhan</span>
+        <span class="metric__value">Rp <?= number_format($total_pendapatan_range, 0, ',', '.') ?></span>
+      </div>
+    </div>
+  </div>
+
+  <?php if (empty($transactions)): ?>
+    <div class="empty-state">
+      <i class="bi bi-receipt empty-state__icon"></i>
+      <div class="empty-state__title">Tidak ada transaksi pada periode ini</div>
+    </div>
+  <?php else: ?>
+    <table class="table-salon">
+      <thead>
+        <tr>
+          <th>Tanggal Transaksi</th>
+          <th>Kode Booking</th>
+          <th>Pelanggan</th>
+          <th>Layanan</th>
+          <th class="text-right">Total Layanan</th>
+          <th class="text-right">DP</th>
+          <th class="text-right">Sisa Bayar / Pelunasan</th>
+          <th class="text-right">Total Pendapatan</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($transactions as $t): 
+          $totalLayanan = (int) $t['base_price'] + (int) $t['additional_price'];
+          $dpPaid = (int) $t['dp_paid'];
+          $sisaBayar = (int) $t['sisa_bayar'];
+          $totalRevenue = (int) $t['nominal'];
+        ?>
+          <tr>
+            <td><?= esc(date('d M Y H:i', strtotime($t['tanggal_transaksi']))) ?></td>
+            <td><strong><?= esc($t['kode_booking']) ?></strong></td>
+            <td><?= esc($t['nama_pelanggan']) ?></td>
+            <td><?= esc($t['nama_layanan']) ?></td>
+            <td class="text-right">Rp <?= number_format($totalLayanan, 0, ',', '.') ?></td>
+            <td class="text-right" style="color:<?= $dpPaid > 0 ? 'var(--gold)' : 'var(--text-muted)' ?>;">
+              <?= $dpPaid > 0 ? 'Rp ' . number_format($dpPaid, 0, ',', '.') : '—' ?>
+            </td>
+            <td class="text-right">Rp <?= number_format($sisaBayar, 0, ',', '.') ?></td>
+            <td class="text-right" style="font-weight:600; color:var(--gold);">Rp <?= number_format($totalRevenue, 0, ',', '.') ?></td>
+          </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+    <div class="caption mt-2" style="font-style:italic;">
+      * DP dan pelunasan dihitung masuk berdasarkan tanggal transaksi selesai untuk periode <?= esc(date('d M Y', strtotime($start))) ?> s/d <?= esc(date('d M Y', strtotime($end))) ?>.
+    </div>
+  <?php endif ?>
+</div>
+
 <script>
 (function () {
   const ctx = document.getElementById('chart7days').getContext('2d');

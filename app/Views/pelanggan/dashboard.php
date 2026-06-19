@@ -16,7 +16,7 @@ $paymentLabel = [
 ?>
 
 <section class="section-header">
-  <div class="h1">Halo, <?= esc($nama) ?></div>
+  <div class="h1">Selamat pagi pelanggan tercinta</div>
   <span class="tagline">Riwayat &amp; booking aktif Anda</span>
   <div class="ornament-rule"><span class="ornament-rule__line"></span><i class="bi bi-gem ornament-rule__icon"></i><span class="ornament-rule__line"></span></div>
 </section>

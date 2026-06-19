@@ -4,42 +4,78 @@ setlocal EnableDelayedExpansion
 echo === SW Beauty Salon - Auto Setup (Windows) ===
 echo.
 
-REM ── 1. Cek PHP & Composer ────────────────────────────────────
+REM ── 0. Auto-tambah PHP/Composer/MySQL ke PATH sesi ini ───────
+REM     Biar nggak perlu set Environment Variables manual. Cari di
+REM     lokasi umum XAMPP/Laragon kalau belum ada di PATH.
 where php >nul 2>nul
 if errorlevel 1 (
-    echo [X] PHP tidak ditemukan di PATH.
-    echo     Pastikan Laragon/XAMPP terinstal dan PHP ada di Environment Variables.
-    pause
-    exit /b 1
+    for %%p in ("C:\xampp\php" "D:\xampp\php" "C:\laragon\bin\php") do (
+        if exist "%%~p\php.exe" set "PATH=%%~p;!PATH!"
+    )
+    REM Laragon menyimpan php di subfolder berversi (php-8.x.x).
+    if exist "C:\laragon\bin\php" for /d %%d in ("C:\laragon\bin\php\php-*") do (
+        if exist "%%d\php.exe" set "PATH=%%d;!PATH!"
+    )
 )
 
-where composer >nul 2>nul
+where php >nul 2>nul
 if errorlevel 1 (
-    echo [X] Composer tidak ditemukan di PATH.
-    echo     Download dari https://getcomposer.org/download/
+    echo [X] PHP tidak ditemukan ^(sudah dicek PATH + XAMPP/Laragon^).
+    echo     Install Laragon/XAMPP, atau tambahkan folder php ke PATH.
     pause
     exit /b 1
 )
 
-REM ── 2. Cari mysql.exe (PATH ^| Laragon ^| XAMPP) ──────────────
+REM ── 1. Composer: pakai yang di PATH, atau fallback composer.phar ─
+set "COMPOSER_CMD="
+where composer >nul 2>nul
+if not errorlevel 1 (
+    set "COMPOSER_CMD=composer"
+) else if exist "%~dp0composer.phar" (
+    set "COMPOSER_CMD=php "%~dp0composer.phar""
+) else (
+    echo [X] Composer tidak ditemukan di PATH dan composer.phar tidak ada.
+    echo     Download dari https://getcomposer.org/download/ ^(taruh composer.phar
+    echo     di folder ini, atau install Composer biasa^), lalu jalankan ulang.
+    pause
+    exit /b 1
+)
+
+REM ── 1b. Pastikan ekstensi 'zip' aktif (biar composer cepat) ──
+REM     Tanpa zip, composer fallback download "from source" (lambat +
+REM     wall of warning). Aktifkan otomatis di php.ini aktif kalau ke-comment.
+php -r "exit(extension_loaded('zip')?0:1);" >nul 2>nul
+if errorlevel 1 (
+    for /f "delims=" %%i in ('php -r "echo php_ini_loaded_file();" 2^>nul') do set "PHPINI=%%i"
+    if defined PHPINI if exist "!PHPINI!" (
+        findstr /i /c:";extension=zip" "!PHPINI!" >nul 2>nul
+        if not errorlevel 1 (
+            echo [i] Mengaktifkan ekstensi 'zip' di !PHPINI! ^(backup .bak dibuat^)...
+            copy /y "!PHPINI!" "!PHPINI!.bak" >nul 2>nul
+            powershell -NoProfile -Command "(Get-Content -Raw '!PHPINI!') -replace ';extension=zip', 'extension=zip' | Set-Content -Encoding ASCII '!PHPINI!'" >nul 2>nul
+        )
+    )
+    php -r "exit(extension_loaded('zip')?0:1);" >nul 2>nul
+    if errorlevel 1 echo [!] Ekstensi 'zip' belum aktif - composer tetap jalan ^(lewat source, agak lambat^).
+)
+
+REM ── 2. Cari mysql.exe (PATH | XAMPP | Laragon) ───────────────
 set "MYSQL_EXE="
 where mysql >nul 2>nul
 if not errorlevel 1 (
     set "MYSQL_EXE=mysql"
 ) else (
     if exist "C:\xampp\mysql\bin\mysql.exe" set "MYSQL_EXE=C:\xampp\mysql\bin\mysql.exe"
-    if not defined MYSQL_EXE (
-        for /d %%d in ("C:\laragon\bin\mysql\mysql-*") do (
-            if exist "%%d\bin\mysql.exe" set "MYSQL_EXE=%%d\bin\mysql.exe"
-        )
-    )
     if not defined MYSQL_EXE if exist "D:\xampp\mysql\bin\mysql.exe" set "MYSQL_EXE=D:\xampp\mysql\bin\mysql.exe"
+    if not defined MYSQL_EXE for /d %%d in ("C:\laragon\bin\mysql\mysql-*") do (
+        if exist "%%d\bin\mysql.exe" set "MYSQL_EXE=%%d\bin\mysql.exe"
+    )
 )
 
 if defined MYSQL_EXE (
     echo [i] mysql ditemukan: !MYSQL_EXE!
 ) else (
-    echo [!] mysql CLI tidak ketemu otomatis di PATH/Laragon/XAMPP.
+    echo [!] mysql CLI tidak ketemu otomatis di PATH/XAMPP/Laragon.
     echo     Skrip akan coba lanjut, tapi pembuatan database mungkin gagal.
     echo     Pastikan MySQL nyala ^(Laragon: Start All; XAMPP: Start MySQL^).
     echo     Tekan ENTER untuk lanjut atau Ctrl+C untuk batal.
@@ -56,7 +92,7 @@ for /l %%i in (1,1,3) do (
             echo     [!] Percobaan %%i/3 ^(coba ulang setelah jeda^)...
             timeout /t 3 /nobreak >nul
         )
-        call composer install --no-interaction
+        call !COMPOSER_CMD! install --no-interaction
         if not errorlevel 1 set "COMPOSER_OK=1"
     )
 )
@@ -175,6 +211,7 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
+REM Seeder idempotent: kalau data demo sudah ada, dia skip sendiri (bukan error).
 call php spark db:seed SalonSeeder
 if errorlevel 1 (
     echo [!] db:seed gagal - tapi tabel sudah ada. Coba ulang manual:
@@ -184,10 +221,11 @@ if errorlevel 1 (
 REM ── 7. Info + jalankan server ───────────────────────────────
 echo.
 echo [5/5] Menjalankan server di http://localhost:8080
-echo     Akun demo:
-echo       Pemilik:   owner@swbeautysalon.local / Password123! ^(di /admin/login^)
-echo       Admin:     admin@swbeautysalon.local / Password123! ^(di /admin/login^)
-echo       Pelanggan: WA 6281338109102          / Password123! ^(di /login^)
+echo     Semua login lewat satu halaman: http://localhost:8080/login
+echo     Akun demo ^(password: Password123^^!^):
+echo       Pemilik:   email owner@swbeautysalon.local
+echo       Admin:     email admin@swbeautysalon.local
+echo       Pelanggan: nomor WA 6281338109102
 echo.
 echo [i] Notifikasi email ^(opsional^): buka .env, isi email.SMTPUser/fromEmail
 echo     dengan akun Gmail salon + email.SMTPPass dengan Gmail App Password

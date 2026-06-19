@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:y="http://www.yworks.com/xml/graphml"
+  xmlns:yed="http://www.yworks.com/xml/yed/3"
+  xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd">
+  <key for="node" id="d6" yfiles.type="nodegraphics"/>
+  <key for="edge" id="d10" yfiles.type="edgegraphics"/>
+  <graph edgedefault="directed" id="G">
+    <node id="pelanggan">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="64" width="150" x="60" y="174"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">Pelanggan</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="admin">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="64" width="150" x="60" y="302"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">Admin</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="pemilik">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="64" width="150" x="60" y="430"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">Pemilik</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="p1_1">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="140" width="140" x="450" y="60"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">1.1
+Registrasi Akun Pelanggan</y:NodeLabel>
+        <y:Shape type="ellipse"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="p1_2">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="140" width="140" x="450" y="264"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">1.2
+Validasi Login Terpadu</y:NodeLabel>
+        <y:Shape type="ellipse"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="p1_3">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="140" width="140" x="450" y="468"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">1.3
+Kelola Akun Pelanggan</y:NodeLabel>
+        <y:Shape type="ellipse"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="d_users">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="46" width="168" x="830" y="311"/>
+        <y:Fill color="#F5F5F5" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">D1  users</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <edge id="e0" source="pelanggan" target="p1_1">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_registrasi</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e1" source="p1_1" target="d_users">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_akun_baru</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e2" source="p1_1" target="pelanggan">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_akun_terdaftar</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e3" source="pelanggan" target="p1_2">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_login_pelanggan</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e4" source="admin" target="p1_2">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_login_staf</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e5" source="pemilik" target="p1_2">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_login_pemilik</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e6" source="d_users" target="p1_2">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_kredensial</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e7" source="p1_2" target="pelanggan">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_sesi_pelanggan</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e8" source="p1_2" target="admin">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_sesi_staf</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e9" source="p1_2" target="pemilik">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_sesi_pemilik</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e10" source="admin" target="p1_3">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_reset_password</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e11" source="d_users" target="p1_3">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_daftar_pelanggan</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e12" source="p1_3" target="d_users">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_password_baru</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e13" source="p1_3" target="admin">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_akun_diperbarui</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+  </graph>
+</graphml>

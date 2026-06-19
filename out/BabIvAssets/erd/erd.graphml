@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:y="http://www.yworks.com/xml/graphml"
+  xmlns:yed="http://www.yworks.com/xml/yed/3"
+  xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd">
+  <key for="node" id="d6" yfiles.type="nodegraphics"/>
+  <key for="edge" id="d10" yfiles.type="edgegraphics"/>
+  <graph edgedefault="directed" id="G">
+    <node id="users">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="188" width="200" x="60" y="60"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">USERS
+PK id
+nama
+email
+nomor_hp
+password_hash
+role
+is_active</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="layanan">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="208" width="200" x="400" y="60"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">LAYANAN
+PK id
+nama
+kategori
+durasi_menit
+harga
+promo_persen
+gambar
+is_active</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="bookings">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="288" width="200" x="740" y="60"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">BOOKINGS
+PK id
+FK user_id
+FK layanan_id
+kode_booking
+tanggal
+slot_mulai
+slot_selesai
+jumlah_slot
+harga_layanan
+dp_amount
+payment_status
+status</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="booking_slots">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="148" width="200" x="60" y="468"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">BOOKING_SLOTS
+PK id
+FK booking_id
+tanggal
+slot_waktu
+status</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="transaksi">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="188" width="200" x="400" y="468"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">TRANSAKSI
+PK id
+FK booking_id
+nominal
+base_price
+additional_price
+metode_bayar
+tanggal_transaksi</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="booking_logs">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="168" width="200" x="740" y="468"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">BOOKING_LOGS
+PK id
+FK booking_id
+event_type
+actor
+actor_role
+payload</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="settings">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="128" width="200" x="60" y="776"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">SETTINGS
+PK id
+key_name
+value
+updated_at</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <edge id="r0" source="users" target="bookings">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">1  melakukan  N</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="r1" source="layanan" target="bookings">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">1  dipesan_pada  N</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="r2" source="bookings" target="booking_slots">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">1  menahan  N</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="r3" source="bookings" target="transaksi">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">1  menghasilkan  1</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="r4" source="bookings" target="booking_logs">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">1  tercatat_pada  N</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+  </graph>
+</graphml>

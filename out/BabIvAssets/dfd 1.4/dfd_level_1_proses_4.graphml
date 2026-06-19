@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:y="http://www.yworks.com/xml/graphml"
+  xmlns:yed="http://www.yworks.com/xml/yed/3"
+  xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd">
+  <key for="node" id="d6" yfiles.type="nodegraphics"/>
+  <key for="edge" id="d10" yfiles.type="edgegraphics"/>
+  <graph edgedefault="directed" id="G">
+    <node id="pelanggan">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="64" width="150" x="60" y="238"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">Pelanggan</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="admin">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="64" width="150" x="60" y="366"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">Admin</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="p4_1">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="140" width="140" x="450" y="60"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">4.1
+Periksa Bukti DP</y:NodeLabel>
+        <y:Shape type="ellipse"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="p4_2">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="140" width="140" x="450" y="264"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">4.2
+Terima/Tolak Booking</y:NodeLabel>
+        <y:Shape type="ellipse"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="p4_3">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="140" width="140" x="450" y="468"/>
+        <y:Fill color="#FFFFFF" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">4.3
+Kirim Notifikasi</y:NodeLabel>
+        <y:Shape type="ellipse"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="d_bookings">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="46" width="168" x="830" y="201"/>
+        <y:Fill color="#F5F5F5" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">D3  bookings</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="d_slots">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="46" width="168" x="830" y="311"/>
+        <y:Fill color="#F5F5F5" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">D4  booking_slots</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <node id="d_logs">
+      <data key="d6"><y:ShapeNode>
+        <y:Geometry height="46" width="168" x="830" y="421"/>
+        <y:Fill color="#F5F5F5" transparent="false"/>
+        <y:BorderStyle color="#000000" type="line" width="1.0"/>
+        <y:NodeLabel alignment="center" autoSizePolicy="content" fontSize="12"
+          modelName="internal" modelPosition="c" visible="true">D7  booking_logs</y:NodeLabel>
+        <y:Shape type="rectangle"/>
+      </y:ShapeNode></data>
+    </node>
+    <edge id="e0" source="admin" target="p4_1">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_verifikasi_dp</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e1" source="d_bookings" target="p4_1">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_booking_pending</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e2" source="p4_1" target="d_bookings">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_status_pembayaran</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e3" source="p4_1" target="p4_2">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_dp_terverifikasi</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e4" source="admin" target="p4_2">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_keputusan_booking</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e5" source="p4_2" target="d_bookings">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_status_booking</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e6" source="p4_2" target="d_slots">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_pelepasan_slot</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e7" source="p4_2" target="d_logs">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_log_verifikasi</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e8" source="p4_2" target="p4_3">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">data_hasil_keputusan</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e9" source="p4_3" target="pelanggan">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_konfirmasi_email</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+    <edge id="e10" source="p4_3" target="admin">
+      <data key="d10"><y:PolyLineEdge>
+        <y:LineStyle color="#000000" type="line" width="1.0"/>
+        <y:Arrows source="none" target="standard"/>
+        <y:EdgeLabel backgroundColor="#FFFFFF" fontSize="10" modelName="centered" visible="true">info_template_wa</y:EdgeLabel>
+        <y:BendStyle smoothed="false"/>
+      </y:PolyLineEdge></data>
+    </edge>
+  </graph>
+</graphml>

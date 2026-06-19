@@ -11,8 +11,9 @@ class Home extends BaseController
     {
         // Highlight 3 layanan teratas (promo dulu, lalu harga termurah).
         $model = new LayananModel();
+        $today = date('Y-m-d');
         $services = $model->where('is_active', 1)
-            ->orderBy('(promo_persen IS NOT NULL AND promo_persen > 0)', 'DESC', false)
+            ->orderBy("CASE WHEN promo_persen > 0 AND (promo_mulai IS NULL OR promo_mulai <= '{$today}') AND (promo_selesai IS NULL OR promo_selesai >= '{$today}') THEN 1 ELSE 0 END", 'DESC', false)
             ->orderBy('harga', 'ASC')
             ->limit(3)
             ->find();
