@@ -34,7 +34,13 @@ class Booking extends BaseController
                 'slot_mulai' => 'required|regex_match[/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/]',
                 'bukti_dp' => 'uploaded[bukti_dp]|is_image[bukti_dp]|max_size[bukti_dp,2048]|mime_in[bukti_dp,image/png,image/jpg,image/jpeg,image/webp]',
             ];
-            if (! $this->validate($rules)) {
+            $errors = [
+                'layanan_id' => [
+                    'required' => 'Silakan pilih layanan terlebih dahulu.',
+                    'is_natural_no_zero' => 'Silakan pilih layanan terlebih dahulu.',
+                ]
+            ];
+            if (! $this->validate($rules, $errors)) {
                 return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
             }
 

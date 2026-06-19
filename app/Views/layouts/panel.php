@@ -63,6 +63,9 @@ if (! function_exists('panel_active')) {
     <?php if (session()->getFlashdata('success')): ?>
       <div class="alert-salon alert-salon--success"><?= esc(session()->getFlashdata('success')) ?></div>
     <?php endif ?>
+    <?php if (session()->getFlashdata('warning')): ?>
+      <div class="alert-salon alert-salon--info"><i class="bi bi-exclamation-triangle"></i> <?= esc(session()->getFlashdata('warning')) ?></div>
+    <?php endif ?>
     <?php if (session()->getFlashdata('error')): ?>
       <div class="alert-salon alert-salon--error"><?= esc(session()->getFlashdata('error')) ?></div>
     <?php endif ?>

@@ -52,6 +52,22 @@ class NotificationService
         return $sent;
     }
 
+    public function sendDpInvoiceEmail(array $b): bool
+    {
+        $subject = "[SW Beauty Salon] DP Booking {$b['kode_booking']} Terverifikasi";
+        $sent = $this->send((string) ($b['email_pelanggan'] ?? ''), $subject, 'emails/dp_invoice', ['b' => $b]);
+        if ($sent) $this->logEvent((int) $b['id'], 'email_dp_invoice', $b['email_pelanggan']);
+        return $sent;
+    }
+
+    public function sendFinalInvoiceEmail(array $b, array $t): bool
+    {
+        $subject = "[SW Beauty Salon] Invoice Treatment {$b['kode_booking']}";
+        $sent = $this->send((string) ($b['email_pelanggan'] ?? ''), $subject, 'emails/final_invoice', ['b' => $b, 't' => $t]);
+        if ($sent) $this->logEvent((int) $b['id'], 'email_final_invoice', $b['email_pelanggan']);
+        return $sent;
+    }
+
     public function sendBookingReminder(array $b): bool
     {
         $jam = substr((string) $b['slot_mulai'], 0, 5);

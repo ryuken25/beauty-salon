@@ -140,6 +140,13 @@ class BookingController extends BaseController
             $msg = $manualMode
                 ? 'Booking selesai. Transaksi dicatat manual.'
                 : 'Booking selesai dan transaksi otomatis dibuat.';
+
+            // Check if email_pelanggan is empty to add a warning
+            $booking = (new \App\Models\BookingModel())->find($id);
+            if ($booking && empty($booking['email_pelanggan'])) {
+                session()->setFlashdata('warning', 'Peringatan: Invoice final tidak terkirim via email karena email pelanggan kosong.');
+            }
+
             return redirect()->to('/admin/booking/' . $id)->with('success', $msg);
         } catch (RuntimeException $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -152,45 +159,106 @@ class BookingController extends BaseController
         return redirect()->back()->with('success', 'WhatsApp ditandai sudah dikirim.');
     }
 
-    public function dpVerify(int $id)
+    public function receipt(int $id)
     {
-        $model = new BookingModel();
-        $row = $model->find($id);
+        $row = (new BookingModel())->detail($id);
         if (! $row) {
             return redirect()->to('/admin/booking')->with('error', 'Booking tidak ditemukan.');
         }
-        $model->update($id, ['payment_status' => 'dp_verified']);
 
-        // Pembayaran DP terverifikasi → sekalian terima booking kalau masih
-        // pending. Service::verify menangani transisi + log + email konfirmasi.
-        $accepted = false;
-        if ($row['status'] === 'pending_verification') {
-            try {
-                (new BookingService())->verify($id, (int) session('user_id'));
-                $accepted = true;
-            } catch (RuntimeException $e) {
-                // Race condition (sudah berubah status di tab lain) — lanjut tanpa
-                // accept; admin bisa coba ulang dari aksi 'Verifikasi'.
-                log_message('warning', 'dpVerify auto-accept gagal: ' . $e->getMessage());
+        // Ambil nama kasir/admin yang memverifikasi
+        $db = db_connect();
+        $cashier = 'Admin';
+        if (! empty($row['verified_via'])) {
+            if (str_starts_with($row['verified_via'], 'dashboard:')) {
+                $adminId = (int) substr($row['verified_via'], 10);
+                $admin = $db->table('users')->where('id', $adminId)->get()->getRowArray();
+                if ($admin) {
+                    $cashier = $admin['nama'];
+                }
+            } else {
+                $cashier = $row['verified_via'];
             }
         }
-        $msg = $accepted
-            ? 'DP terverifikasi & booking otomatis diterima.'
-            : 'DP terverifikasi.';
-        return redirect()->to('/admin/booking/' . $id)->with('success', $msg);
+
+        return view('admin/booking/receipt', [
+            'booking' => $row,
+            'cashier' => $cashier,
+        ]);
+    }
+
+    public function resendEmailDp(int $id)
+    {
+        $row = (new BookingModel())->detail($id);
+        if (! $row) {
+            return redirect()->back()->with('error', 'Booking tidak ditemukan.');
+        }
+        if (empty($row['email_pelanggan'])) {
+            return redirect()->back()->with('error', 'Pelanggan tidak memiliki alamat email.');
+        }
+
+        $sent = (new \App\Services\NotificationService())->sendDpInvoiceEmail($row);
+        if ($sent) {
+            return redirect()->back()->with('success', 'Email invoice DP berhasil dikirim ulang.');
+        }
+        return redirect()->back()->with('error', 'Gagal mengirim email. Silakan cek konfigurasi email di .env.');
     }
 
     public function walkin()
     {
         if ($this->request->getMethod() === 'POST') {
+            $rules = [
+                'nama_pelanggan' => 'required',
+                'nomor_hp_pelanggan' => 'required|regex_match[/^(\+?62|0)8[0-9]{7,12}$/]',
+                'email_pelanggan' => 'required|valid_email',
+                'layanan_id' => 'required|is_natural_no_zero',
+                'tanggal' => 'required|valid_date[Y-m-d]',
+                'slot_mulai' => 'required|regex_match[/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/]',
+                'bukti_dp' => 'uploaded[bukti_dp]|is_image[bukti_dp]|mime_in[bukti_dp,image/png,image/jpg,image/jpeg,image/webp]',
+            ];
+            $errors = [
+                'layanan_id' => [
+                    'required' => 'Silakan pilih layanan terlebih dahulu.',
+                    'is_natural_no_zero' => 'Silakan pilih layanan terlebih dahulu.',
+                ],
+                'email_pelanggan' => [
+                    'required' => 'Alamat email wajib diisi.',
+                    'valid_email' => 'Format alamat email tidak valid.',
+                ],
+                'nomor_hp_pelanggan' => [
+                    'required' => 'Nomor HP wajib diisi.',
+                    'regex_match' => 'Format nomor HP tidak valid. Gunakan format seperti 081234567890.',
+                ],
+                'bukti_dp' => [
+                    'uploaded' => 'Bukti pembayaran DP wajib diunggah.',
+                    'is_image' => 'Bukti pembayaran DP harus berupa file gambar.',
+                    'mime_in' => 'Format file gambar tidak valid. Gunakan PNG, JPG, JPEG, atau WEBP.',
+                ]
+            ];
+            if (! $this->validate($rules, $errors)) {
+                return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
+            }
+
+            // Move bukti DP into public/uploads/dp/.
+            $file = $this->request->getFile('bukti_dp');
+            $uploadDir = FCPATH . 'uploads/dp';
+            if (! is_dir($uploadDir)) {
+                @mkdir($uploadDir, 0775, true);
+            }
+            $name = $file->getRandomName();
+            $file->move($uploadDir, $name);
+            $proofRelative = 'uploads/dp/' . $name;
+
             try {
                 $row = (new BookingService())->create([
                     'nama_pelanggan' => $this->request->getPost('nama_pelanggan'),
                     'nomor_hp_pelanggan' => $this->request->getPost('nomor_hp_pelanggan'),
+                    'email_pelanggan' => $this->request->getPost('email_pelanggan'),
                     'layanan_id' => (int) $this->request->getPost('layanan_id'),
                     'tanggal' => $this->request->getPost('tanggal'),
                     'slot_mulai' => $this->request->getPost('slot_mulai'),
                     'catatan' => $this->request->getPost('catatan'),
+                    'dp_proof_path' => $proofRelative,
                     'sumber' => 'walkin',
                     'verified_via' => 'dashboard:' . session('user_id'),
                     'actor' => 'dashboard:' . session('user_id'),
@@ -198,6 +266,7 @@ class BookingController extends BaseController
                 ]);
                 return redirect()->to('/admin/booking/' . $row['id'])->with('success', 'Walk-in booking berhasil dibuat.');
             } catch (RuntimeException $e) {
+                @unlink($uploadDir . '/' . $name);
                 return redirect()->back()->withInput()->with('error', $e->getMessage());
             }
         }

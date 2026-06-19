@@ -30,15 +30,23 @@ class BookingService
             throw new RuntimeException('Layanan tidak valid.');
         }
 
-        // Harga FINAL setelah promo — dipakai konsisten untuk harga_layanan
-        // (booking) + dp_amount + nominal transaksi nanti (di complete()).
-        // Hilangin promo? Cukup unset promo_persen — hargaFinal() balik ke harga asli.
-        $hargaInt = LayananModel::hargaFinal($layanan);
+        $tanggalBooking = $data['tanggal'];
+
+        // Hitung harga normal dan promo berdasarkan tanggal booking
+        $hargaOriginal = (int) $layanan['harga'];
+        $isPromoActive = LayananModel::isPromo($layanan, $tanggalBooking);
+        $promoId = $isPromoActive ? (int) $layanan['id'] : null;
+        $promoName = $isPromoActive ? ($layanan['promo_deskripsi'] ?: 'Promo ' . $layanan['nama']) : null;
+        $promoDiscountType = $isPromoActive ? 'percentage' : null;
+        $promoDiscountValue = $isPromoActive ? (int) $layanan['promo_persen'] : 0;
+        $hargaFinal = LayananModel::hargaFinal($layanan, $tanggalBooking);
+
         // DP rule: harga ≤ 50.000 → DP = full; harga > 50.000 → DP = 50.000.
         $sumberRaw = ($data['sumber'] ?? 'online') === 'walkin' ? 'walkin' : 'online';
-        $dpAmount = $sumberRaw === 'walkin' ? 0 : min($hargaInt, 50_000);
-        $dpProof = $sumberRaw === 'walkin' ? null : ($data['dp_proof_path'] ?? null);
-        $paymentStatus = $sumberRaw === 'walkin' ? 'unpaid' : ($dpProof ? 'dp_uploaded' : 'unpaid');
+        $dpAmount = min($hargaFinal, 50_000);
+        $remainingPayment = max(0, $hargaFinal - $dpAmount);
+        $dpProof = $data['dp_proof_path'] ?? null;
+        $paymentStatus = $sumberRaw === 'walkin' ? 'dp_verified' : ($dpProof ? 'dp_uploaded' : 'unpaid');
 
         $email = isset($data['email_pelanggan']) ? trim((string) $data['email_pelanggan']) : '';
 
@@ -62,10 +70,17 @@ class BookingService
                 'slot_mulai' => $validation['slot_mulai'] . ':00',
                 'slot_selesai' => $validation['slot_selesai'] . ':00',
                 'jumlah_slot' => $validation['jumlah_slot'],
-                'harga_layanan' => $hargaInt,
+                'harga_layanan' => $hargaFinal,
                 'dp_amount' => $dpAmount,
                 'dp_proof_path' => $dpProof,
                 'payment_status' => $paymentStatus,
+                'original_service_price' => $hargaOriginal,
+                'promo_id' => $promoId,
+                'promo_name' => $promoName,
+                'promo_discount_type' => $promoDiscountType,
+                'promo_discount_value' => $promoDiscountValue,
+                'final_service_price' => $hargaFinal,
+                'remaining_payment' => $remainingPayment,
                 'status' => $statusInitial,
                 'sumber' => $sumber,
                 'catatan' => $data['catatan'] ?? null,
@@ -75,6 +90,9 @@ class BookingService
             if ($statusInitial === 'accepted') {
                 $bookingRow['verified_via'] = $data['verified_via'] ?? 'walkin';
                 $bookingRow['verified_at'] = $now;
+                if ($dpAmount > 0) {
+                    $bookingRow['dp_verified_at'] = $now;
+                }
             }
 
             $db->table('bookings')->insert($bookingRow);
@@ -107,14 +125,23 @@ class BookingService
 
             $row = (new BookingModel())->detail($bookingId);
 
-            // FASE 14 hook A — email "menunggu verifikasi" untuk booking
-            // online yang punya alamat email. Best-effort: kegagalan SMTP
-            // tidak boleh membatalkan booking yang sudah commit.
-            if ($row && $sumber === 'online' && ! empty($row['email_pelanggan'])) {
+            // FASE 14 hook A — email notifikasi sesuai status awal booking.
+            // Best-effort: kegagalan SMTP tidak boleh membatalkan booking yang sudah commit.
+            if ($row && ! empty($row['email_pelanggan'])) {
                 try {
-                    (new NotificationService())->sendBookingCreated($row);
+                    $notif = new NotificationService();
+                    if ($statusInitial === 'accepted') {
+                        if ((int) $row['dp_amount'] > 0) {
+                            $notif->sendDpInvoiceEmail($row);
+                        } else {
+                            $notif->sendBookingVerified($row);
+                        }
+                    } else {
+                        // Status pending_verification
+                        $notif->sendBookingCreated($row);
+                    }
                 } catch (\Throwable $e) {
-                    log_message('error', 'sendBookingCreated gagal: ' . $e->getMessage());
+                    log_message('error', 'Gagal mengirim email notifikasi booking baru: ' . $e->getMessage());
                 }
             }
 
@@ -300,28 +327,26 @@ class BookingService
             throw new RuntimeException('Booking sudah berubah status dan tidak dapat ditandai selesai.');
         }
 
+        $dpTerverifikasi = ($booking['payment_status'] === 'dp_verified') ? (int) $booking['dp_amount'] : 0;
         if ($manualMode) {
-            // Admin sets the nominal manually. Stored as base_price so reports
-            // (which sum nominal = base + additional) stay consistent.
-            $basePrice = max(0, $manualNominal);
-            $additional = 0;
+            $totalLayananFinal = max(0, $manualNominal);
+            $biayaTambahan = 0;
         } else {
-            $basePrice = (int) $booking['harga_layanan'];
-            $additional = max(0, $additionalPrice);
+            $totalLayananFinal = (int) ($booking['final_service_price'] ?: $booking['harga_layanan']);
+            $biayaTambahan = max(0, $additionalPrice);
         }
-        $total = $basePrice + $additional;
-        $dpPaid = (int) ($booking['dp_amount'] ?? 0);
-        $sisaBayar = max(0, $total - $dpPaid);
+        $subtotal = $totalLayananFinal + $biayaTambahan;
+        $sisaPembayaran = max(0, $subtotal - $dpTerverifikasi);
 
         $existing = $db->table('transaksi')->where('booking_id', $bookingId)->countAllResults();
         if ($existing === 0) {
             $db->table('transaksi')->insert([
                 'booking_id' => $bookingId,
-                'nominal' => $total,
-                'base_price' => $basePrice,
-                'additional_price' => $additional,
-                'dp_paid' => $dpPaid,
-                'sisa_bayar' => $sisaBayar,
+                'nominal' => $subtotal,
+                'base_price' => $totalLayananFinal,
+                'additional_price' => $biayaTambahan,
+                'dp_paid' => $dpTerverifikasi,
+                'sisa_bayar' => $sisaPembayaran,
                 'metode_bayar' => $metodeBayar,
                 'tanggal_transaksi' => $now,
                 'catatan' => $catatan,
@@ -334,10 +359,21 @@ class BookingService
         $this->logEvent($bookingId, 'completed', 'dashboard:' . ($userId ?? 'unknown'), 'admin', [
             'manual' => $manualMode,
             'metode_bayar' => $metodeBayar,
-            'base_price' => $basePrice,
-            'additional_price' => $additional,
-            'nominal' => $total,
+            'base_price' => $totalLayananFinal,
+            'additional_price' => $biayaTambahan,
+            'nominal' => $subtotal,
         ]);
+
+        // Kirim email invoice final (best-effort)
+        $row = (new BookingModel())->detail($bookingId);
+        $transaksi = $db->table('transaksi')->where('booking_id', $bookingId)->get()->getRowArray();
+        if ($row && $transaksi && ! empty($row['email_pelanggan'])) {
+            try {
+                (new NotificationService())->sendFinalInvoiceEmail($row, $transaksi);
+            } catch (\Throwable $e) {
+                log_message('error', 'sendFinalInvoiceEmail gagal: ' . $e->getMessage());
+            }
+        }
     }
 
     public function markWaSent(int $bookingId, ?int $userId): void
@@ -401,6 +437,23 @@ class BookingService
         if ($newStatus === 'rejected') {
             $fields['rejection_reason'] = $reason;
         }
+
+        if ($newStatus === 'accepted') {
+            // Check if DP proof is missing for online booking that requires DP
+            if ($booking['sumber'] === 'online' && (int) $booking['dp_amount'] > 0) {
+                if (empty($booking['dp_proof_path'])) {
+                    $db->transRollback();
+                    throw new RuntimeException('Verifikasi ditolak. Bukti pembayaran DP belum diunggah.');
+                }
+            }
+
+            // Auto-verify DP
+            if ((int) $booking['dp_amount'] > 0) {
+                $fields['payment_status'] = 'dp_verified';
+                $fields['dp_verified_at'] = $now;
+            }
+        }
+
         $db->table('bookings')->where('id', $bookingId)->where('status', 'pending_verification')->update($fields);
         if ($db->affectedRows() !== 1) {
             $db->transRollback();
@@ -415,17 +468,17 @@ class BookingService
             'reason' => $reason,
         ]);
 
-        // FASE 14 hook B — kalau admin verifikasi (accepted), kirim email
-        // konfirmasi ke pelanggan. Reject sengaja tidak dikirim — WA manual
-        // di detail booking adalah saluran yang dipakai admin untuk alasan
-        // tolak.
         if ($newStatus === 'accepted') {
             $row = (new BookingModel())->detail($bookingId);
             if ($row && ! empty($row['email_pelanggan'])) {
                 try {
-                    (new NotificationService())->sendBookingVerified($row);
+                    if ((int) $row['dp_amount'] > 0) {
+                        (new NotificationService())->sendDpInvoiceEmail($row);
+                    } else {
+                        (new NotificationService())->sendBookingVerified($row);
+                    }
                 } catch (\Throwable $e) {
-                    log_message('error', 'sendBookingVerified gagal: ' . $e->getMessage());
+                    log_message('error', 'Gagal mengirim email verifikasi/DP invoice: ' . $e->getMessage());
                 }
             }
         }

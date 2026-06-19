@@ -46,15 +46,27 @@ class LaporanController extends BaseController
                 $closeHour = $openHour + 1;
             }
             $date = date('Y-m-d', strtotime(sprintf('%+d days', $offset)));
-            $rows = $db->query(
-                'SELECT HOUR(tanggal_transaksi) jam, SUM(nominal) total
-                 FROM transaksi WHERE DATE(tanggal_transaksi) = ? GROUP BY HOUR(tanggal_transaksi)',
+            
+            $rowsDp = $db->query(
+                "SELECT HOUR(dp_verified_at) jam, SUM(dp_amount) total
+                 FROM bookings WHERE payment_status = 'dp_verified' AND DATE(dp_verified_at) = ? GROUP BY HOUR(dp_verified_at)",
                 [$date]
             )->getResultArray();
+
+            $rowsPelunasan = $db->query(
+                "SELECT HOUR(tanggal_transaksi) jam, SUM(sisa_bayar) total
+                 FROM transaksi WHERE DATE(tanggal_transaksi) = ? GROUP BY HOUR(tanggal_transaksi)",
+                [$date]
+            )->getResultArray();
+
             $bucket = [];
-            foreach ($rows as $r) {
-                $bucket[(int) $r['jam']] = (int) $r['total'];
+            foreach ($rowsDp as $r) {
+                $bucket[(int) $r['jam']] = ($bucket[(int) $r['jam']] ?? 0) + (int) $r['total'];
             }
+            foreach ($rowsPelunasan as $r) {
+                $bucket[(int) $r['jam']] = ($bucket[(int) $r['jam']] ?? 0) + (int) $r['total'];
+            }
+
             for ($h = $openHour; $h < $closeHour; $h++) {
                 $labels[] = sprintf('%02d:00', $h);
                 $values[] = $bucket[$h] ?? 0;
@@ -68,15 +80,27 @@ class LaporanController extends BaseController
             if ($endTs > $todayTs) $endTs = $todayTs;
             $end = date('Y-m-d', $endTs);
             $start = date('Y-m-d', strtotime('-6 days', $endTs));
-            $rows = $db->query(
-                'SELECT DATE(tanggal_transaksi) tgl, SUM(nominal) total
-                 FROM transaksi WHERE DATE(tanggal_transaksi) BETWEEN ? AND ? GROUP BY DATE(tanggal_transaksi)',
+            
+            $rowsDp = $db->query(
+                "SELECT DATE(dp_verified_at) tgl, SUM(dp_amount) total
+                 FROM bookings WHERE payment_status = 'dp_verified' AND DATE(dp_verified_at) BETWEEN ? AND ? GROUP BY DATE(dp_verified_at)",
                 [$start, $end]
             )->getResultArray();
+
+            $rowsPelunasan = $db->query(
+                "SELECT DATE(tanggal_transaksi) tgl, SUM(sisa_bayar) total
+                 FROM transaksi WHERE DATE(tanggal_transaksi) BETWEEN ? AND ? GROUP BY DATE(tanggal_transaksi)",
+                [$start, $end]
+            )->getResultArray();
+
             $bucket = [];
-            foreach ($rows as $r) {
-                $bucket[$r['tgl']] = (int) $r['total'];
+            foreach ($rowsDp as $r) {
+                $bucket[$r['tgl']] = ($bucket[$r['tgl']] ?? 0) + (int) $r['total'];
             }
+            foreach ($rowsPelunasan as $r) {
+                $bucket[$r['tgl']] = ($bucket[$r['tgl']] ?? 0) + (int) $r['total'];
+            }
+
             for ($i = 6; $i >= 0; $i--) {
                 $d = date('Y-m-d', strtotime("-{$i} days", $endTs));
                 $ts = strtotime($d);
@@ -94,15 +118,27 @@ class LaporanController extends BaseController
             $thisMonthStart = date('Y-m-01');
             $isCurrent = $monthStart === $thisMonthStart;
             $monthEnd = $isCurrent ? date('Y-m-d') : date('Y-m-t', $target);
-            $rows = $db->query(
-                'SELECT DAY(tanggal_transaksi) tgl, SUM(nominal) total
-                 FROM transaksi WHERE DATE(tanggal_transaksi) BETWEEN ? AND ? GROUP BY DAY(tanggal_transaksi)',
+            
+            $rowsDp = $db->query(
+                "SELECT DAY(dp_verified_at) tgl, SUM(dp_amount) total
+                 FROM bookings WHERE payment_status = 'dp_verified' AND DATE(dp_verified_at) BETWEEN ? AND ? GROUP BY DAY(dp_verified_at)",
                 [$monthStart, $monthEnd]
             )->getResultArray();
+
+            $rowsPelunasan = $db->query(
+                "SELECT DAY(tanggal_transaksi) tgl, SUM(sisa_bayar) total
+                 FROM transaksi WHERE DATE(tanggal_transaksi) BETWEEN ? AND ? GROUP BY DAY(tanggal_transaksi)",
+                [$monthStart, $monthEnd]
+            )->getResultArray();
+
             $bucket = [];
-            foreach ($rows as $r) {
-                $bucket[(int) $r['tgl']] = (int) $r['total'];
+            foreach ($rowsDp as $r) {
+                $bucket[(int) $r['tgl']] = ($bucket[(int) $r['tgl']] ?? 0) + (int) $r['total'];
             }
+            foreach ($rowsPelunasan as $r) {
+                $bucket[(int) $r['tgl']] = ($bucket[(int) $r['tgl']] ?? 0) + (int) $r['total'];
+            }
+
             $lastDay = (int) date('d', strtotime($monthEnd));
             for ($d = 1; $d <= $lastDay; $d++) {
                 $labels[] = (string) $d;
@@ -130,11 +166,19 @@ class LaporanController extends BaseController
         $db = db_connect();
         $today = date('Y-m-d');
 
-        $pendapatanHariIni = (int) ($db->table('transaksi')->selectSum('nominal')->where('DATE(tanggal_transaksi)', $today)->get()->getRow()->nominal ?? 0);
-        $pendapatanKemarin = (int) ($db->table('transaksi')->selectSum('nominal')->where('DATE(tanggal_transaksi)', date('Y-m-d', strtotime('-1 day')))->get()->getRow()->nominal ?? 0);
+        $dpToday = (int) ($db->table('bookings')->selectSum('dp_amount')->where('payment_status', 'dp_verified')->where('DATE(dp_verified_at)', $today)->get()->getRow()->dp_amount ?? 0);
+        $pelunasanToday = (int) ($db->table('transaksi')->selectSum('sisa_bayar')->where('DATE(tanggal_transaksi)', $today)->get()->getRow()->sisa_bayar ?? 0);
+        $pendapatanHariIni = $dpToday + $pelunasanToday;
+
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $dpYesterday = (int) ($db->table('bookings')->selectSum('dp_amount')->where('payment_status', 'dp_verified')->where('DATE(dp_verified_at)', $yesterday)->get()->getRow()->dp_amount ?? 0);
+        $pelunasanYesterday = (int) ($db->table('transaksi')->selectSum('sisa_bayar')->where('DATE(tanggal_transaksi)', $yesterday)->get()->getRow()->sisa_bayar ?? 0);
+        $pendapatanKemarin = $dpYesterday + $pelunasanYesterday;
         $trend = $pendapatanKemarin > 0 ? (int) round((($pendapatanHariIni - $pendapatanKemarin) / $pendapatanKemarin) * 100) : null;
 
-        $pendapatanBulanIni = (int) ($db->table('transaksi')->selectSum('nominal')->where('DATE(tanggal_transaksi) >=', date('Y-m-01'))->get()->getRow()->nominal ?? 0);
+        $dpBulanIni = (int) ($db->table('bookings')->selectSum('dp_amount')->where('payment_status', 'dp_verified')->where('DATE(dp_verified_at) >=', date('Y-m-01'))->get()->getRow()->dp_amount ?? 0);
+        $pelunasanBulanIni = (int) ($db->table('transaksi')->selectSum('sisa_bayar')->where('DATE(tanggal_transaksi) >=', date('Y-m-01'))->get()->getRow()->sisa_bayar ?? 0);
+        $pendapatanBulanIni = $dpBulanIni + $pelunasanBulanIni;
 
         // 7-day revenue series for the chart
         $chartLabels = [];
@@ -142,7 +186,9 @@ class LaporanController extends BaseController
         $hariShort = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
         for ($i = 6; $i >= 0; $i--) {
             $d = date('Y-m-d', strtotime("-{$i} days"));
-            $sum = (int) ($db->table('transaksi')->selectSum('nominal')->where('DATE(tanggal_transaksi)', $d)->get()->getRow()->nominal ?? 0);
+            $dpSum = (int) ($db->table('bookings')->selectSum('dp_amount')->where('payment_status', 'dp_verified')->where('DATE(dp_verified_at)', $d)->get()->getRow()->dp_amount ?? 0);
+            $pelunasanSum = (int) ($db->table('transaksi')->selectSum('sisa_bayar')->where('DATE(tanggal_transaksi)', $d)->get()->getRow()->sisa_bayar ?? 0);
+            $sum = $dpSum + $pelunasanSum;
             $chartLabels[] = $hariShort[(int) date('w', strtotime($d))];
             $chartValues[] = $sum;
         }
@@ -175,22 +221,57 @@ class LaporanController extends BaseController
         $start = (string) ($this->request->getGet('start') ?: date('Y-m-01'));
         $end = (string) ($this->request->getGet('end') ?: date('Y-m-d'));
 
-        $transactions = $db->table('transaksi t')
-            ->select('t.id, t.nominal, t.base_price, t.additional_price, t.dp_paid, t.sisa_bayar, t.metode_bayar, t.tanggal_transaksi, t.catatan, b.kode_booking, b.nama_pelanggan, l.nama AS nama_layanan')
-            ->join('bookings b', 'b.id = t.booking_id')
-            ->join('layanan l', 'l.id = b.layanan_id')
-            ->where('DATE(t.tanggal_transaksi) >=', $start)
-            ->where('DATE(t.tanggal_transaksi) <=', $end)
-            ->orderBy('t.tanggal_transaksi', 'DESC')
-            ->get()->getResultArray();
+        // Query transaksi & booking aktif dalam periode filter
+        $transactions = $db->query(
+            "SELECT 
+                b.id AS booking_id,
+                b.kode_booking,
+                b.nama_pelanggan,
+                b.status AS booking_status,
+                b.dp_amount,
+                b.payment_status,
+                b.dp_verified_at,
+                b.completed_at,
+                b.final_service_price AS final_price,
+                l.nama AS nama_layanan,
+                t.base_price,
+                t.additional_price,
+                t.sisa_bayar,
+                t.tanggal_transaksi
+             FROM bookings b
+             JOIN layanan l ON l.id = b.layanan_id
+             LEFT JOIN transaksi t ON t.booking_id = b.id
+             WHERE (b.payment_status = 'dp_verified' AND DATE(b.dp_verified_at) BETWEEN ? AND ?)
+                OR (b.status = 'completed' AND DATE(b.completed_at) BETWEEN ? AND ?)
+             ORDER BY COALESCE(t.tanggal_transaksi, b.dp_verified_at) DESC",
+             [$start, $end, $start, $end]
+        )->getResultArray();
 
-        $statsRange = $db->table('transaksi')
-            ->selectSum('dp_paid', 'total_dp')
-            ->selectSum('sisa_bayar', 'total_sisa')
-            ->selectSum('nominal', 'total_pendapatan')
+        $totalDpRange = (int) ($db->table('bookings')
+            ->selectSum('dp_amount')
+            ->where('payment_status', 'dp_verified')
+            ->where('DATE(dp_verified_at) >=', $start)
+            ->where('DATE(dp_verified_at) <=', $end)
+            ->get()->getRow()->dp_amount ?? 0);
+
+        $totalSisaRange = (int) ($db->table('transaksi')
+            ->selectSum('sisa_bayar')
             ->where('DATE(tanggal_transaksi) >=', $start)
             ->where('DATE(tanggal_transaksi) <=', $end)
-            ->get()->getRowArray();
+            ->get()->getRow()->sisa_bayar ?? 0);
+
+        $totalPendapatanRange = $totalDpRange + $totalSisaRange;
+
+        $bookingDpBelumSelesai = $db->table('bookings')
+            ->where('status', 'accepted')
+            ->where('payment_status', 'dp_verified')
+            ->countAllResults();
+
+        $bookingSelesaiRange = $db->table('bookings')
+            ->where('status', 'completed')
+            ->where('DATE(completed_at) >=', $start)
+            ->where('DATE(completed_at) <=', $end)
+            ->countAllResults();
 
         return view('owner/laporan', [
             'pendapatan_hari_ini' => $pendapatanHariIni,
@@ -206,9 +287,11 @@ class LaporanController extends BaseController
             'start' => $start,
             'end' => $end,
             'transactions' => $transactions,
-            'total_dp_range' => (int) ($statsRange['total_dp'] ?? 0),
-            'total_sisa_range' => (int) ($statsRange['total_sisa'] ?? 0),
-            'total_pendapatan_range' => (int) ($statsRange['total_pendapatan'] ?? 0),
+            'total_dp_range' => $totalDpRange,
+            'total_sisa_range' => $totalSisaRange,
+            'total_pendapatan_range' => $totalPendapatanRange,
+            'booking_dp_belum_selesai' => $bookingDpBelumSelesai,
+            'booking_selesai_range' => $bookingSelesaiRange,
         ]);
     }
 }

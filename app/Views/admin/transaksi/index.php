@@ -50,8 +50,13 @@
           $totalLayanan = $base + $add;
         ?>
           <tr>
-            <td><?= esc(date('d M Y H:i', strtotime($r['tanggal_transaksi']))) ?></td>
-            <td><?= esc($r['kode_booking']) ?></td>
+            <td><?= esc(date('d M Y H:i', strtotime($r['tanggal']))) ?></td>
+            <td>
+              <?= esc($r['kode_booking']) ?>
+              <?php if ($r['tipe'] === 'dp'): ?>
+                <span class="badge-salon badge-salon--pending" style="font-size: 0.65rem; padding: 0.1rem 0.3rem; margin-left: 0.2rem; vertical-align: middle;">DP</span>
+              <?php endif ?>
+            </td>
             <td>
               <?= esc($r['nama_pelanggan']) ?>
               <?php if ($catatan !== ''): ?>
@@ -59,14 +64,20 @@
               <?php endif ?>
             </td>
             <td><?= esc($r['nama_layanan']) ?></td>
-            <td><?= esc(ucfirst($r['metode_bayar'])) ?></td>
+            <td><?= esc(ucfirst($r['metode_bayar'])) ?><?= $r['tipe'] === 'dp' ? ' (DP)' : '' ?></td>
             <td class="text-right">Rp <?= number_format($totalLayanan, 0, ',', '.') ?></td>
             <td class="text-right" style="color:<?= $dpPaid > 0 ? 'var(--gold)' : 'var(--text-muted)' ?>;">
               <?= $dpPaid > 0 ? 'Rp ' . number_format($dpPaid, 0, ',', '.') : '—' ?>
             </td>
-            <td class="text-right" style="font-weight:600; color:var(--gold);">Rp <?= number_format($sisaBayar, 0, ',', '.') ?></td>
+            <td class="text-right" style="font-weight:600; color:<?= $r['tipe'] === 'dp' ? 'var(--text-muted)' : 'var(--gold)' ?>;">
+              <?= $r['tipe'] === 'dp' ? '—' : 'Rp ' . number_format($sisaBayar, 0, ',', '.') ?>
+            </td>
             <td class="text-center">
-              <a class="btn-salon-ghost btn-salon--sm" href="<?= base_url('admin/transaksi/' . $r['id'] . '/nota') ?>" style="padding: 0.25rem 0.5rem;"><i class="bi bi-receipt"></i> Nota</a>
+              <?php if ($r['tipe'] === 'dp'): ?>
+                <a class="btn-salon-ghost btn-salon--sm" href="<?= base_url('admin/booking/' . $r['booking_id'] . '/receipt') ?>" style="padding: 0.25rem 0.5rem;"><i class="bi bi-receipt"></i> Receipt</a>
+              <?php else: ?>
+                <a class="btn-salon-ghost btn-salon--sm" href="<?= base_url('admin/transaksi/' . $r['id'] . '/nota') ?>" style="padding: 0.25rem 0.5rem;"><i class="bi bi-receipt"></i> Nota</a>
+              <?php endif ?>
             </td>
           </tr>
         <?php endforeach ?>

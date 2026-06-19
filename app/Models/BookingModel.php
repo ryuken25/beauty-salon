@@ -14,6 +14,8 @@ class BookingModel extends BaseAppModel
         'status', 'sumber', 'catatan',
         'wa_sent', 'verified_via', 'verified_at', 'completed_at', 'cancelled_at', 'cancelled_by',
         'rejection_reason', 'cancellation_reason',
+        'original_service_price', 'promo_id', 'promo_name', 'promo_discount_type',
+        'promo_discount_value', 'final_service_price', 'remaining_payment', 'dp_verified_at',
     ];
 
     public function detail(int $id): ?array

@@ -74,13 +74,20 @@ $lbl = ['pending_verification' => 'Menunggu Verifikasi', 'accepted' => 'Diterima
           <img src="<?= base_url($booking['dp_proof_path']) ?>" alt="Bukti DP"
                style="width:100%; max-height:240px; object-fit:contain; border:1px solid var(--gold-border); border-radius:8px; background:#0b0b0b;">
         </a>
-        <?php if (($booking['payment_status'] ?? 'unpaid') !== 'dp_verified'): ?>
-          <form method="post" action="<?= base_url('admin/booking/' . $booking['id'] . '/dp-verify') ?>" class="mt-2">
-            <?= csrf_field() ?>
-            <button class="btn-salon-success btn-salon--full" type="submit">
-              <i class="bi bi-shield-check"></i> Tandai DP terverifikasi
-            </button>
-          </form>
+        <?php if (($booking['payment_status'] ?? 'unpaid') === 'dp_verified'): ?>
+          <div class="mt-2 flex flex-wrap gap-1">
+            <a class="btn-salon-primary btn-salon--full" href="<?= base_url('admin/booking/' . $booking['id'] . '/receipt') ?>">
+              <i class="bi bi-receipt"></i> Lihat &amp; Print Receipt DP
+            </a>
+            <?php if (! empty($booking['email_pelanggan'])): ?>
+              <form method="post" action="<?= base_url('admin/booking/' . $booking['id'] . '/resend-email-dp') ?>" style="width:100%; margin:0;">
+                <?= csrf_field() ?>
+                <button class="btn-salon-ghost btn-salon--full" type="submit">
+                  <i class="bi bi-envelope"></i> Kirim Ulang Email DP
+                </button>
+              </form>
+            <?php endif ?>
+          </div>
         <?php endif ?>
       <?php else: ?>
         <div class="alert-salon alert-salon--info" style="margin:0;">

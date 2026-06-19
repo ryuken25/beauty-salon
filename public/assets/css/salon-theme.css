@@ -296,6 +296,10 @@ a:hover { color: var(--text-primary); text-decoration: underline; text-underline
   border-color: var(--gold);
   box-shadow: 0 0 0 3px rgba(201,166,107,0.1);
 }
+.form-salon-select option {
+  background-color: var(--surface);
+  color: var(--text-primary);
+}
 .form-salon-textarea { min-height: 80px; resize: vertical; }
 .form-salon-help { font-size: 0.7143rem; color: var(--text-muted); margin-top: 0.286rem; }
 

@@ -157,23 +157,35 @@ $statusBoxCls = [
     </div>
   </form>
 
-  <div class="row-salon cols-3 mb-3">
-    <div class="card-salon" style="border-left: 4px solid var(--gold);">
+  <div class="row-salon cols-5 mb-3">
+    <div class="card-salon" style="border-left: 3px solid var(--gold);">
       <div class="metric">
-        <span class="label">Total DP Diterima</span>
-        <span class="metric__value" style="color:var(--gold);">Rp <?= number_format($total_dp_range, 0, ',', '.') ?></span>
+        <span class="label" style="font-size:0.75rem;">Total DP Terverifikasi</span>
+        <span class="metric__value" style="color:var(--gold); font-size:1.25rem;">Rp <?= number_format($total_dp_range, 0, ',', '.') ?></span>
       </div>
     </div>
-    <div class="card-salon" style="border-left: 4px solid var(--gold);">
+    <div class="card-salon" style="border-left: 3px solid var(--gold);">
       <div class="metric">
-        <span class="label">Total Pelunasan Diterima</span>
-        <span class="metric__value" style="color:var(--gold);">Rp <?= number_format($total_sisa_range, 0, ',', '.') ?></span>
+        <span class="label" style="font-size:0.75rem;">Total Pelunasan Treatment</span>
+        <span class="metric__value" style="color:var(--gold); font-size:1.25rem;">Rp <?= number_format($total_sisa_range, 0, ',', '.') ?></span>
       </div>
     </div>
     <div class="card-salon card-salon--featured">
       <div class="metric">
-        <span class="label">Total Pendapatan Keseluruhan</span>
-        <span class="metric__value">Rp <?= number_format($total_pendapatan_range, 0, ',', '.') ?></span>
+        <span class="label" style="font-size:0.75rem;">Total Pendapatan</span>
+        <span class="metric__value" style="font-size:1.25rem;">Rp <?= number_format($total_pendapatan_range, 0, ',', '.') ?></span>
+      </div>
+    </div>
+    <div class="card-salon" style="border-left: 3px solid var(--gold);">
+      <div class="metric">
+        <span class="label" style="font-size:0.75rem;">DP Belum Treatment</span>
+        <span class="metric__value" style="color:var(--gold); font-size:1.25rem;"><?= esc($booking_dp_belum_selesai) ?></span>
+      </div>
+    </div>
+    <div class="card-salon" style="border-left: 3px solid var(--gold);">
+      <div class="metric">
+        <span class="label" style="font-size:0.75rem;">Booking Selesai</span>
+        <span class="metric__value" style="color:var(--gold); font-size:1.25rem;"><?= esc($booking_selesai_range) ?></span>
       </div>
     </div>
   </div>
@@ -187,40 +199,50 @@ $statusBoxCls = [
     <table class="table-salon">
       <thead>
         <tr>
-          <th>Tanggal Transaksi</th>
           <th>Kode Booking</th>
           <th>Pelanggan</th>
           <th>Layanan</th>
-          <th class="text-right">Total Layanan</th>
+          <th>Status</th>
+          <th class="text-right">Harga Final</th>
           <th class="text-right">DP</th>
-          <th class="text-right">Sisa Bayar / Pelunasan</th>
+          <th class="text-right">Sisa Pembayaran</th>
           <th class="text-right">Total Pendapatan</th>
+          <th>Tanggal DP Verified</th>
+          <th>Tanggal Selesai</th>
         </tr>
       </thead>
       <tbody>
         <?php foreach ($transactions as $t): 
-          $totalLayanan = (int) $t['base_price'] + (int) $t['additional_price'];
-          $dpPaid = (int) $t['dp_paid'];
-          $sisaBayar = (int) $t['sisa_bayar'];
-          $totalRevenue = (int) $t['nominal'];
+          $hargaFinal = (int) $t['final_price'];
+          $dpPaid = ($t['payment_status'] === 'dp_verified') ? (int) $t['dp_amount'] : 0;
+          $sisaBayar = ($t['booking_status'] === 'completed') ? (int) $t['sisa_bayar'] : 0;
+          $totalRevenue = $dpPaid + $sisaBayar;
         ?>
           <tr>
-            <td><?= esc(date('d M Y H:i', strtotime($t['tanggal_transaksi']))) ?></td>
             <td><strong><?= esc($t['kode_booking']) ?></strong></td>
             <td><?= esc($t['nama_pelanggan']) ?></td>
             <td><?= esc($t['nama_layanan']) ?></td>
-            <td class="text-right">Rp <?= number_format($totalLayanan, 0, ',', '.') ?></td>
+            <td>
+              <?php
+              $cls = 'badge-salon--' . ($t['booking_status'] === 'pending_verification' ? 'pending' : str_replace('_', '-', $t['booking_status']));
+              $lbl = $statusLabels[$t['booking_status']] ?? $t['booking_status'];
+              ?>
+              <span class="badge-salon <?= $cls ?>"><?= esc($lbl) ?></span>
+            </td>
+            <td class="text-right">Rp <?= number_format($hargaFinal, 0, ',', '.') ?></td>
             <td class="text-right" style="color:<?= $dpPaid > 0 ? 'var(--gold)' : 'var(--text-muted)' ?>;">
               <?= $dpPaid > 0 ? 'Rp ' . number_format($dpPaid, 0, ',', '.') : '—' ?>
             </td>
             <td class="text-right">Rp <?= number_format($sisaBayar, 0, ',', '.') ?></td>
             <td class="text-right" style="font-weight:600; color:var(--gold);">Rp <?= number_format($totalRevenue, 0, ',', '.') ?></td>
+            <td><?= $t['dp_verified_at'] ? esc(date('d M Y H:i', strtotime($t['dp_verified_at']))) : '—' ?></td>
+            <td><?= $t['completed_at'] ? esc(date('d M Y H:i', strtotime($t['completed_at']))) : '—' ?></td>
           </tr>
         <?php endforeach ?>
       </tbody>
     </table>
     <div class="caption mt-2" style="font-style:italic;">
-      * DP dan pelunasan dihitung masuk berdasarkan tanggal transaksi selesai untuk periode <?= esc(date('d M Y', strtotime($start))) ?> s/d <?= esc(date('d M Y', strtotime($end))) ?>.
+      * DP dihitung berdasarkan tanggal verifikasi DP (`Tanggal DP Verified`), Pelunasan dihitung berdasarkan tanggal transaksi selesai (`Tanggal Selesai`).
     </div>
   <?php endif ?>
 </div>

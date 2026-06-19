@@ -4,7 +4,7 @@ namespace App\Models;
 class LayananModel extends BaseAppModel
 {
     /** Jumlah hari sejak created_at supaya layanan dianggap "baru". Ganti angka ini untuk mengubah window. */
-    public const HARI_BARU = 14;
+    public const HARI_BARU = 7;
 
     protected $table = 'layanan';
     protected $allowedFields = [
@@ -44,16 +44,16 @@ class LayananModel extends BaseAppModel
      * Aktif = promo_persen > 0 AND today ∈ [promo_mulai, promo_selesai]
      * (NULL di salah satu sisi = tak terbatas di sisi itu).
      */
-    public static function isPromo(array $l): bool
+    public static function isPromo(array $l, ?string $date = null): bool
     {
         if (empty($l['promo_persen']) || (int) $l['promo_persen'] <= 0) {
             return false;
         }
-        $today = date('Y-m-d');
-        if (! empty($l['promo_mulai']) && $today < substr((string) $l['promo_mulai'], 0, 10)) {
+        $targetDate = $date ?? date('Y-m-d');
+        if (! empty($l['promo_mulai']) && $targetDate < substr((string) $l['promo_mulai'], 0, 10)) {
             return false;
         }
-        if (! empty($l['promo_selesai']) && $today > substr((string) $l['promo_selesai'], 0, 10)) {
+        if (! empty($l['promo_selesai']) && $targetDate > substr((string) $l['promo_selesai'], 0, 10)) {
             return false;
         }
         return true;
@@ -76,10 +76,10 @@ class LayananModel extends BaseAppModel
     }
 
     /** Harga final setelah promo (dibulatkan ke rupiah). */
-    public static function hargaFinal(array $l): int
+    public static function hargaFinal(array $l, ?string $date = null): int
     {
         $h = (int) $l['harga'];
-        if (! self::isPromo($l)) return $h;
+        if (! self::isPromo($l, $date)) return $h;
         return (int) round($h * (100 - (int) $l['promo_persen']) / 100);
     }
 
