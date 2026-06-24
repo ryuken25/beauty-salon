@@ -52,7 +52,7 @@ PASSWORD = "Password123!"
 ACCOUNTS = {
     "admin":     "admin@swbeautysalon.local",
     "pemilik":   "owner@swbeautysalon.local",
-    "pelanggan": "6281338109102",
+    "pelanggan": "6281234567890",
 }
 
 # ============================================================================ #
@@ -1353,7 +1353,8 @@ class UltimateDoc(BabIvDoc):
         self._section_antarmuka(spec)              # 4.4
         self._section_implementasi(spec)           # 4.5
         self._section_blackbox(spec)               # 4.6
-        # 4.7 SUS: sengaja TIDAK diisi (permintaan)
+        if sus_data:
+            self._section_sus(spec, sus_data)      # 4.7 SUS
 
     # ---- 4.2 dengan penjelasan per diagram --------------------------------
     def _section_perancangan(self, spec, figures):
@@ -1458,7 +1459,7 @@ if ($q && ($r = $q->fetch_row())) $o['layanan_id'] = $r[0];
 $q = $m->query("SELECT id FROM bookings ORDER BY id DESC LIMIT 1");
 if ($q && ($r = $q->fetch_row())) $o['booking_id'] = $r[0];
 $q = $m->query("SELECT b.kode_booking FROM bookings b JOIN users u ON u.id=b.user_id
-                WHERE u.nomor_hp='6281338109102' ORDER BY b.id DESC LIMIT 1");
+                WHERE u.nomor_hp='6281234567890' ORDER BY b.id DESC LIMIT 1");
 if ($q && ($r = $q->fetch_row())) $o['kode'] = $r[0];
 echo json_encode($o);
 """
@@ -1518,7 +1519,8 @@ def capture_screenshots(shots_dir: pathlib.Path) -> int:
                 if role != "guest":
                     pg.goto(f"{BASE_URL}/login", wait_until="domcontentloaded")
                     pg.fill("input[name=identifier]", ACCOUNTS[role])
-                    pg.fill("input[name=password]", PASSWORD)
+                    pwd = "123123123" if role == "pelanggan" else PASSWORD
+                    pg.fill("input[name=password]", pwd)
                     pg.click("button[type=submit]")
                     pg.wait_for_load_state("networkidle")
                 contexts[role] = (c, pg)
@@ -1634,11 +1636,23 @@ def main():
 
     emit_mockups(spec, assets, render)
 
+    # Calculate SUS
+    sus_data = None
+    sus_xlsx = ROOT / "data.xlsx"
+    if sus_xlsx.exists():
+        try:
+            from babiv_diagrams import sus as sus_mod
+            sus_data = sus_mod.compute_sus(str(sus_xlsx))
+            print(f"  SUS: {sus_data['n']} responden, rata-rata "
+                  f"{sus_data['mean']} (grade {sus_data['grade']})")
+        except Exception as exc:
+            print(f"  ! gagal hitung SUS: {exc}")
+
     if render and not args.no_docx:
         print("[6/6] BAB_IV.docx")
         doc = UltimateDoc(chapter=4, bab_title=spec["bab_title"],
                           system_name=spec["system_name"])
-        doc.build_from_spec(spec, figures)
+        doc.build_from_spec(spec, figures, sus_data)
         docx_path = assets / "BAB_IV.docx"
         doc.save(str(docx_path))
         print(f"    -> {docx_path}")
@@ -1667,7 +1681,8 @@ def main():
     print(f"Screenshot 4.5      : {n_shot}/{len(SHOT_PAGES)} halaman")
     print(f"Wireframe 4.4       : {len(spec['antarmuka'])} halaman")
     print(f"Tabel blackbox 4.6  : {len(spec['pengujian']['blackbox'])} fitur")
-    print("4.7 SUS             : tidak diisi (sesuai permintaan)")
+    sus_txt = f"{sus_data['mean']} (grade {sus_data['grade']})" if sus_data else "tidak diisi"
+    print(f"4.7 SUS             : {sus_txt}")
     if warns:
         print(f"PERINGATAN balance  : {len(warns)} — periksa output di atas!")
     else:
