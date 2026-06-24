@@ -65,7 +65,7 @@ class TransaksiController extends BaseController
     {
         $db = db_connect();
         $transaksi = $db->table('transaksi t')
-            ->select('t.id, t.nominal, t.base_price, t.additional_price, t.dp_paid, t.sisa_bayar, t.metode_bayar, t.tanggal_transaksi, t.catatan, b.kode_booking, b.nama_pelanggan, b.nomor_hp_pelanggan, b.email_pelanggan, b.verified_via, l.nama AS nama_layanan')
+            ->select('t.id, t.nominal, t.base_price, t.additional_price, t.dp_paid, t.sisa_bayar, t.metode_bayar, t.tanggal_transaksi, t.catatan, b.kode_booking, b.nama_pelanggan, b.nomor_hp_pelanggan, b.email_pelanggan, b.verified_via, b.dp_verified_at, l.nama AS nama_layanan')
             ->join('bookings b', 'b.id = t.booking_id')
             ->join('layanan l', 'l.id = b.layanan_id')
             ->where('t.id', $id)

@@ -186,8 +186,15 @@
       <td class="value">Rp <?= number_format((int) $t['nominal'], 0, ',', '.') ?></td>
     </tr>
     <tr>
-      <td class="label">DP Terbayar</td>
-      <td class="value" style="color:var(--color-danger);">- Rp <?= number_format((int) $t['dp_paid'], 0, ',', '.') ?></td>
+      <td class="label">
+        DP Terbayar
+        <?php if ((int) $t['dp_paid'] > 0 && ! empty($t['dp_verified_at'])): ?>
+          <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:normal; margin-top:0.2rem;">
+            Terbayar: <?= date('d M Y H:i', strtotime($t['dp_verified_at'])) ?> WITA
+          </div>
+        <?php endif ?>
+      </td>
+      <td class="value" style="color:var(--color-danger); vertical-align:top;">- Rp <?= number_format((int) $t['dp_paid'], 0, ',', '.') ?></td>
     </tr>
     <tr class="receipt-divider"></tr>
     <tr>
@@ -197,6 +204,10 @@
     <tr>
       <td class="label">Metode Pembayaran</td>
       <td class="value" style="text-transform:uppercase; font-weight:600;"><?= esc($t['metode_bayar']) ?></td>
+    </tr>
+    <tr>
+      <td class="label">Status</td>
+      <td class="value" style="color:var(--gold); font-weight:600; text-transform:uppercase;">LUNAS</td>
     </tr>
   </table>
 

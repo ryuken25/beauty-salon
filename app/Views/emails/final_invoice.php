@@ -51,12 +51,23 @@ $cekLink = rtrim((string) config('App')->baseURL, '/') . '/cek-booking';
     <td style="padding:8px 14px;border-bottom:1px solid #2a2418;color:#e8e6e3;">Rp <?= number_format($biayaTambahan, 0, ',', '.') ?></td>
   </tr>
   <tr>
-    <td style="padding:8px 14px;color:#a8a39c;border-bottom:1px solid #2a2418;">Uang Muka (DP) Terbayar</td>
-    <td style="padding:8px 14px;border-bottom:1px solid #2a2418;color:#e8e6e3;">-Rp <?= number_format($dpPaid, 0, ',', '.') ?></td>
+    <td style="padding:8px 14px;color:#a8a39c;border-bottom:1px solid #2a2418;">
+      Uang Muka (DP) Terbayar
+      <?php if ($dpPaid > 0 && ! empty($b['dp_verified_at'])): ?>
+        <div style="font-size:11px;color:#a8a39c;font-weight:normal;margin-top:2px;">
+          Terbayar: <?= esc(date('d M Y H:i', strtotime($b['dp_verified_at']))) ?> WITA
+        </div>
+      <?php endif ?>
+    </td>
+    <td style="padding:8px 14px;border-bottom:1px solid #2a2418;color:#e8e6e3;vertical-align:top;">-Rp <?= number_format($dpPaid, 0, ',', '.') ?></td>
   </tr>
   <tr>
     <td style="padding:8px 14px;color:#a8a39c;border-bottom:1px solid #2a2418;">Metode Pelunasan</td>
-    <td style="padding:8px 14px;border-bottom:1px solid #2a2418;color:#e8e6e3;font-weight:500;"><?= esc($metodeBayar) ?></td>
+    <td style="padding:8px 14px;border-bottom:1px solid #2a2418;color:#e8e6e3;font-weight:500;vertical-align:top;"><?= esc($metodeBayar) ?></td>
+  </tr>
+  <tr>
+    <td style="padding:8px 14px;color:#a8a39c;border-bottom:1px solid #2a2418;">Status</td>
+    <td style="padding:8px 14px;border-bottom:1px solid #2a2418;color:#7bd389;font-weight:600;text-transform:uppercase;vertical-align:top;">LUNAS</td>
   </tr>
   <tr>
     <td style="padding:8px 14px;color:#a8a39c;border-bottom:1px solid #2a2418;">Pelunasan Dibayar</td>
