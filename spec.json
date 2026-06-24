@@ -1,0 +1,2481 @@
+{
+  "system_name": "Sistem Informasi Reservasi dan Transaksi SW Beauty Salon",
+  "chapter": 4,
+  "bab_title": "Hasil dan Pembahasan",
+  "external_entities": [
+    {
+      "id": "owner",
+      "name": "Owner"
+    },
+    {
+      "id": "admin",
+      "name": "Admin/Kasir"
+    },
+    {
+      "id": "pelanggan",
+      "name": "Pelanggan"
+    }
+  ],
+  "data_stores": [
+    {
+      "id": "d_users",
+      "code": "D1",
+      "name": "users"
+    },
+    {
+      "id": "d_layanan",
+      "code": "D2",
+      "name": "layanan"
+    },
+    {
+      "id": "d_bookings",
+      "code": "D3",
+      "name": "bookings"
+    },
+    {
+      "id": "d_booking_slots",
+      "code": "D4",
+      "name": "booking_slots"
+    },
+    {
+      "id": "d_transaksi",
+      "code": "D5",
+      "name": "transaksi"
+    },
+    {
+      "id": "d_settings",
+      "code": "D6",
+      "name": "settings"
+    }
+  ],
+  "context": {
+    "flows": [
+      {
+        "src": "pelanggan",
+        "dst": "sys",
+        "label": "data_registrasi"
+      },
+      {
+        "src": "sys",
+        "dst": "pelanggan",
+        "label": "info_status_registrasi"
+      },
+      {
+        "src": "pelanggan",
+        "dst": "sys",
+        "label": "data_login_pelanggan"
+      },
+      {
+        "src": "sys",
+        "dst": "pelanggan",
+        "label": "info_sesi_pelanggan"
+      },
+      {
+        "src": "pelanggan",
+        "dst": "sys",
+        "label": "data_booking_online"
+      },
+      {
+        "src": "sys",
+        "dst": "pelanggan",
+        "label": "info_status_booking"
+      },
+      {
+        "src": "admin",
+        "dst": "sys",
+        "label": "data_login_admin"
+      },
+      {
+        "src": "sys",
+        "dst": "admin",
+        "label": "info_sesi_admin"
+      },
+      {
+        "src": "admin",
+        "dst": "sys",
+        "label": "data_verifikasi"
+      },
+      {
+        "src": "sys",
+        "dst": "admin",
+        "label": "info_status_verifikasi"
+      },
+      {
+        "src": "admin",
+        "dst": "sys",
+        "label": "data_transaksi"
+      },
+      {
+        "src": "sys",
+        "dst": "admin",
+        "label": "info_nota"
+      },
+      {
+        "src": "admin",
+        "dst": "sys",
+        "label": "data_pengaturan"
+      },
+      {
+        "src": "sys",
+        "dst": "admin",
+        "label": "info_pengaturan"
+      },
+      {
+        "src": "owner",
+        "dst": "sys",
+        "label": "data_login_owner"
+      },
+      {
+        "src": "sys",
+        "dst": "owner",
+        "label": "info_sesi_owner"
+      },
+      {
+        "src": "owner",
+        "dst": "sys",
+        "label": "data_layanan"
+      },
+      {
+        "src": "sys",
+        "dst": "owner",
+        "label": "info_layanan"
+      },
+      {
+        "src": "owner",
+        "dst": "sys",
+        "label": "data_permintaan_laporan"
+      },
+      {
+        "src": "sys",
+        "dst": "owner",
+        "label": "info_laporan"
+      }
+    ]
+  },
+  "level0": {
+    "processes": [
+      {
+        "id": "p1",
+        "no": "1.0",
+        "name": "Autentikasi & Sesi"
+      },
+      {
+        "id": "p2",
+        "no": "2.0",
+        "name": "Pemesanan Layanan Mandiri"
+      },
+      {
+        "id": "p3",
+        "no": "3.0",
+        "name": "Pengelolaan Reservasi & Walk-in"
+      },
+      {
+        "id": "p4",
+        "no": "4.0",
+        "name": "Pencatatan Transaksi & Pembayaran"
+      },
+      {
+        "id": "p5",
+        "no": "5.0",
+        "name": "Pengelolaan Layanan Salon"
+      },
+      {
+        "id": "p6",
+        "no": "6.0",
+        "name": "Laporan & Analisis Pendapatan"
+      },
+      {
+        "id": "p7",
+        "no": "7.0",
+        "name": "Pengelolaan Pengaturan & Pelanggan"
+      }
+    ],
+    "flows": [
+      {
+        "src": "pelanggan",
+        "dst": "p1",
+        "label": "data_registrasi"
+      },
+      {
+        "src": "p1",
+        "dst": "pelanggan",
+        "label": "info_status_registrasi"
+      },
+      {
+        "src": "pelanggan",
+        "dst": "p1",
+        "label": "data_login_pelanggan"
+      },
+      {
+        "src": "p1",
+        "dst": "pelanggan",
+        "label": "info_sesi_pelanggan"
+      },
+      {
+        "src": "admin",
+        "dst": "p1",
+        "label": "data_login_admin"
+      },
+      {
+        "src": "p1",
+        "dst": "admin",
+        "label": "info_sesi_admin"
+      },
+      {
+        "src": "owner",
+        "dst": "p1",
+        "label": "data_login_owner"
+      },
+      {
+        "src": "p1",
+        "dst": "owner",
+        "label": "info_sesi_owner"
+      },
+      {
+        "src": "p1",
+        "dst": "d_users",
+        "label": "data_users"
+      },
+      {
+        "src": "d_users",
+        "dst": "p1",
+        "label": "info_users"
+      },
+      {
+        "src": "pelanggan",
+        "dst": "p2",
+        "label": "data_booking_online"
+      },
+      {
+        "src": "p2",
+        "dst": "pelanggan",
+        "label": "info_status_booking"
+      },
+      {
+        "src": "p2",
+        "dst": "d_bookings",
+        "label": "data_bookings"
+      },
+      {
+        "src": "d_bookings",
+        "dst": "p2",
+        "label": "info_bookings"
+      },
+      {
+        "src": "p2",
+        "dst": "d_booking_slots",
+        "label": "data_booking_slots"
+      },
+      {
+        "src": "d_booking_slots",
+        "dst": "p2",
+        "label": "info_booking_slots"
+      },
+      {
+        "src": "p2",
+        "dst": "d_layanan",
+        "label": "data_layanan_req"
+      },
+      {
+        "src": "d_layanan",
+        "dst": "p2",
+        "label": "info_layanan"
+      },
+      {
+        "src": "p2",
+        "dst": "d_settings",
+        "label": "data_settings_req"
+      },
+      {
+        "src": "d_settings",
+        "dst": "p2",
+        "label": "info_settings"
+      },
+      {
+        "src": "admin",
+        "dst": "p3",
+        "label": "data_verifikasi"
+      },
+      {
+        "src": "p3",
+        "dst": "admin",
+        "label": "info_status_verifikasi"
+      },
+      {
+        "src": "p3",
+        "dst": "d_bookings",
+        "label": "data_bookings"
+      },
+      {
+        "src": "d_bookings",
+        "dst": "p3",
+        "label": "info_bookings"
+      },
+      {
+        "src": "p3",
+        "dst": "d_booking_slots",
+        "label": "data_booking_slots"
+      },
+      {
+        "src": "d_booking_slots",
+        "dst": "p3",
+        "label": "info_booking_slots"
+      },
+      {
+        "src": "admin",
+        "dst": "p4",
+        "label": "data_transaksi"
+      },
+      {
+        "src": "p4",
+        "dst": "admin",
+        "label": "info_nota"
+      },
+      {
+        "src": "p4",
+        "dst": "d_transaksi",
+        "label": "data_transaksi"
+      },
+      {
+        "src": "d_transaksi",
+        "dst": "p4",
+        "label": "info_transaksi"
+      },
+      {
+        "src": "p4",
+        "dst": "d_bookings",
+        "label": "data_bookings_req"
+      },
+      {
+        "src": "d_bookings",
+        "dst": "p4",
+        "label": "info_bookings"
+      },
+      {
+        "src": "owner",
+        "dst": "p5",
+        "label": "data_layanan"
+      },
+      {
+        "src": "p5",
+        "dst": "owner",
+        "label": "info_layanan"
+      },
+      {
+        "src": "p5",
+        "dst": "d_layanan",
+        "label": "data_layanan"
+      },
+      {
+        "src": "d_layanan",
+        "dst": "p5",
+        "label": "info_layanan"
+      },
+      {
+        "src": "owner",
+        "dst": "p6",
+        "label": "data_permintaan_laporan"
+      },
+      {
+        "src": "p6",
+        "dst": "owner",
+        "label": "info_laporan"
+      },
+      {
+        "src": "p6",
+        "dst": "d_transaksi",
+        "label": "data_transaksi_req"
+      },
+      {
+        "src": "d_transaksi",
+        "dst": "p6",
+        "label": "info_transaksi"
+      },
+      {
+        "src": "p6",
+        "dst": "d_bookings",
+        "label": "data_bookings_req"
+      },
+      {
+        "src": "d_bookings",
+        "dst": "p6",
+        "label": "info_bookings"
+      },
+      {
+        "src": "admin",
+        "dst": "p7",
+        "label": "data_pengaturan"
+      },
+      {
+        "src": "p7",
+        "dst": "admin",
+        "label": "info_pengaturan"
+      },
+      {
+        "src": "p7",
+        "dst": "d_settings",
+        "label": "data_settings"
+      },
+      {
+        "src": "d_settings",
+        "dst": "p7",
+        "label": "info_settings"
+      },
+      {
+        "src": "p7",
+        "dst": "d_users",
+        "label": "data_users"
+      },
+      {
+        "src": "d_users",
+        "dst": "p7",
+        "label": "info_users"
+      }
+    ]
+  },
+  "level1": [
+    {
+      "parent_no": "1.0",
+      "processes": [
+        {
+          "id": "p1_1",
+          "no": "1.1",
+          "name": "Validasi Login"
+        },
+        {
+          "id": "p1_2",
+          "no": "1.2",
+          "name": "Registrasi Pelanggan"
+        },
+        {
+          "id": "p1_3",
+          "no": "1.3",
+          "name": "Reset Password"
+        },
+        {
+          "id": "p1_4",
+          "no": "1.4",
+          "name": "Logout Sesi"
+        }
+      ],
+      "flows": [
+        {
+          "src": "pelanggan",
+          "dst": "p1_2",
+          "label": "data_registrasi"
+        },
+        {
+          "src": "p1_2",
+          "dst": "d_users",
+          "label": "data_users"
+        },
+        {
+          "src": "d_users",
+          "dst": "p1_2",
+          "label": "info_users"
+        },
+        {
+          "src": "p1_2",
+          "dst": "pelanggan",
+          "label": "info_status_registrasi"
+        },
+        {
+          "src": "pelanggan",
+          "dst": "p1_1",
+          "label": "data_login_pelanggan"
+        },
+        {
+          "src": "admin",
+          "dst": "p1_1",
+          "label": "data_login_admin"
+        },
+        {
+          "src": "owner",
+          "dst": "p1_1",
+          "label": "data_login_owner"
+        },
+        {
+          "src": "d_users",
+          "dst": "p1_1",
+          "label": "info_users"
+        },
+        {
+          "src": "p1_1",
+          "dst": "d_users",
+          "label": "data_users"
+        },
+        {
+          "src": "p1_1",
+          "dst": "pelanggan",
+          "label": "info_sesi_pelanggan"
+        },
+        {
+          "src": "p1_1",
+          "dst": "admin",
+          "label": "info_sesi_admin"
+        },
+        {
+          "src": "p1_1",
+          "dst": "owner",
+          "label": "info_sesi_owner"
+        },
+        {
+          "src": "pelanggan",
+          "dst": "p1_3",
+          "label": "data_reset_req"
+        },
+        {
+          "src": "p1_3",
+          "dst": "d_users",
+          "label": "data_users"
+        },
+        {
+          "src": "d_users",
+          "dst": "p1_3",
+          "label": "info_users"
+        },
+        {
+          "src": "p1_3",
+          "dst": "pelanggan",
+          "label": "info_status_reset"
+        },
+        {
+          "src": "admin",
+          "dst": "p1_4",
+          "label": "data_logout"
+        },
+        {
+          "src": "pelanggan",
+          "dst": "p1_4",
+          "label": "data_logout"
+        },
+        {
+          "src": "owner",
+          "dst": "p1_4",
+          "label": "data_logout"
+        },
+        {
+          "src": "p1_4",
+          "dst": "pelanggan",
+          "label": "info_logout_success"
+        },
+        {
+          "src": "p1_4",
+          "dst": "admin",
+          "label": "info_logout_success"
+        },
+        {
+          "src": "p1_4",
+          "dst": "owner",
+          "label": "info_logout_success"
+        }
+      ]
+    },
+    {
+      "parent_no": "2.0",
+      "processes": [
+        {
+          "id": "p2_1",
+          "no": "2.1",
+          "name": "Pilih Layanan & Slot"
+        },
+        {
+          "id": "p2_2",
+          "no": "2.2",
+          "name": "Input Form Booking"
+        },
+        {
+          "id": "p2_3",
+          "no": "2.3",
+          "name": "Cek & Batal Booking"
+        }
+      ],
+      "flows": [
+        {
+          "src": "pelanggan",
+          "dst": "p2_1",
+          "label": "data_booking_online"
+        },
+        {
+          "src": "d_layanan",
+          "dst": "p2_1",
+          "label": "info_layanan"
+        },
+        {
+          "src": "p2_1",
+          "dst": "d_layanan",
+          "label": "data_layanan_req"
+        },
+        {
+          "src": "d_booking_slots",
+          "dst": "p2_1",
+          "label": "info_booking_slots"
+        },
+        {
+          "src": "p2_1",
+          "dst": "d_booking_slots",
+          "label": "data_booking_slots"
+        },
+        {
+          "src": "p2_1",
+          "dst": "p2_2",
+          "label": "data_layanan_pilihan"
+        },
+        {
+          "src": "p2_2",
+          "dst": "d_bookings",
+          "label": "data_bookings"
+        },
+        {
+          "src": "d_bookings",
+          "dst": "p2_2",
+          "label": "info_bookings"
+        },
+        {
+          "src": "p2_2",
+          "dst": "pelanggan",
+          "label": "info_status_booking"
+        },
+        {
+          "src": "pelanggan",
+          "dst": "p2_3",
+          "label": "data_batal_booking"
+        },
+        {
+          "src": "p2_3",
+          "dst": "d_bookings",
+          "label": "data_bookings"
+        },
+        {
+          "src": "d_bookings",
+          "dst": "p2_3",
+          "label": "info_bookings"
+        }
+      ]
+    },
+    {
+      "parent_no": "3.0",
+      "processes": [
+        {
+          "id": "p3_1",
+          "no": "3.1",
+          "name": "Verifikasi Pembayaran DP"
+        },
+        {
+          "id": "p3_2",
+          "no": "3.2",
+          "name": "Kelola Status Booking"
+        },
+        {
+          "id": "p3_3",
+          "no": "3.3",
+          "name": "Input Booking Walk-in"
+        }
+      ],
+      "flows": [
+        {
+          "src": "admin",
+          "dst": "p3_1",
+          "label": "data_verifikasi"
+        },
+        {
+          "src": "p3_1",
+          "dst": "d_bookings",
+          "label": "data_bookings"
+        },
+        {
+          "src": "d_bookings",
+          "dst": "p3_1",
+          "label": "info_bookings"
+        },
+        {
+          "src": "p3_1",
+          "dst": "admin",
+          "label": "info_status_verifikasi"
+        },
+        {
+          "src": "admin",
+          "dst": "p3_2",
+          "label": "data_status_update"
+        },
+        {
+          "src": "p3_2",
+          "dst": "d_bookings",
+          "label": "data_bookings"
+        },
+        {
+          "src": "d_bookings",
+          "dst": "p3_2",
+          "label": "info_bookings"
+        },
+        {
+          "src": "p3_2",
+          "dst": "d_booking_slots",
+          "label": "data_booking_slots"
+        },
+        {
+          "src": "d_booking_slots",
+          "dst": "p3_2",
+          "label": "info_booking_slots"
+        },
+        {
+          "src": "admin",
+          "dst": "p3_3",
+          "label": "data_walkin"
+        },
+        {
+          "src": "p3_3",
+          "dst": "d_bookings",
+          "label": "data_bookings"
+        },
+        {
+          "src": "d_bookings",
+          "dst": "p3_3",
+          "label": "info_bookings"
+        }
+      ]
+    },
+    {
+      "parent_no": "4.0",
+      "processes": [
+        {
+          "id": "p4_1",
+          "no": "4.1",
+          "name": "Input Biaya Tambahan"
+        },
+        {
+          "id": "p4_2",
+          "no": "4.2",
+          "name": "Pendaftaran Metode Pelunasan"
+        },
+        {
+          "id": "p4_3",
+          "no": "4.3",
+          "name": "Cetak & Kirim Nota"
+        }
+      ],
+      "flows": [
+        {
+          "src": "admin",
+          "dst": "p4_1",
+          "label": "data_transaksi"
+        },
+        {
+          "src": "d_bookings",
+          "dst": "p4_1",
+          "label": "info_bookings"
+        },
+        {
+          "src": "p4_1",
+          "dst": "d_bookings",
+          "label": "data_bookings_req"
+        },
+        {
+          "src": "p4_1",
+          "dst": "p4_2",
+          "label": "data_sisa_bayar"
+        },
+        {
+          "src": "p4_2",
+          "dst": "d_transaksi",
+          "label": "data_transaksi"
+        },
+        {
+          "src": "d_transaksi",
+          "dst": "p4_2",
+          "label": "info_transaksi"
+        },
+        {
+          "src": "p4_2",
+          "dst": "p4_3",
+          "label": "data_transaksi_selesai"
+        },
+        {
+          "src": "p4_3",
+          "dst": "admin",
+          "label": "info_nota"
+        }
+      ]
+    },
+    {
+      "parent_no": "5.0",
+      "processes": [
+        {
+          "id": "p5_1",
+          "no": "5.1",
+          "name": "Tambah Layanan"
+        },
+        {
+          "id": "p5_2",
+          "no": "5.2",
+          "name": "Update Informasi Layanan"
+        },
+        {
+          "id": "p5_3",
+          "no": "5.3",
+          "name": "Hapus Layanan"
+        }
+      ],
+      "flows": [
+        {
+          "src": "owner",
+          "dst": "p5_1",
+          "label": "data_layanan"
+        },
+        {
+          "src": "p5_1",
+          "dst": "d_layanan",
+          "label": "data_layanan"
+        },
+        {
+          "src": "d_layanan",
+          "dst": "p5_1",
+          "label": "info_layanan"
+        },
+        {
+          "src": "owner",
+          "dst": "p5_2",
+          "label": "data_layanan_update"
+        },
+        {
+          "src": "p5_2",
+          "dst": "d_layanan",
+          "label": "data_layanan"
+        },
+        {
+          "src": "d_layanan",
+          "dst": "p5_2",
+          "label": "info_layanan"
+        },
+        {
+          "src": "owner",
+          "dst": "p5_3",
+          "label": "data_layanan_del"
+        },
+        {
+          "src": "p5_3",
+          "dst": "d_layanan",
+          "label": "data_layanan"
+        },
+        {
+          "src": "d_layanan",
+          "dst": "p5_3",
+          "label": "info_layanan"
+        },
+        {
+          "src": "p5_1",
+          "dst": "owner",
+          "label": "info_layanan"
+        },
+        {
+          "src": "p5_2",
+          "dst": "owner",
+          "label": "info_layanan"
+        },
+        {
+          "src": "p5_3",
+          "dst": "owner",
+          "label": "info_layanan"
+        }
+      ]
+    },
+    {
+      "parent_no": "6.0",
+      "processes": [
+        {
+          "id": "p6_1",
+          "no": "6.1",
+          "name": "Rekap Pendapatan Harian"
+        },
+        {
+          "id": "p6_2",
+          "no": "6.2",
+          "name": "Grafik Laporan Bulanan"
+        }
+      ],
+      "flows": [
+        {
+          "src": "owner",
+          "dst": "p6_1",
+          "label": "data_permintaan_laporan"
+        },
+        {
+          "src": "d_transaksi",
+          "dst": "p6_1",
+          "label": "info_transaksi"
+        },
+        {
+          "src": "p6_1",
+          "dst": "d_transaksi",
+          "label": "data_transaksi_req"
+        },
+        {
+          "src": "p6_1",
+          "dst": "p6_2",
+          "label": "data_rekap"
+        },
+        {
+          "src": "d_bookings",
+          "dst": "p6_2",
+          "label": "info_bookings"
+        },
+        {
+          "src": "p6_2",
+          "dst": "d_bookings",
+          "label": "data_bookings_req"
+        },
+        {
+          "src": "p6_2",
+          "dst": "owner",
+          "label": "info_laporan"
+        }
+      ]
+    },
+    {
+      "parent_no": "7.0",
+      "processes": [
+        {
+          "id": "p7_1",
+          "no": "7.1",
+          "name": "Kelola Data Pelanggan"
+        },
+        {
+          "id": "p7_2",
+          "no": "7.2",
+          "name": "Update Password Akun"
+        },
+        {
+          "id": "p7_3",
+          "no": "7.3",
+          "name": "Update Jam & Slot"
+        }
+      ],
+      "flows": [
+        {
+          "src": "admin",
+          "dst": "p7_1",
+          "label": "data_pengaturan"
+        },
+        {
+          "src": "p7_1",
+          "dst": "d_users",
+          "label": "data_users"
+        },
+        {
+          "src": "d_users",
+          "dst": "p7_1",
+          "label": "info_users"
+        },
+        {
+          "src": "admin",
+          "dst": "p7_2",
+          "label": "data_password_reset"
+        },
+        {
+          "src": "p7_2",
+          "dst": "d_users",
+          "label": "data_users"
+        },
+        {
+          "src": "d_users",
+          "dst": "p7_2",
+          "label": "info_users"
+        },
+        {
+          "src": "admin",
+          "dst": "p7_3",
+          "label": "data_settings_update"
+        },
+        {
+          "src": "p7_3",
+          "dst": "d_settings",
+          "label": "data_settings"
+        },
+        {
+          "src": "d_settings",
+          "dst": "p7_3",
+          "label": "info_settings"
+        },
+        {
+          "src": "p7_1",
+          "dst": "admin",
+          "label": "info_pengaturan"
+        },
+        {
+          "src": "p7_2",
+          "dst": "admin",
+          "label": "info_pengaturan"
+        },
+        {
+          "src": "p7_3",
+          "dst": "admin",
+          "label": "info_pengaturan"
+        }
+      ]
+    }
+  ],
+  "erd": {
+    "entities": [
+      {
+        "id": "users",
+        "name": "USERS",
+        "pk": "id",
+        "attrs": [
+          "email",
+          "password_hash",
+          "nama",
+          "nomor_hp",
+          "role",
+          "is_active",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      {
+        "id": "layanan",
+        "name": "LAYANAN",
+        "pk": "id",
+        "attrs": [
+          "nama",
+          "kategori",
+          "deskripsi",
+          "durasi_menit",
+          "harga",
+          "is_active",
+          "created_at"
+        ]
+      },
+      {
+        "id": "bookings",
+        "name": "BOOKINGS",
+        "pk": "id",
+        "fks": [
+          "user_id",
+          "layanan_id"
+        ],
+        "attrs": [
+          "kode_booking",
+          "nama_pelanggan",
+          "nomor_hp_pelanggan",
+          "email_pelanggan",
+          "tanggal",
+          "slot_mulai",
+          "slot_selesai",
+          "harga_layanan",
+          "final_service_price",
+          "remaining_payment",
+          "dp_amount",
+          "payment_status",
+          "status",
+          "sumber"
+        ]
+      },
+      {
+        "id": "booking_slots",
+        "name": "BOOKING_SLOTS",
+        "pk": "id",
+        "fks": [
+          "booking_id"
+        ],
+        "attrs": [
+          "tanggal",
+          "slot_waktu",
+          "status",
+          "created_at"
+        ]
+      },
+      {
+        "id": "transaksi",
+        "name": "TRANSAKSI",
+        "pk": "id",
+        "fks": [
+          "booking_id"
+        ],
+        "attrs": [
+          "nominal",
+          "base_price",
+          "additional_price",
+          "dp_paid",
+          "sisa_bayar",
+          "metode_bayar",
+          "tanggal_transaksi"
+        ]
+      },
+      {
+        "id": "settings",
+        "name": "SETTINGS",
+        "pk": "id",
+        "attrs": [
+          "key_name",
+          "value",
+          "updated_at"
+        ]
+      }
+    ],
+    "relations": [
+      {
+        "src": "users",
+        "dst": "bookings",
+        "label": "melakukan",
+        "src_card": "one",
+        "dst_card": "many"
+      },
+      {
+        "src": "layanan",
+        "dst": "bookings",
+        "label": "dipesan",
+        "src_card": "one",
+        "dst_card": "many"
+      },
+      {
+        "src": "bookings",
+        "dst": "booking_slots",
+        "label": "menempati",
+        "src_card": "one",
+        "dst_card": "many"
+      },
+      {
+        "src": "bookings",
+        "dst": "transaksi",
+        "label": "menghasilkan",
+        "src_card": "one",
+        "dst_card": "one"
+      }
+    ],
+    "chen": true
+  },
+  "analisis": {
+    "kebutuhan_fungsional": [
+      {
+        "actor": "Pelanggan",
+        "items": [
+          "Mendaftar akun baru (registrasi) dan masuk ke dalam sistem (login).",
+          "Memilih layanan salon dan slot waktu operasional secara mandiri.",
+          "Melakukan reservasi pemesanan (booking) online dan mengunggah bukti transfer DP.",
+          "Melihat riwayat pemesanan dan melakukan pembatalan booking mandiri."
+        ]
+      },
+      {
+        "actor": "Admin/Kasir",
+        "items": [
+          "Melakukan login untuk masuk ke area operasional admin.",
+          "Memverifikasi pembayaran DP dan mengupdate status reservasi.",
+          "Membuat pemesanan walk-in secara langsung di salon.",
+          "Mengelola data pelanggan salon dan melakukan reset password pelanggan.",
+          "Mencatat pelunasan transaksi, menginput biaya tambahan, memilih metode pelunasan, mencetak nota cetak, serta mengirim ulang email invoice final."
+        ]
+      },
+      {
+        "actor": "Owner",
+        "items": [
+          "Melakukan login untuk masuk ke area manajerial pemilik.",
+          "Mengelola data master layanan salon (CRUD layanan salon).",
+          "Melihat rekap data pendapatan harian, bulanan, dan statistik grafik penjualan di dashboard."
+        ]
+      }
+    ],
+    "kebutuhan_nonfungsional": {
+      "deskripsi": "Kebutuhan non-fungsional menggambarkan spesifikasi infrastruktur perangkat keras dan perangkat lunak minimum yang diperlukan untuk membangun dan menjalankan sistem ini secara stabil.",
+      "tabel": [
+        {
+          "judul": "Spesifikasi Perangkat Keras Minimum",
+          "header": [
+            "No",
+            "Perangkat",
+            "Spesifikasi"
+          ],
+          "rows": [
+            [
+              "1",
+              "Processor",
+              "Intel Core i3 / AMD Ryzen 3 atau setara"
+            ],
+            [
+              "2",
+              "RAM",
+              "8 GB DDR4"
+            ],
+            [
+              "3",
+              "Penyimpanan",
+              "Solid State Drive (SSD) 256 GB"
+            ]
+          ],
+          "widths_cm": [
+            1.5,
+            5.0,
+            7.5
+          ]
+        },
+        {
+          "judul": "Spesifikasi Perangkat Lunak Pendukung",
+          "header": [
+            "No",
+            "Perangkat Lunak",
+            "Keterangan"
+          ],
+          "rows": [
+            [
+              "1",
+              "Sistem Operasi",
+              "Windows 10/11 64-bit atau Linux/OSX"
+            ],
+            [
+              "2",
+              "Web Server",
+              "Apache 2.4 (XAMPP v8.x)"
+            ],
+            [
+              "3",
+              "Bahasa Pemrograman",
+              "PHP 8.1 / 8.2"
+            ],
+            [
+              "4",
+              "Framework MVC",
+              "CodeIgniter 4"
+            ],
+            [
+              "5",
+              "Basis Data",
+              "MySQL / MariaDB"
+            ]
+          ],
+          "widths_cm": [
+            1.5,
+            5.0,
+            7.5
+          ]
+        }
+      ]
+    }
+  },
+  "struktur_tabel": [
+    {
+      "nama": "users",
+      "header": [
+        "Field",
+        "Tipe",
+        "Keterangan"
+      ],
+      "rows": [
+        [
+          "id",
+          "BIGINT",
+          "Primary Key, Auto Increment"
+        ],
+        [
+          "email",
+          "VARCHAR(255)",
+          "Alamat email unik pengguna"
+        ],
+        [
+          "password_hash",
+          "VARCHAR(255)",
+          "Password hash ter-enkripsi"
+        ],
+        [
+          "nama",
+          "VARCHAR(255)",
+          "Nama lengkap pengguna"
+        ],
+        [
+          "nomor_hp",
+          "VARCHAR(255)",
+          "Nomor WhatsApp/HP aktif"
+        ],
+        [
+          "role",
+          "ENUM('pemilik','admin','pelanggan')",
+          "Hak akses peran pengguna"
+        ],
+        [
+          "is_active",
+          "TINYINT",
+          "Status keaktifan akun (1=aktif, 0=nonaktif)"
+        ],
+        [
+          "created_at",
+          "DATETIME",
+          "Waktu akun dibuat"
+        ],
+        [
+          "updated_at",
+          "DATETIME",
+          "Waktu update terakhir"
+        ]
+      ],
+      "widths_cm": [
+        4.0,
+        4.0,
+        6.0
+      ]
+    },
+    {
+      "nama": "layanan",
+      "header": [
+        "Field",
+        "Tipe",
+        "Keterangan"
+      ],
+      "rows": [
+        [
+          "id",
+          "BIGINT",
+          "Primary Key, Auto Increment"
+        ],
+        [
+          "nama",
+          "VARCHAR(255)",
+          "Nama layanan perawatan salon"
+        ],
+        [
+          "kategori",
+          "VARCHAR(255)",
+          "Kategori layanan (Rambut, Wajah, dll)"
+        ],
+        [
+          "deskripsi",
+          "TEXT",
+          "Deskripsi detail layanan"
+        ],
+        [
+          "durasi_menit",
+          "SMALLINT",
+          "Durasi pengerjaan layanan (dalam menit)"
+        ],
+        [
+          "harga",
+          "INT",
+          "Harga normal layanan"
+        ],
+        [
+          "is_active",
+          "TINYINT",
+          "Status keaktifan layanan (1=aktif, 0=nonaktif)"
+        ],
+        [
+          "created_at",
+          "DATETIME",
+          "Waktu layanan ditambahkan"
+        ]
+      ],
+      "widths_cm": [
+        4.0,
+        4.0,
+        6.0
+      ]
+    },
+    {
+      "nama": "bookings",
+      "header": [
+        "Field",
+        "Tipe",
+        "Keterangan"
+      ],
+      "rows": [
+        [
+          "id",
+          "BIGINT",
+          "Primary Key, Auto Increment"
+        ],
+        [
+          "kode_booking",
+          "VARCHAR(255)",
+          "Kode booking unik (mis: SW-YYYYMMDD-XXX)"
+        ],
+        [
+          "user_id",
+          "BIGINT",
+          "Foreign Key ke tabel users (optional)"
+        ],
+        [
+          "nama_pelanggan",
+          "VARCHAR(255)",
+          "Nama pelanggan reservasi"
+        ],
+        [
+          "nomor_hp_pelanggan",
+          "VARCHAR(255)",
+          "No WhatsApp pelanggan"
+        ],
+        [
+          "email_pelanggan",
+          "VARCHAR(255)",
+          "Email untuk invoice"
+        ],
+        [
+          "layanan_id",
+          "BIGINT",
+          "Foreign Key ke tabel layanan"
+        ],
+        [
+          "tanggal",
+          "DATE",
+          "Tanggal pelayanan yang dipesan"
+        ],
+        [
+          "slot_mulai",
+          "TIME",
+          "Jam mulai pengerjaan"
+        ],
+        [
+          "slot_selesai",
+          "TIME",
+          "Jam selesai pengerjaan"
+        ],
+        [
+          "jumlah_slot",
+          "SMALLINT",
+          "Jumlah slot waktu yang terpakai"
+        ],
+        [
+          "harga_layanan",
+          "INT",
+          "Harga normal saat dipesan"
+        ],
+        [
+          "final_service_price",
+          "INT",
+          "Harga final setelah diskon/promo"
+        ],
+        [
+          "remaining_payment",
+          "INT",
+          "Sisa pembayaran pelunasan"
+        ],
+        [
+          "dp_amount",
+          "INT",
+          "Jumlah uang muka (DP) yang wajib dibayar"
+        ],
+        [
+          "dp_proof_path",
+          "VARCHAR(255)",
+          "Path berkas bukti transfer DP"
+        ],
+        [
+          "payment_status",
+          "ENUM('unpaid','dp_verified')",
+          "Status pembayaran DP"
+        ],
+        [
+          "dp_verified_at",
+          "DATETIME",
+          "Waktu verifikasi pembayaran DP"
+        ],
+        [
+          "status",
+          "ENUM('pending','accepted','completed','cancelled')",
+          "Status reservasi"
+        ],
+        [
+          "sumber",
+          "ENUM('online','walkin')",
+          "Asal pemesanan dilakukan"
+        ]
+      ],
+      "widths_cm": [
+        4.0,
+        4.0,
+        6.0
+      ]
+    },
+    {
+      "nama": "booking_slots",
+      "header": [
+        "Field",
+        "Tipe",
+        "Keterangan"
+      ],
+      "rows": [
+        [
+          "id",
+          "BIGINT",
+          "Primary Key, Auto Increment"
+        ],
+        [
+          "booking_id",
+          "BIGINT",
+          "Foreign Key ke tabel bookings"
+        ],
+        [
+          "tanggal",
+          "DATE",
+          "Tanggal pelayanan terpakai"
+        ],
+        [
+          "slot_waktu",
+          "TIME",
+          "Jam slot yang dipesan"
+        ],
+        [
+          "status",
+          "ENUM('booked','held')",
+          "Status slot pemesanan"
+        ]
+      ],
+      "widths_cm": [
+        4.0,
+        4.0,
+        6.0
+      ]
+    },
+    {
+      "nama": "transaksi",
+      "header": [
+        "Field",
+        "Tipe",
+        "Keterangan"
+      ],
+      "rows": [
+        [
+          "id",
+          "BIGINT",
+          "Primary Key, Auto Increment"
+        ],
+        [
+          "booking_id",
+          "BIGINT",
+          "Foreign Key ke tabel bookings"
+        ],
+        [
+          "nominal",
+          "INT",
+          "Total nominal transaksi (harga final + tambahan)"
+        ],
+        [
+          "base_price",
+          "INT",
+          "Harga dasar layanan"
+        ],
+        [
+          "additional_price",
+          "INT",
+          "Nominal biaya tambahan pengerjaan"
+        ],
+        [
+          "dp_paid",
+          "INT",
+          "Uang muka yang telah dipotong"
+        ],
+        [
+          "sisa_bayar",
+          "INT",
+          "Pelunasan yang dibayarkan kasir"
+        ],
+        [
+          "metode_bayar",
+          "VARCHAR(50)",
+          "Metode pembayaran pelunasan (Cash / Transfer)"
+        ],
+        [
+          "tanggal_transaksi",
+          "DATETIME",
+          "Waktu transaksi diselesaikan"
+        ]
+      ],
+      "widths_cm": [
+        4.0,
+        4.0,
+        6.0
+      ]
+    },
+    {
+      "nama": "settings",
+      "header": [
+        "Field",
+        "Tipe",
+        "Keterangan"
+      ],
+      "rows": [
+        [
+          "id",
+          "BIGINT",
+          "Primary Key, Auto Increment"
+        ],
+        [
+          "key_name",
+          "VARCHAR(255)",
+          "Nama kunci pengaturan unik"
+        ],
+        [
+          "value",
+          "TEXT",
+          "Nilai konfigurasi pengaturan"
+        ]
+      ],
+      "widths_cm": [
+        4.0,
+        4.0,
+        6.0
+      ]
+    }
+  ],
+  "antarmuka": [
+    {
+      "title": "Halaman Landing / Home Utama",
+      "desc": "Halaman landing utama menampilkan profil SW Beauty Salon, keunggulan, daftar layanan salon, dan tombol navigasi untuk login atau melakukan reservasi.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon",
+          "menu": [
+            "Layanan",
+            "Booking",
+            "Cek Booking",
+            "Login"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "SW Beauty Salon - Reserve, Refine, Revel"
+        },
+        {
+          "type": "text",
+          "text": "Nikmati perawatan kecantikan premium dari terapis ahli kami. Mudah, cepat, dan terpercaya secara online."
+        },
+        {
+          "type": "buttons",
+          "items": [
+            "Lihat Layanan",
+            "Reservasi Sekarang"
+          ]
+        },
+        {
+          "type": "cards",
+          "items": [
+            {
+              "title": "Facial Treatment",
+              "value": "Mulai Rp 180.000"
+            },
+            {
+              "title": "Hair Smoothing",
+              "value": "Mulai Rp 250.000"
+            },
+            {
+              "title": "Nail Art",
+              "value": "Mulai Rp 75.000"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Halaman Daftar Layanan",
+      "desc": "Halaman ini menampilkan seluruh daftar treatment kecantikan yang ditawarkan oleh salon beserta kategori, harga, durasi, dan deskripsi singkat.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon",
+          "menu": [
+            "Layanan",
+            "Booking",
+            "Cek Booking",
+            "Login"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Layanan Perawatan Salon"
+        },
+        {
+          "type": "table",
+          "title": "Daftar Layanan Perawatan",
+          "columns": [
+            "No",
+            "Nama Layanan",
+            "Kategori",
+            "Durasi",
+            "Harga"
+          ],
+          "rows": [
+            [
+              "1",
+              "Facial Treatment",
+              "Wajah",
+              "60 Menit",
+              "Rp 180.000"
+            ],
+            [
+              "2",
+              "Hair Smoothing",
+              "Rambut",
+              "120 Menit",
+              "Rp 250.000"
+            ],
+            [
+              "3",
+              "Nail Art",
+              "Kuku",
+              "45 Menit",
+              "Rp 75.000"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Halaman Formulir Pemesanan Online",
+      "desc": "Halaman form booking digunakan oleh pelanggan untuk mengisi data pemesanan secara mandiri, memilih layanan, menentukan tanggal reservasi, dan memilih slot waktu yang masih tersedia.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon",
+          "menu": [
+            "Dashboard",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Form Pemesanan Layanan"
+        },
+        {
+          "type": "form",
+          "title": "Detail Pemesanan",
+          "fields": [
+            {
+              "label": "Nama Lengkap"
+            },
+            {
+              "label": "Nomor WhatsApp"
+            },
+            {
+              "label": "Layanan Perawatan"
+            },
+            {
+              "label": "Tanggal Reservasi"
+            },
+            {
+              "label": "Pilih Slot Jam"
+            }
+          ],
+          "submit": "Lanjutkan Pembayaran DP"
+        }
+      ]
+    },
+    {
+      "title": "Halaman Cek & Batalkan Pemesanan",
+      "desc": "Halaman khusus bagi pelanggan non-terdaftar (walk-in/online tanpa login) untuk memeriksa status pemesanan mereka atau melakukan pembatalan dengan memasukkan kode booking.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon"
+        },
+        {
+          "type": "heading",
+          "text": "Periksa Status Reservasi"
+        },
+        {
+          "type": "form",
+          "title": "Pencarian Booking",
+          "fields": [
+            {
+              "label": "Kode Booking (Contoh: SW-YYYYMMDD-XXX)"
+            }
+          ],
+          "submit": "Periksa Detail"
+        },
+        {
+          "type": "table",
+          "title": "Detail Reservasi Terakhir",
+          "columns": [
+            "Kode",
+            "Layanan",
+            "Tanggal",
+            "Status",
+            "Aksi"
+          ],
+          "rows": [
+            [
+              "SW-20260623-001",
+              "Facial",
+              "23 Jun 2026",
+              "dp_verified",
+              "Batalkan Pemesanan"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Halaman Login Terpadu",
+      "desc": "Halaman login terpadu digunakan oleh semua aktor (Pelanggan, Admin, Owner) dengan menginputkan email atau nomor HP serta kata sandi.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon"
+        },
+        {
+          "type": "form",
+          "title": "Masuk ke Akun Anda",
+          "fields": [
+            {
+              "label": "Email atau Nomor WhatsApp"
+            },
+            {
+              "label": "Password",
+              "type": "password"
+            }
+          ],
+          "submit": "Masuk"
+        }
+      ]
+    },
+    {
+      "title": "Halaman Dashboard Owner (Full Sidebar)",
+      "desc": "Dashboard utama bagi owner menampilkan ringkasan performa finansial salon, data booking terbaru, dan sidebar lengkap yang berisi akses ke laporan manajerial.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon (Owner)"
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Laporan Keuangan",
+            "Kelola Layanan",
+            "Reservasi",
+            "Walk-in",
+            "Jadwal Terapis",
+            "Pelanggan",
+            "Transaksi",
+            "Pengaturan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Dashboard Owner"
+        },
+        {
+          "type": "cards",
+          "items": [
+            {
+              "title": "Pendapatan Hari Ini",
+              "value": "Rp 1.450.000"
+            },
+            {
+              "title": "Total Booking Aktif",
+              "value": "15 Booking"
+            },
+            {
+              "title": "Layanan Terlaris",
+              "value": "Facial"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Halaman Dashboard Admin (Operational Sidebar)",
+      "desc": "Dashboard bagi admin kasir yang berisi informasi operasional harian salon, antrean pengerjaan hari ini, dan sidebar terbatas untuk tugas operasional tanpa akses laporan keuangan.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon (Admin)"
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Reservasi",
+            "Walk-in",
+            "Jadwal Terapis",
+            "Pelanggan",
+            "Transaksi",
+            "Pengaturan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Dashboard Operasional Admin"
+        },
+        {
+          "type": "cards",
+          "items": [
+            {
+              "title": "Pending Verification",
+              "value": "3 Booking"
+            },
+            {
+              "title": "Total Walk-in Hari Ini",
+              "value": "5 Pelanggan"
+            },
+            {
+              "title": "Total Transaksi Selesai",
+              "value": "12 Nota"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Antrean Reservasi Hari Ini",
+          "columns": [
+            "Jam",
+            "Pelanggan",
+            "Layanan",
+            "Status",
+            "Aksi"
+          ],
+          "rows": [
+            [
+              "10:00 - 11:00",
+              "I Kadek Nadi",
+              "Facial",
+              "accepted",
+              "Lihat | Selesaikan"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Halaman Pengelolaan Reservasi Booking",
+      "desc": "Halaman khusus admin untuk memeriksa daftar pesanan masuk dari pelanggan online, memverifikasi unggahan bukti transfer DP, serta menyetujui atau menolak pesanan.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon (Admin)"
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Reservasi",
+            "Walk-in",
+            "Jadwal Terapis",
+            "Pelanggan",
+            "Transaksi",
+            "Pengaturan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Pengelolaan Reservasi Booking"
+        },
+        {
+          "type": "table",
+          "title": "Antrean Reservasi Menunggu Verifikasi",
+          "columns": [
+            "Kode",
+            "Pelanggan",
+            "Tanggal",
+            "DP Amount",
+            "Bukti Transfer",
+            "Aksi"
+          ],
+          "rows": [
+            [
+              "SW-20260623-005",
+              "I Komang Nadiana",
+              "23 Jun 2026",
+              "Rp 50.000",
+              "Lihat Bukti",
+              "Terima | Tolak"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Halaman Pemesanan Langsung (Walk-in)",
+      "desc": "Form khusus admin untuk mencatat pelanggan langsung yang datang ke salon, memilih slot terapis, dan memverifikasi pembayaran secara langsung.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon (Admin)"
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Reservasi",
+            "Walk-in",
+            "Jadwal Terapis",
+            "Pelanggan",
+            "Transaksi",
+            "Pengaturan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Pemesanan Pelanggan Datang Langsung (Walk-in)"
+        },
+        {
+          "type": "form",
+          "title": "Form Walk-in",
+          "fields": [
+            {
+              "label": "Nama Pelanggan"
+            },
+            {
+              "label": "Nomor WhatsApp"
+            },
+            {
+              "label": "Layanan"
+            },
+            {
+              "label": "Tanggal Hari Ini"
+            },
+            {
+              "label": "Pilih Slot Waktu"
+            },
+            {
+              "label": "Uang Muka (DP) Terbayar"
+            }
+          ],
+          "submit": "Simpan & Terima Reservasi"
+        }
+      ]
+    },
+    {
+      "title": "Halaman Pengelolaan Pelanggan",
+      "desc": "Halaman untuk mengelola data master pelanggan yang terdaftar di salon, termasuk memperbarui informasi nama atau melakukan reset sandi jika pelanggan lupa.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon (Admin)"
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Reservasi",
+            "Walk-in",
+            "Jadwal Terapis",
+            "Pelanggan",
+            "Transaksi",
+            "Pengaturan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Pengelolaan Data Pelanggan"
+        },
+        {
+          "type": "table",
+          "title": "Daftar Pelanggan Terdaftar",
+          "columns": [
+            "No",
+            "Nama",
+            "Email",
+            "Nomor WhatsApp",
+            "Aksi"
+          ],
+          "rows": [
+            [
+              "1",
+              "I Kadek nadi Artana",
+              "kadeknadi98@gmail.com",
+              "081234567890",
+              "Ubah Nama | Reset Sandi"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Halaman Pencatatan Transaksi Pembayaran",
+      "desc": "Halaman untuk kasir mencatat pelunasan, memasukkan biaya tambahan jika ada treatment ekstra, memilih metode pembayaran pelunasan, dan mencetak nota transaksi.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon (Admin)"
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Reservasi",
+            "Walk-in",
+            "Jadwal Terapis",
+            "Pelanggan",
+            "Transaksi",
+            "Pengaturan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Pencatatan Pelunasan Transaksi"
+        },
+        {
+          "type": "form",
+          "title": "Detail Pembayaran Nota #7",
+          "fields": [
+            {
+              "label": "Total Biaya Layanan Normal (Rp 180.000)"
+            },
+            {
+              "label": "Biaya Tambahan (Treatment Tambahan)"
+            },
+            {
+              "label": "Uang Muka (DP) Terbayar (-Rp 50.000)"
+            },
+            {
+              "label": "Sisa yang Harus Dibayar"
+            },
+            {
+              "label": "Metode Pembayaran (Cash / Transfer)"
+            }
+          ],
+          "submit": "Selesaikan Transaksi & Cetak Nota"
+        }
+      ]
+    },
+    {
+      "title": "Halaman Pengaturan Salon & Operasional",
+      "desc": "Halaman bagi admin untuk mengatur parameter sistem seperti batas kuota slot booking per jam operasional, mengganti kata sandi admin, dan mengedit informasi dasar salon.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon (Admin)"
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Reservasi",
+            "Walk-in",
+            "Jadwal Terapis",
+            "Pelanggan",
+            "Transaksi",
+            "Pengaturan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Pengaturan Parameter Salon"
+        },
+        {
+          "type": "form",
+          "title": "Pengaturan Sistem",
+          "fields": [
+            {
+              "label": "Maksimal Pelanggan per Slot Jam"
+            },
+            {
+              "label": "Jam Buka Operasional"
+            },
+            {
+              "label": "Jam Tutup Operasional"
+            }
+          ],
+          "submit": "Simpan Pengaturan"
+        }
+      ]
+    },
+    {
+      "title": "Halaman Laporan Pendapatan Owner",
+      "desc": "Halaman grafik dan statistik pendapatan salon yang diakses khusus oleh pemilik untuk memantau rekap harian, bulanan, serta kinerja layanan terlaris.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon (Owner)"
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Laporan Keuangan",
+            "Kelola Layanan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Laporan Rekap Pendapatan"
+        },
+        {
+          "type": "cards",
+          "items": [
+            {
+              "title": "Pendapatan Hari Ini",
+              "value": "Rp 1.450.000"
+            },
+            {
+              "title": "Pendapatan Bulan Ini",
+              "value": "Rp 24.300.000"
+            },
+            {
+              "title": "Rata-rata Transaksi",
+              "value": "Rp 160.000"
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "label": "Grafik Perkembangan Keuangan Bulanan",
+          "h": 150
+        },
+        {
+          "type": "table",
+          "title": "Rincian Transaksi Selesai",
+          "columns": [
+            "Tanggal",
+            "Kode Booking",
+            "Layanan",
+            "Uang Muka",
+            "Pelunasan",
+            "Total Pendapatan"
+          ],
+          "rows": [
+            [
+              "2026-06-23",
+              "SW-20260623-001",
+              "Facial",
+              "Rp 50.000",
+              "Rp 130.000",
+              "Rp 180.000"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Halaman Manajemen Layanan Perawatan",
+      "desc": "Halaman CRUD (Create, Read, Update, Delete) yang diakses pemilik untuk menambah jenis perawatan salon baru, mengatur harga normal, promo persentase, deskripsi, dan durasi menit pengerjaan.",
+      "mockup": [
+        {
+          "type": "navbar",
+          "logo": true,
+          "title": "SW Beauty Salon (Owner)"
+        },
+        {
+          "type": "sidebar",
+          "items": [
+            "Dashboard",
+            "Laporan Keuangan",
+            "Kelola Layanan",
+            "Logout"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Manajemen Layanan Perawatan"
+        },
+        {
+          "type": "table",
+          "title": "Daftar Treatment Aktif",
+          "columns": [
+            "No",
+            "Nama Perawatan",
+            "Kategori",
+            "Durasi",
+            "Harga",
+            "Aksi"
+          ],
+          "rows": [
+            [
+              "1",
+              "Facial Treatment",
+              "Wajah",
+              "60 Menit",
+              "Rp 180.000",
+              "Ubah | Hapus"
+            ],
+            [
+              "2",
+              "Hair Smoothing",
+              "Rambut",
+              "120 Menit",
+              "Rp 250.000",
+              "Ubah | Hapus"
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "implementasi": [
+    {
+      "title": "Halaman Landing / Home Utama",
+      "desc": "Menampilkan tampilan awal landing page SW Beauty Salon beserta portofolio layanan.",
+      "image": "halaman/public-home.png"
+    },
+    {
+      "title": "Halaman Daftar Layanan",
+      "desc": "Menampilkan daftar treatment kecantikan beserta detail deskripsi, durasi, dan harga.",
+      "image": "halaman/public-layanan.png"
+    },
+    {
+      "title": "Halaman Formulir Pemesanan Online",
+      "desc": "Menampilkan formulir reservasi mandiri untuk memilih tanggal pelayanan dan slot waktu terapis.",
+      "image": "halaman/public-booking.png"
+    },
+    {
+      "title": "Halaman Cek & Batalkan Pemesanan",
+      "desc": "Menampilkan pencarian detail booking publik menggunakan nomor kode booking reservasi.",
+      "image": "halaman/public-cek-booking.png"
+    },
+    {
+      "title": "Halaman Login Terpadu",
+      "desc": "Menampilkan gerbang masuk sistem bagi pelanggan, staf admin kasir, dan pemilik salon.",
+      "image": "halaman/public-login.png"
+    },
+    {
+      "title": "Halaman Dashboard Owner (Full Sidebar)",
+      "desc": "Menampilkan beranda dashboard utama bagi pemilik berisi rekap penjualan total, total booking aktif, dan navigasi menu lengkap.",
+      "image": "halaman/owner-dashboard.png"
+    },
+    {
+      "title": "Halaman Dashboard Admin (Operational Sidebar)",
+      "desc": "Menampilkan beranda operasional harian bagi staf admin/kasir dengan navigasi terbatas tanpa akses laporan keuangan.",
+      "image": "halaman/admin-dashboard.png"
+    },
+    {
+      "title": "Halaman Pengelolaan Reservasi Booking",
+      "desc": "Menampilkan daftar pesanan masuk dari pelanggan online untuk diverifikasi bukti transfer DP-nya.",
+      "image": "halaman/owner-booking.png"
+    },
+    {
+      "title": "Halaman Pemesanan Langsung (Walk-in)",
+      "desc": "Menampilkan form walk-in admin untuk input pelayanan datang langsung secara cepat.",
+      "image": "halaman/owner-walkin.png"
+    },
+    {
+      "title": "Halaman Pengelolaan Pelanggan",
+      "desc": "Menampilkan menu admin untuk memperbarui profil nama atau mereset sandi pelanggan terdaftar.",
+      "image": "halaman/owner-pelanggan.png"
+    },
+    {
+      "title": "Halaman Pencatatan Transaksi Pembayaran",
+      "desc": "Menampilkan modul kasir untuk input biaya tambahan dan menyelesaikan tagihan transaksi.",
+      "image": "halaman/owner-transaksi.png"
+    },
+    {
+      "title": "Halaman Pengaturan Salon & Operasional",
+      "desc": "Menampilkan menu admin untuk membatasi kuota slot booking per jam operasional.",
+      "image": "halaman/owner-pengaturan.png"
+    },
+    {
+      "title": "Halaman Laporan Pendapatan Owner",
+      "desc": "Menampilkan menu laporan keuangan harian dan bulanan khusus untuk pemilik salon.",
+      "image": "halaman/owner-laporan.png"
+    },
+    {
+      "title": "Halaman Manajemen Layanan Perawatan",
+      "desc": "Menampilkan antarmuka CRUD data master treatment kecantikan di salon.",
+      "image": "halaman/owner-layanan.png"
+    }
+  ],
+  "pengujian": {
+    "blackbox": [
+      {
+        "judul": "Modul Autentikasi Pengguna (Login & Logout)",
+        "cases": [
+          {
+            "input": "Memasukkan email dan password yang valid (pemilik/admin/pelanggan)",
+            "expect": "Sistem menerima autentikasi dan memindahkan halaman ke dashboard sesuai peran masing-masing",
+            "observe": "Berhasil masuk ke dashboard sesuai hak akses masing-masing",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Memasukkan password yang salah pada email yang terdaftar",
+            "expect": "Sistem menolak masuk dan menampilkan notifikasi kesalahan kata sandi",
+            "observe": "Muncul notifikasi peringatan password salah, tetap di halaman login",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Menekan tombol logout pada menu navigasi utama",
+            "expect": "Sistem menghapus sesi login aktif dan mengembalikan pengguna ke form login awal",
+            "observe": "Sesi terhapus dan halaman langsung diarahkan kembali ke form login",
+            "result": "Sesuai"
+          }
+        ]
+      },
+      {
+        "judul": "Modul Pemesanan Online oleh Pelanggan",
+        "cases": [
+          {
+            "input": "Mengisi form booking secara lengkap dan memilih slot waktu yang masih kosong",
+            "expect": "Pemesanan berhasil disimpan dengan status pending, slot di-hold, dan diarahkan ke instruksi pembayaran DP",
+            "observe": "Reservasi tersimpan, kode booking terbit, dan petunjuk DP tertera",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Memilih slot jam pelayanan yang sudah dipesan penuh oleh pelanggan lain",
+            "expect": "Sistem memvalidasi dan memblokir pilihan slot tersebut sehingga tidak bisa dipilih kembali",
+            "observe": "Slot jam tersebut berwarna merah/disabled dan tidak merespon klik",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Melakukan pembatalan booking sebelum H-1 waktu pelayanan di halaman cek booking",
+            "expect": "Sistem mengubah status booking menjadi dibatalkan secara otomatis",
+            "observe": "Status pesanan berubah menjadi cancelled and slot dilepaskan",
+            "result": "Sesuai"
+          }
+        ]
+      },
+      {
+        "judul": "Modul Verifikasi & Walk-in oleh Admin Kasir",
+        "cases": [
+          {
+            "input": "Memilih menu terima/verifikasi bukti transfer DP pelanggan",
+            "expect": "Status pesanan berubah menjadi accepted (disetujui) dan mengirimkan notifikasi email verifikasi DP sukses",
+            "observe": "Status berubah menjadi accepted, email sukses terkirim",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Memasukkan data pemesanan walk-in secara lengkap beserta nominal DP tunai",
+            "expect": "Booking langsung berstatus accepted (aktif) tanpa perlu verifikasi transfer tambahan",
+            "observe": "Walk-in booking langsung aktif dan masuk antrean pengerjaan hari ini",
+            "result": "Sesuai"
+          }
+        ]
+      },
+      {
+        "judul": "Modul Pelunasan Transaksi Kasir",
+        "cases": [
+          {
+            "input": "Menginput nominal biaya tambahan untuk produk/jasa ekstra, lalu menekan selesaikan transaksi",
+            "expect": "Total tagihan dihitung otomatis, sisa pembayaran diselesaikan, status disetujui menjadi completed, dan nota cetak diterbitkan",
+            "observe": "Sisa bayar terhitung tepat, nota dapat dicetak, status diselesaikan",
+            "result": "Sesuai"
+          }
+        ]
+      },
+      {
+        "judul": "Modul CRUD Layanan oleh Owner",
+        "cases": [
+          {
+            "input": "Menambahkan data layanan perawatan baru dengan harga dan durasi lengkap",
+            "expect": "Layanan baru tersimpan ke basis data dan langsung tampil di form pemesanan pelanggan",
+            "observe": "Data layanan tersimpan dan langsung muncul di list layanan publik",
+            "result": "Sesuai"
+          },
+          {
+            "input": "Menghapus layanan salon yang sudah tidak ditawarkan kembali",
+            "expect": "Layanan dinonaktifkan (soft delete) sehingga tidak tampil bagi pelanggan namun tetap tersimpan dalam riwayat laporan",
+            "observe": "Layanan terhapus secara visual dari beranda pemesanan namun rekap laporan sebelumnya tetap valid",
+            "result": "Sesuai"
+          }
+        ]
+      }
+    ]
+  },
+  "sus": {
+    "xlsx": "data.xlsx"
+  }
+}
