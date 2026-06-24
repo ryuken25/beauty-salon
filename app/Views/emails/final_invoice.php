@@ -66,8 +66,8 @@ $cekLink = rtrim((string) config('App')->baseURL, '/') . '/cek-booking';
     <td style="padding:8px 14px;border-bottom:1px solid #2a2418;color:#e8e6e3;font-weight:500;vertical-align:top;"><?= esc($metodeBayar) ?></td>
   </tr>
   <tr>
-    <td style="padding:8px 14px;color:#a8a39c;border-bottom:1px solid #2a2418;">Status</td>
-    <td style="padding:8px 14px;border-bottom:1px solid #2a2418;color:#7bd389;font-weight:600;text-transform:uppercase;vertical-align:top;">LUNAS</td>
+    <td style="padding:8px 14px;color:#a8a39c;border-bottom:1px solid #2a2418;font-weight:bold;">Status Pembayaran</td>
+    <td style="padding:8px 14px;border-bottom:1px solid #2a2418;color:#7bd389;font-weight:700;text-transform:uppercase;vertical-align:top;letter-spacing:0.5px;">LUNAS</td>
   </tr>
   <tr>
     <td style="padding:8px 14px;color:#a8a39c;border-bottom:1px solid #2a2418;">Pelunasan Dibayar</td>

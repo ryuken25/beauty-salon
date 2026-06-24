@@ -106,6 +106,21 @@
       .receipt-totals .highlight {
         color: #000 !important;
       }
+      .receipt-totals td,
+      .receipt-details td,
+      .receipt-items td,
+      .receipt-items th,
+      .receipt-totals .value,
+      .receipt-details .value,
+      .receipt-totals .label,
+      .receipt-details .label {
+        color: #000 !important;
+      }
+      .receipt-totals .value[style*="color"],
+      .receipt-details .value[style*="color"],
+      .receipt-totals .highlight[style*="color"] {
+        color: #000 !important;
+      }
       .no-print-actions {
         display: none !important;
       }
@@ -206,8 +221,8 @@
       <td class="value" style="text-transform:uppercase; font-weight:600;"><?= esc($t['metode_bayar']) ?></td>
     </tr>
     <tr>
-      <td class="label">Status</td>
-      <td class="value" style="color:var(--gold); font-weight:600; text-transform:uppercase;">LUNAS</td>
+      <td class="label" style="font-weight:600; color:var(--gold);">Status Pembayaran</td>
+      <td class="value" style="color:var(--gold); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">LUNAS</td>
     </tr>
   </table>
 
