@@ -20,6 +20,23 @@
     <div class="form-salon-help" style="margin-top:0.4rem;">Simpan kode ini untuk cek status atau membatalkan booking.</div>
   </div>
 
+  <?php
+  // Kontak admin — pesan sudah membawa kode booking dan nama pemesan.
+  $waSuksesHref = wa_admin_link(wa_message('booking', [
+      'kode' => $booking['kode_booking'],
+      'nama' => $booking['nama_pelanggan'] ?? '',
+  ]));
+  ?>
+  <?php if ($waSuksesHref !== null): ?>
+    <div class="card-salon mt-2" style="text-align:center;">
+      <div class="caption">Ada yang ingin ditanyakan soal booking ini?</div>
+      <a class="btn-wa-inline btn-wa-inline--full mt-1" href="<?= esc($waSuksesHref) ?>" target="_blank" rel="noopener noreferrer"
+         aria-label="Chat WhatsApp admin SW Beauty Salon">
+        <i class="bi bi-whatsapp"></i> Chat admin di <?= esc(wa_admin_display()) ?>
+      </a>
+    </div>
+  <?php endif ?>
+
   <div class="card-salon mt-3">
     <table style="width:100%; font-size:0.875rem;">
       <tr><td class="label">Layanan</td><td class="text-right"><?= esc($booking['nama_layanan']) ?></td></tr>

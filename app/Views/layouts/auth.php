@@ -11,7 +11,7 @@
   <link href="<?= base_url('assets/css/salon-theme.css') ?>" rel="stylesheet">
 </head>
 <body>
-<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem; background:var(--bg);">
+<div class="auth-shell" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem; background:var(--bg);">
   <div style="width:100%; max-width:420px;">
     <?php if (session()->getFlashdata('success')): ?>
       <div class="alert-salon alert-salon--success"><?= esc(session()->getFlashdata('success')) ?></div>
@@ -22,5 +22,6 @@
     <?= $this->renderSection('content') ?>
   </div>
 </div>
+<?= $this->include('partials/wa_float') ?>
 </body>
 </html>

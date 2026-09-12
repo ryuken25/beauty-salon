@@ -72,7 +72,14 @@
 <footer class="footer-salon">
   <div class="container-salon">
     <div class="ornament-rule ornament-rule--wide"><span class="ornament-rule__line"></span><i class="bi bi-gem ornament-rule__icon"></i><span class="ornament-rule__line"></span></div>
-    <div><i class="bi bi-geo-alt"></i> Batunya, Baturiti, Tabanan, Bali &nbsp;·&nbsp; <i class="bi bi-telephone"></i> +62 878-6218-3074</div>
+    <?php $waFooterHref = wa_admin_link(wa_message('umum')); ?>
+    <div>
+      <i class="bi bi-geo-alt"></i> Batunya, Baturiti, Tabanan, Bali
+      <?php if ($waFooterHref !== null): ?>
+        &nbsp;·&nbsp; <i class="bi bi-whatsapp"></i> Butuh bantuan?
+        <a href="<?= esc($waFooterHref) ?>" target="_blank" rel="noopener noreferrer">WhatsApp kami di <?= esc(wa_admin_display()) ?></a>
+      <?php endif ?>
+    </div>
     <div class="tagline mt-1">Crafted with care · © <?= date('Y') ?> SW Beauty Salon</div>
   </div>
 </footer>
@@ -98,5 +105,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <?= $this->include('partials/promo_popup') ?>
+<?= $this->include('partials/wa_float') ?>
 </body>
 </html>

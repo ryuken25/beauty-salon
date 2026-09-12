@@ -55,6 +55,19 @@ $cancelable = in_array($booking['status'], ['pending_verification', 'accepted'],
       </a>
       <div class="form-salon-help mt-1">Pembatalan dibolehkan ≥ 2 jam sebelum jam mulai. Slot akan otomatis dilepas.</div>
     <?php endif ?>
+
+    <?php
+    $waDetailHref = wa_admin_link(wa_message('booking', [
+        'kode' => $booking['kode_booking'],
+        'nama' => $booking['nama_pelanggan'] ?? '',
+    ]));
+    ?>
+    <?php if ($waDetailHref !== null): ?>
+      <a class="btn-wa-inline btn-wa-inline--full mt-2" href="<?= esc($waDetailHref) ?>" target="_blank" rel="noopener noreferrer"
+         aria-label="Chat WhatsApp admin SW Beauty Salon">
+        <i class="bi bi-whatsapp"></i> Tanya admin soal booking ini
+      </a>
+    <?php endif ?>
   </div>
 
   <div class="text-center mt-3">

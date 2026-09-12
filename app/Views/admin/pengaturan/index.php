@@ -44,6 +44,28 @@
       <?= csrf_field() ?>
       <div class="h2 mb-2">WhatsApp manual</div>
       <div><label class="form-salon-label">Nomor HP owner (format internasional)</label><input class="form-salon-input" name="nomor_hp_owner" value="<?= esc($s['nomor_hp_owner'] ?? '') ?>" placeholder="6281234567890"></div>
+
+      <?php
+      // Nomor yang dipakai tombol "Tanya Admin" di sisi pelanggan.
+      // Preview dibentuk dari nilai yang sedang aktif (database → .env → Config\Salon).
+      $waAdminHref   = wa_admin_link(wa_message('umum'));
+      $waAdminTampil = wa_admin_display();
+      ?>
+      <div class="mt-2">
+        <label class="form-salon-label">Nomor WhatsApp Admin</label>
+        <input class="form-salon-input" name="wa_admin" value="<?= esc($s['wa_admin'] ?? '') ?>" placeholder="081338109102">
+        <div class="form-salon-help">Contoh: 081338109102 atau 6281338109102</div>
+        <?php if ($waAdminHref !== null): ?>
+          <div class="form-salon-help mt-1">
+            Tampil ke pelanggan sebagai <strong><?= esc($waAdminTampil) ?></strong> · preview tautan:
+            <a href="<?= esc($waAdminHref) ?>" target="_blank" rel="noopener noreferrer"><?= esc($waAdminHref) ?></a>
+          </div>
+        <?php else: ?>
+          <div class="form-salon-help mt-1" style="color:var(--color-danger);">
+            Nomor belum valid — tombol WhatsApp tidak ditampilkan ke pelanggan.
+          </div>
+        <?php endif ?>
+      </div>
       <div class="mt-2"><label class="form-salon-label">Template pesan diterima</label><textarea class="form-salon-textarea" rows="3" name="template_wa_diterima"><?= esc($s['template_wa_diterima'] ?? '') ?></textarea></div>
       <div class="mt-2"><label class="form-salon-label">Template pesan ditolak</label><textarea class="form-salon-textarea" rows="3" name="template_wa_ditolak"><?= esc($s['template_wa_ditolak'] ?? '') ?></textarea></div>
       <div class="mt-2"><label class="form-salon-label">Template reminder</label><textarea class="form-salon-textarea" rows="3" name="template_wa_reminder"><?= esc($s['template_wa_reminder'] ?? '') ?></textarea></div>

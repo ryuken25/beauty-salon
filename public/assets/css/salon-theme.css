@@ -1119,3 +1119,102 @@ a.metric-link:hover { color: inherit; }
 .salon-swal { border: 1px solid var(--gold-border); border-radius: 14px; font-family: var(--font-body); }
 .salon-swal .swal2-title { font-family: var(--font-display); color: var(--text-primary); }
 .salon-swal .swal2-confirm { font-weight: 600; border-radius: 999px; }
+
+/* ════════════════════════════════════════════════════════════════
+   Kontak WhatsApp admin (pelanggan → admin)
+   Hijau WhatsApp #25D366 supaya langsung dikenali, dibingkai ring
+   gold agar menyatu dengan tema. Hanya dipakai di sisi publik.
+   ════════════════════════════════════════════════════════════════ */
+
+/* Tombol mengambang. z-index 1030 — di bawah modal Bootstrap (1055). */
+.wa-float {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1030;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #25D366;
+  color: #0B3B22;
+  border: 2px solid var(--gold-border);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.wa-float:hover,
+.wa-float:focus-visible {
+  color: #0B3B22;
+  text-decoration: none;
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.55);
+}
+.wa-float svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+  display: block;
+}
+
+/* Label muncul saat hover/fokus; pembaca layar tetap dapat aria-label. */
+.wa-float__label {
+  position: absolute;
+  right: calc(100% + 10px);
+  white-space: nowrap;
+  background: var(--card);
+  color: var(--text-primary);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8125rem;
+  opacity: 0;
+  transform: translateX(6px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.wa-float:hover .wa-float__label,
+.wa-float:focus-visible .wa-float__label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Tombol WhatsApp inline (kartu layanan, halaman booking, cek booking). */
+.btn-wa-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: rgba(37,211,102,0.10);
+  border: 1px solid rgba(37,211,102,0.45);
+  color: var(--color-completed-fg);
+  text-decoration: none;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+.btn-wa-inline:hover,
+.btn-wa-inline:focus-visible {
+  background: rgba(37,211,102,0.18);
+  border-color: #25D366;
+  color: #7FE39A;
+  text-decoration: none;
+}
+.btn-wa-inline--full { width: 100%; }
+
+/* Sel grid layanan: kartu + tombol WhatsApp di bawahnya, tinggi tetap rata. */
+.layanan-cell { display: flex; flex-direction: column; gap: 0.5rem; }
+.layanan-cell > .card-salon { flex: 1 1 auto; }
+
+/* Di layar kecil tombol mengambang menempel di sudut, jadi beri ruang
+   ekstra di bawah supaya tidak menutupi tombol aksi terakhir halaman. */
+@media (max-width: 767.98px) {
+  .wa-float { right: 16px; bottom: 16px; width: 52px; height: 52px; }
+  .wa-float svg { width: 26px; height: 26px; }
+  .footer-salon { padding-bottom: 5.5rem; }
+  .auth-shell { padding-bottom: 5.5rem; }
+}

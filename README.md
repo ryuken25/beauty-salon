@@ -97,6 +97,7 @@ Login terpisah: staff (admin/pemilik) pakai email di **`/admin/login`**; pelangg
 - Transaksi otomatis dengan input biaya tambahan opsional + catatan saat booking diselesaikan.
 - Input booking walk-in oleh admin (tanpa DP — bayar di tempat).
 - Template WhatsApp manual (Salin Pesan, Buka WhatsApp, Tandai sudah dikirim).
+- **Tombol WhatsApp ke admin** di sisi pelanggan: tombol mengambang "Tanya Admin" di semua halaman publik, tombol per kartu layanan, dan nomor yang bisa diklik di footer, halaman booking sukses, serta cek booking. Pesan terisi otomatis sesuai halaman (nama layanan atau kode booking). Nomornya diatur di `/admin/pengaturan` → tab WhatsApp.
 
 ## Notifikasi Email (Gmail SMTP)
 

@@ -32,6 +32,23 @@ $payMap = [
   <div class="form-salon-help mt-2" style="text-align:center;">
     Belum punya kode? Cek email konfirmasi booking. Atau <a href="<?= base_url('login') ?>">login</a> untuk lihat semua booking Anda.
   </div>
+
+  <?php
+  // Kode booking dibawa ke pesan kalau pelanggan sudah sempat mengetiknya.
+  $waCekHref = wa_admin_link(
+      $kode !== '' ? wa_message('booking', ['kode' => $kode]) : wa_message('umum')
+  );
+  ?>
+  <?php if (empty($booking) && $waCekHref !== null): ?>
+    <div class="ornament-rule"><span class="ornament-rule__line"></span><i class="bi bi-gem ornament-rule__icon"></i><span class="ornament-rule__line"></span></div>
+    <div style="text-align:center;">
+      <div class="caption mb-1">Kode tidak ketemu atau lupa kodenya? Tanya admin langsung.</div>
+      <a class="btn-wa-inline btn-wa-inline--full" href="<?= esc($waCekHref) ?>" target="_blank" rel="noopener noreferrer"
+         aria-label="Chat WhatsApp admin SW Beauty Salon">
+        <i class="bi bi-whatsapp"></i> WhatsApp admin di <?= esc(wa_admin_display()) ?>
+      </a>
+    </div>
+  <?php endif ?>
 </div>
 
 <?php if (! empty($booking)):

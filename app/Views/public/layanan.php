@@ -20,8 +20,10 @@
     $isPromo = \App\Models\LayananModel::isPromo($s);
     $hargaFinal = \App\Models\LayananModel::hargaFinal($s);
     $cardCls = 'card-salon' . ($isPromo ? ' card-salon--promo' : '');
+    $waLayanan = wa_admin_link(wa_message('layanan', ['layanan' => $s['nama']]));
   ?>
-    <a class="<?= $cardCls ?>" href="<?= base_url('layanan/' . (int) $s['id']) ?>" data-kategori="<?= esc($s['kategori']) ?>" style="text-decoration:none; color:inherit; display:block;">
+  <div class="layanan-cell" data-kategori="<?= esc($s['kategori']) ?>">
+    <a class="<?= $cardCls ?>" href="<?= base_url('layanan/' . (int) $s['id']) ?>" style="text-decoration:none; color:inherit; display:block;">
       <?php if ($cover): ?>
         <img class="layanan-cover" src="<?= base_url($cover) ?>" alt="<?= esc($s['nama']) ?>">
       <?php else: ?>
@@ -52,6 +54,13 @@
         <i class="bi bi-eye"></i> Lihat detail
       </span>
     </a>
+    <?php if ($waLayanan !== null): ?>
+      <a class="btn-wa-inline btn-wa-inline--full" href="<?= esc($waLayanan) ?>" target="_blank" rel="noopener noreferrer"
+         aria-label="Chat WhatsApp admin SW Beauty Salon">
+        <i class="bi bi-whatsapp"></i> Tanya admin soal layanan ini
+      </a>
+    <?php endif ?>
+  </div>
   <?php endforeach ?>
 </div>
 
@@ -61,8 +70,8 @@ document.querySelectorAll('#kategoriChips .chip').forEach((c) => {
     document.querySelectorAll('#kategoriChips .chip').forEach((x) => x.classList.remove('chip--active'));
     c.classList.add('chip--active');
     const k = c.dataset.kategori;
-    document.querySelectorAll('#layananGrid .card-salon').forEach((card) => {
-      card.style.display = (!k || card.dataset.kategori === k) ? '' : 'none';
+    document.querySelectorAll('#layananGrid .layanan-cell').forEach((cell) => {
+      cell.style.display = (!k || cell.dataset.kategori === k) ? '' : 'none';
     });
   };
 });
