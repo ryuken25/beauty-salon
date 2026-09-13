@@ -23,7 +23,7 @@ class TransaksiController extends BaseController
 
         // Query bookings with verified DP
         $dps = $db->table('bookings b')
-            ->select('NULL AS id, b.dp_amount AS nominal, b.final_service_price AS base_price, 0 AS additional_price, b.dp_amount AS dp_paid, b.remaining_payment AS sisa_bayar, "transfer" AS metode_bayar, b.dp_verified_at AS tanggal, b.catatan, b.id AS booking_id, b.kode_booking, b.nama_pelanggan, l.nama AS nama_layanan, "dp" AS tipe')
+            ->select('NULL AS id, b.dp_amount AS nominal, b.harga_layanan AS base_price, 0 AS additional_price, b.dp_amount AS dp_paid, b.remaining_payment AS sisa_bayar, "transfer" AS metode_bayar, b.dp_verified_at AS tanggal, b.catatan, b.id AS booking_id, b.kode_booking, b.nama_pelanggan, l.nama AS nama_layanan, "dp" AS tipe')
             ->join('layanan l', 'l.id = b.layanan_id')
             ->where('b.payment_status', 'dp_verified')
             ->where('b.dp_verified_at IS NOT NULL')

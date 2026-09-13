@@ -35,9 +35,9 @@ class BookingService
         // Hitung harga normal dan promo berdasarkan tanggal booking
         $hargaOriginal = (int) $layanan['harga'];
         $isPromoActive = LayananModel::isPromo($layanan, $tanggalBooking);
-        $promoId = $isPromoActive ? (int) $layanan['id'] : null;
         $promoName = $isPromoActive ? ($layanan['promo_deskripsi'] ?: 'Promo ' . $layanan['nama']) : null;
-        $promoDiscountType = $isPromoActive ? 'percentage' : null;
+        // Potongan promo selalu berupa persen, jadi yang perlu di-snapshot hanya
+        // besarannya. Layanan yang dipromokan sudah terekam di kolom layanan_id.
         $promoDiscountValue = $isPromoActive ? (int) $layanan['promo_persen'] : 0;
         $hargaFinal = LayananModel::hargaFinal($layanan, $tanggalBooking);
 
@@ -83,11 +83,8 @@ class BookingService
                 'dp_proof_path' => $dpProof,
                 'payment_status' => $paymentStatus,
                 'original_service_price' => $hargaOriginal,
-                'promo_id' => $promoId,
                 'promo_name' => $promoName,
-                'promo_discount_type' => $promoDiscountType,
                 'promo_discount_value' => $promoDiscountValue,
-                'final_service_price' => $hargaFinal,
                 'remaining_payment' => $remainingPayment,
                 'status' => $statusInitial,
                 'sumber' => $sumber,
@@ -340,7 +337,7 @@ class BookingService
             $totalLayananFinal = max(0, $manualNominal);
             $biayaTambahan = 0;
         } else {
-            $totalLayananFinal = (int) ($booking['final_service_price'] ?: $booking['harga_layanan']);
+            $totalLayananFinal = (int) $booking['harga_layanan'];
             $biayaTambahan = max(0, $additionalPrice);
         }
         $subtotal = $totalLayananFinal + $biayaTambahan;

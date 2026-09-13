@@ -5,7 +5,7 @@ $tanggal = date('d/m/Y', strtotime((string) $b['tanggal']));
 $mulai = substr((string) $b['slot_mulai'], 0, 5);
 $selesai = substr((string) $b['slot_selesai'], 0, 5);
 $cekLink = rtrim((string) config('App')->baseURL, '/') . '/cek-booking';
-$hargaLayanan = (int) ($b['final_service_price'] ?? $b['harga_layanan']);
+$hargaLayanan = (int) $b['harga_layanan'];
 $dpAmount = (int) ($b['dp_amount'] ?? 0);
 $remaining = (int) ($b['remaining_payment'] ?? ($hargaLayanan - $dpAmount));
 ?>

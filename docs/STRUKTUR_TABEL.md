@@ -7,7 +7,14 @@ primary key.
 Basis data: `sw_beauty_salon` (MySQL/MariaDB, engine InnoDB, charset `utf8mb4`).
 Struktur di bawah adalah kondisi setelah seluruh migration dijalankan
 (`php spark migrate`), dengan migration terakhir
-`2026-06-19-100000_AddBookingPriceSnapshotAndDpVerifiedAt.php`.
+`2026-09-14-100000_DropRedundantBookingPriceColumns.php`.
+
+> **Perubahan 14 September 2026 — penyederhanaan tabel `bookings`.**
+> Tiga kolom dihapus karena tidak membawa informasi baru: `final_service_price`
+> (isinya selalu sama persis dengan `harga_layanan`), `promo_id` (isinya selalu
+> sama dengan `layanan_id`), dan `promo_discount_type` (nilainya hanya
+> `'percentage'` atau NULL). Tabel `bookings` turun dari 37 menjadi 34 kolom.
+> Rinciannya di [REVISI_SIDANG.md](REVISI_SIDANG.md).
 
 ---
 
@@ -105,32 +112,29 @@ Tabel inti pemesanan, baik dari pelanggan online maupun walk-in yang diinput adm
 | 9 | slot_mulai | TIME | — | Tidak | Jam mulai layanan |
 | 10 | slot_selesai | TIME | — | Tidak | Jam selesai layanan |
 | 11 | jumlah_slot | SMALLINT UNSIGNED | 5 | Tidak | Banyaknya slot 30 menit yang ditahan |
-| 12 | harga_layanan | INT UNSIGNED | 10 | Tidak | Harga final setelah promo (default 0) |
-| 13 | original_service_price | INT UNSIGNED | 10 | Tidak | Snapshot harga normal saat booking dibuat (default 0) |
-| 14 | promo_id | INT UNSIGNED | 10 | Ya | Penanda promo yang dipakai saat booking |
-| 15 | promo_name | VARCHAR | 150 | Ya | Snapshot nama promo |
-| 16 | promo_discount_type | VARCHAR | 50 | Ya | Jenis potongan promo, misalnya persen |
-| 17 | promo_discount_value | INT UNSIGNED | 10 | Tidak | Besar potongan dalam rupiah (default 0) |
-| 18 | final_service_price | INT UNSIGNED | 10 | Tidak | Snapshot harga yang ditagihkan (default 0) |
-| 19 | remaining_payment | INT UNSIGNED | 10 | Tidak | Sisa yang dibayar di salon setelah DP (default 0) |
-| 20 | dp_amount | INT UNSIGNED | 10 | Tidak | Nominal uang muka (default 0) |
-| 21 | dp_proof_path | VARCHAR | 255 | Ya | Path file bukti transfer DP |
-| 22 | payment_status | ENUM | unpaid, dp_uploaded, dp_verified | Tidak | Status pembayaran DP (default unpaid) |
-| 23 | dp_verified_at | DATETIME | — | Ya | Waktu DP diverifikasi admin |
-| 24 | email_reminder_sent_at | DATETIME | — | Ya | Waktu email pengingat dikirim. NULL = belum dikirim |
-| 25 | status | ENUM | pending_verification, accepted, rejected, cancelled, completed | Tidak | Status booking (default pending_verification) |
-| 26 | sumber | ENUM | online, walkin | Tidak | Asal booking (default online) |
-| 27 | catatan | TEXT | — | Ya | Catatan tambahan dari pelanggan atau admin |
-| 28 | wa_sent | TINYINT | 1 | Tidak | Penanda pesan WhatsApp sudah dikirim admin (default 0) |
-| 29 | verified_via | VARCHAR | 60 | Ya | Kanal verifikasi booking |
-| 30 | verified_at | DATETIME | — | Ya | Waktu booking diverifikasi |
-| 31 | completed_at | DATETIME | — | Ya | Waktu booking diselesaikan |
-| 32 | cancelled_at | DATETIME | — | Ya | Waktu booking dibatalkan |
-| 33 | cancelled_by | VARCHAR | 60 | Ya | Pihak yang membatalkan, pelanggan atau admin |
-| 34 | cancellation_reason | TEXT | — | Ya | Alasan pembatalan |
-| 35 | rejection_reason | TEXT | — | Ya | Alasan penolakan oleh admin |
-| 36 | created_at | DATETIME | — | Ya | Waktu data dibuat |
-| 37 | updated_at | DATETIME | — | Ya | Waktu data terakhir diubah |
+| 12 | harga_layanan | INT UNSIGNED | 10 | Tidak | Harga yang ditagihkan, sudah dipotong promo (default 0) |
+| 13 | original_service_price | INT UNSIGNED | 10 | Tidak | Harga normal layanan saat booking dibuat, disimpan agar nota lama tidak berubah ketika harga katalog diperbarui (default 0) |
+| 14 | promo_name | VARCHAR | 150 | Ya | Nama promo yang berlaku saat booking dibuat |
+| 15 | promo_discount_value | INT UNSIGNED | 10 | Tidak | Besar potongan promo dalam persen (default 0) |
+| 16 | remaining_payment | INT UNSIGNED | 10 | Tidak | Sisa yang dibayar di salon setelah DP (default 0) |
+| 17 | dp_amount | INT UNSIGNED | 10 | Tidak | Nominal uang muka (default 0) |
+| 18 | dp_proof_path | VARCHAR | 255 | Ya | Path file bukti transfer DP |
+| 19 | payment_status | ENUM | unpaid, dp_uploaded, dp_verified | Tidak | Status pembayaran DP (default unpaid) |
+| 20 | dp_verified_at | DATETIME | — | Ya | Waktu DP diverifikasi admin |
+| 21 | email_reminder_sent_at | DATETIME | — | Ya | Waktu email pengingat dikirim. NULL = belum dikirim |
+| 22 | status | ENUM | pending_verification, accepted, rejected, cancelled, completed | Tidak | Status booking (default pending_verification) |
+| 23 | sumber | ENUM | online, walkin | Tidak | Asal booking (default online) |
+| 24 | catatan | TEXT | — | Ya | Catatan tambahan dari pelanggan atau admin |
+| 25 | wa_sent | TINYINT | 1 | Tidak | Penanda pesan WhatsApp sudah dikirim admin (default 0) |
+| 26 | verified_via | VARCHAR | 60 | Ya | Kanal verifikasi booking |
+| 27 | verified_at | DATETIME | — | Ya | Waktu booking diverifikasi |
+| 28 | completed_at | DATETIME | — | Ya | Waktu booking diselesaikan |
+| 29 | cancelled_at | DATETIME | — | Ya | Waktu booking dibatalkan |
+| 30 | cancelled_by | VARCHAR | 60 | Ya | Pihak yang membatalkan, pelanggan atau admin |
+| 31 | cancellation_reason | TEXT | — | Ya | Alasan pembatalan |
+| 32 | rejection_reason | TEXT | — | Ya | Alasan penolakan oleh admin |
+| 33 | created_at | DATETIME | — | Ya | Waktu data dibuat |
+| 34 | updated_at | DATETIME | — | Ya | Waktu data terakhir diubah |
 
 ### 2.4 Tabel `booking_slots`
 
@@ -340,11 +344,8 @@ CREATE TABLE `bookings` (
   `jumlah_slot` smallint(5) unsigned NOT NULL,
   `harga_layanan` int(10) unsigned NOT NULL DEFAULT 0,
   `original_service_price` int(10) unsigned NOT NULL DEFAULT 0,
-  `promo_id` int(10) unsigned DEFAULT NULL,
   `promo_name` varchar(150) DEFAULT NULL,
-  `promo_discount_type` varchar(50) DEFAULT NULL,
   `promo_discount_value` int(10) unsigned NOT NULL DEFAULT 0,
-  `final_service_price` int(10) unsigned NOT NULL DEFAULT 0,
   `remaining_payment` int(10) unsigned NOT NULL DEFAULT 0,
   `dp_amount` int(10) unsigned NOT NULL DEFAULT 0,
   `dp_proof_path` varchar(255) DEFAULT NULL,
@@ -373,8 +374,11 @@ CREATE TABLE `bookings` (
   KEY `bookings_user_id_fk` (`user_id`),
   CONSTRAINT `bookings_layanan_id_foreign` FOREIGN KEY (`layanan_id`) REFERENCES `layanan` (`id`) ON DELETE CASCADE,
   CONSTRAINT `bookings_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
 ```
+
+Jumlah kolom `bookings` di DDL ini ada 34, turun dari 37 sebelum pembersihan
+14 September 2026.
 
 ### 4.5 Nilai counter AUTO_INCREMENT saat audit
 

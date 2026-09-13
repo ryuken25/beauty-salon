@@ -8,7 +8,8 @@ tersentuh. Dikerjakan 13 September 2026.
 | No | Poin revisi penguji | Perubahan yang dilakukan | File terkait |
 |---|---|---|---|
 | — | Pertanyaan `id` → auto increment: apakah seluruh primary key benar-benar auto increment? | Audit seluruh migration dan pengecekan langsung ke database. Hasilnya seluruh tabel sudah memakai `BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY`, sehingga **tidak ada migration baru** yang dibuat. Hasil audit dan struktur tiap tabel didokumentasikan untuk lampiran laporan. | [docs/STRUKTUR_TABEL.md](STRUKTUR_TABEL.md) (baru) |
-| 4 | "Pada aplikasi web sebaiknya dicantumkan nomor WA otomatis ke Admin untuk memudahkan pelanggan jika ingin bertanya." | Nomor WhatsApp admin dijadikan pengaturan yang bisa diubah dari panel, lalu ditampilkan di sisi pelanggan sebagai tombol mengambang "Tanya Admin", tombol per layanan, dan nomor yang bisa diklik di footer, halaman booking sukses, serta halaman cek booking. Pesan sudah terisi otomatis sesuai halaman yang dibuka. | lihat tabel di bawah |
+| 4 | "Pada aplikasi web sebaiknya dicantumkan nomor WA otomatis ke Admin untuk memudahkan pelanggan jika ingin bertanya." | Nomor WhatsApp admin dijadikan pengaturan yang bisa diubah dari panel, lalu ditampilkan di sisi pelanggan sebagai tombol mengambang "Tanya Admin", tombol per layanan, dan nomor yang bisa diklik di footer, halaman booking sukses, serta halaman cek booking. Pesan sudah terisi otomatis sesuai halaman yang dibuka. | lihat rincian poin 4 |
+| — | "Basis datanya kok amburadul, ada pemborosan di tengah tabel." | Tiga kolom yang tidak membawa informasi baru dihapus dari tabel `bookings` lewat migration baru: `final_service_price`, `promo_id`, dan `promo_discount_type`. Tabel `bookings` turun dari 37 menjadi 34 kolom. Kolom snapshot harga yang memang diperlukan tetap dipertahankan. | lihat rincian penyederhanaan tabel |
 
 ## Rincian poin 4 — nomor WhatsApp admin
 
@@ -77,6 +78,56 @@ dikirim lewat URL.
   (`app/Views/layouts/panel.php`), jadi admin dan pemilik tidak melihatnya.
 - Tidak ada paket, library, atau API eksternal baru. WhatsApp tetap manual lewat
   tautan `wa.me`, sesuai batasan proyek.
+
+## Rincian penyederhanaan tabel `bookings`
+
+### Kolom yang dihapus dan alasannya
+
+| Kolom | Alasan dihapus | Bukti |
+|---|---|---|
+| `final_service_price` | Isinya selalu sama persis dengan `harga_layanan`. Di `BookingService::create()` satu variabel `$hargaFinal` ditulis ke dua kolom sekaligus. | Data yang ada: `harga_layanan` = 144000 dan `final_service_price` = 144000 pada baris yang sama. |
+| `promo_id` | Isinya selalu id layanan, padahal kolom `layanan_id` di tabel yang sama sudah menyimpannya. Sistem ini tidak punya tabel promo tersendiri — promo adalah atribut pada `layanan`. | Kode lama: `$promoId = $isPromoActive ? (int) $layanan['id'] : null;` |
+| `promo_discount_type` | Nilainya hanya `'percentage'` atau NULL. Tidak ada jenis potongan lain di sistem ini, jadi kolom ini tidak membedakan apa pun. | Kode lama: `$promoDiscountType = $isPromoActive ? 'percentage' : null;` |
+
+### Kolom yang sengaja dipertahankan
+
+Empat kolom berikut sekilas terlihat mubazir, tetapi sebenarnya menyimpan
+informasi yang tidak bisa direkonstruksi ulang dari tabel lain:
+
+| Kolom | Kenapa tetap ada |
+|---|---|
+| `original_service_price` | Harga normal saat booking dibuat. Kalau pemilik menaikkan harga layanan bulan depan, nota booking bulan lalu harus tetap menampilkan harga lama. Mengambilnya lewat `JOIN layanan` akan membuat nota lama ikut berubah. |
+| `promo_name` | Nama promo yang berlaku saat itu. Promo bisa diganti atau dihapus, sementara nota lama harus tetap menyebut promo yang benar. |
+| `promo_discount_value` | Besar potongan (persen) saat booking dibuat, dengan alasan yang sama. |
+| `remaining_payment` | Sisa tagihan setelah DP. Dipakai langsung oleh daftar transaksi dan laporan keuangan tanpa perhitungan ulang di setiap query. |
+
+Istilah untuk pola ini adalah **historical snapshot** — denormalisasi yang
+disengaja dan lazim dipakai pada sistem transaksi, karena nilai yang sudah
+disepakati dengan pelanggan tidak boleh berubah ketika data induknya berubah.
+
+### File yang diubah
+
+| File | Alasan |
+|---|---|
+| `app/Database/Migrations/2026-09-14-100000_DropRedundantBookingPriceColumns.php` | Migration baru yang menghapus tiga kolom. Migration lama tidak disentuh. Method `down()` mengembalikan kolomnya lengkap dengan pengisian ulang, jadi perubahan ini bisa dibatalkan. |
+| `app/Services/BookingService.php` | Berhenti menulis tiga kolom itu; pembacaan harga akhir memakai `harga_layanan`. |
+| `app/Models/BookingModel.php` | Tiga kolom dikeluarkan dari `allowedFields`. |
+| `app/Controllers/Admin/TransaksiController.php` | Query DP memakai `b.harga_layanan AS base_price`. |
+| `app/Controllers/Owner/LaporanController.php` | Query laporan memakai `b.harga_layanan AS final_price`. |
+| `app/Views/admin/booking/receipt.php`, `app/Views/emails/dp_invoice.php`, `app/Views/emails/final_invoice.php` | Nota dan email invoice membaca `harga_layanan` langsung. |
+
+### Hasil pengujian
+
+Diuji dengan booking walk-in nyata memakai layanan berpromo (Facial, harga
+normal Rp 180.000, promo 20%):
+
+| Yang diperiksa | Hasil |
+|---|---|
+| Harga tersimpan | `harga_layanan` 144.000, `original_service_price` 180.000, potongan promo 20 |
+| DP | 50.000, sisa 94.000 |
+| Setelah diselesaikan dengan biaya tambahan 25.000 | `transaksi`: base 144.000 + tambahan 25.000 = nominal 169.000, DP 50.000, sisa bayar 119.000 |
+| Halaman nota, daftar transaksi, laporan pemilik | Tampil normal, angka cocok, tidak ada error kolom |
+| Rollback migration | Kolom kembali lengkap dan terisi ulang dengan benar |
 
 ## Cara menguji
 

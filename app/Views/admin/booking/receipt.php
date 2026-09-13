@@ -167,7 +167,7 @@
     <tbody>
       <?php
       $hargaNormal = (int) ($booking['original_service_price'] ?? $booking['harga_layanan']);
-      $hargaFinal = (int) ($booking['final_service_price'] ?? $booking['harga_layanan']);
+      $hargaFinal = (int) $booking['harga_layanan'];
       $discountVal = (int) ($booking['promo_discount_value'] ?? 0);
       $promoName = $booking['promo_name'] ?? null;
       $dpPaid = (int) ($booking['dp_amount'] ?? 0);

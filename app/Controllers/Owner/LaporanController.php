@@ -232,7 +232,7 @@ class LaporanController extends BaseController
                 b.payment_status,
                 b.dp_verified_at,
                 b.completed_at,
-                b.final_service_price AS final_price,
+                b.harga_layanan AS final_price,
                 l.nama AS nama_layanan,
                 t.base_price,
                 t.additional_price,
