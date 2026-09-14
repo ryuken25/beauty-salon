@@ -2,18 +2,29 @@
 Generate dokumen .docx struktur tabel SW Beauty Salon langsung dari database,
 supaya isinya tidak mungkin meleset dari skema yang sebenarnya berjalan.
 
-Format tabel mengikuti lampiran laporan TA:
-No | Nama Field | Tipe Data | Panjang | Null | Keterangan
+Isi dokumen:
+  1. Ringkasan tabel
+  2. Entity Relationship Diagram notasi Crow's Foot (digambar dengan Graphviz,
+     relasi dan kardinalitasnya dibaca dari foreign key di basis data)
+  3. Struktur tiap tabel dengan format lampiran laporan TA:
+     No | Nama Field | Tipe Data | Panjang | Null | Keterangan
+
+Pemakaian:
+    python scripts/generate_struktur_tabel_docx.py docs/Struktur_Tabel_SW_Beauty_Salon.docx
+
+Prasyarat: MySQL menyala, paket python-docx, dan Graphviz (perintah `dot`).
 """
+import os
 import subprocess
 import sys
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.section import WD_ORIENT
+from docx.enum.section import WD_ORIENT, WD_SECTION
 
 MYSQL = r"C:\xampp\mysql\bin\mysql.exe"
+DOT = "dot"
 DB = "sw_beauty_salon"
 
 TABLES = [
@@ -188,6 +199,172 @@ def kolom(tabel):
     return hasil
 
 
+# ─────────────────────────────────────────────────────────────
+#  Entity Relationship Diagram (notasi Crow's Foot)
+# ─────────────────────────────────────────────────────────────
+
+# Ujung garis mengikuti notasi Crow's Foot:
+#   tee  + tee   -> tepat satu
+#   tee  + odot  -> nol atau satu
+#   tee  + crow  -> satu atau banyak
+#   odot + crow  -> nol atau banyak
+KARD = {
+    "tepat_satu": "teetee",
+    "nol_satu": "odottee",
+    "satu_banyak": "teecrow",
+    "nol_banyak": "odotcrow",
+}
+
+
+def relasi():
+    """Baca foreign key dari basis data lalu simpulkan kardinalitasnya."""
+    fks = q(
+        "SELECT k.TABLE_NAME, k.COLUMN_NAME, k.REFERENCED_TABLE_NAME, "
+        "c.IS_NULLABLE, c.COLUMN_KEY "
+        "FROM information_schema.KEY_COLUMN_USAGE k "
+        "JOIN information_schema.COLUMNS c ON c.TABLE_SCHEMA = k.TABLE_SCHEMA "
+        "  AND c.TABLE_NAME = k.TABLE_NAME AND c.COLUMN_NAME = k.COLUMN_NAME "
+        f"WHERE k.TABLE_SCHEMA='{DB}' AND k.REFERENCED_TABLE_NAME IS NOT NULL "
+        "ORDER BY k.REFERENCED_TABLE_NAME, k.TABLE_NAME",
+        5,
+    )
+
+    hasil = []
+    for anak, kolom, induk, nullable, key in fks:
+        # Sisi induk: kalau kolom FK boleh kosong, satu baris anak bisa saja
+        # tidak terhubung ke induk mana pun (contoh: booking walk-in tanpa akun).
+        sisi_induk = KARD["nol_satu"] if nullable == "YES" else KARD["tepat_satu"]
+
+        if key == "UNI":
+            # UNIQUE berarti satu induk paling banyak punya satu baris anak.
+            sisi_anak, teks = KARD["nol_satu"], "1 : 0..1"
+        elif (anak, kolom) == ("booking_slots", "booking_id"):
+            # Setiap booking selalu menahan minimal satu slot 30 menit.
+            sisi_anak, teks = KARD["satu_banyak"], "1 : 1..N"
+        else:
+            sisi_anak, teks = KARD["nol_banyak"], "1 : 0..N"
+
+        hasil.append({
+            "induk": induk, "anak": anak, "kolom": kolom,
+            "sisi_induk": sisi_induk, "sisi_anak": sisi_anak, "teks": teks,
+        })
+    return hasil
+
+
+def dot_entitas(tabel, kols, fk_cols):
+    baris = [
+        '<TR><TD BGCOLOR="#2F2A26" ALIGN="CENTER" PORT="__judul">'
+        f'<FONT COLOR="#FFFFFF" POINT-SIZE="13"><B>{tabel}</B></FONT></TD></TR>'
+    ]
+    for k in kols:
+        nama = k["nama"]
+        if nama == "id":
+            tanda, warna = "PK", "#FBF1DC"
+        elif nama in fk_cols:
+            tanda, warna = "FK", "#E8EEF9"
+        else:
+            tanda, warna = "&#160;&#160;", "#FFFFFF"
+
+        label = f"<B>{nama}</B>" if nama == "id" else nama
+        tipe = k["tipe"].replace(" UNSIGNED", "").capitalize()
+        baris.append(
+            f'<TR><TD BGCOLOR="{warna}" ALIGN="LEFT" PORT="{nama}">'
+            f'<FONT POINT-SIZE="10"><B>{tanda}</B>  {label}  '
+            f'<FONT COLOR="#8A8A8A">{tipe}</FONT></FONT></TD></TR>'
+        )
+
+    isi = "\n    ".join(baris)
+    return (
+        f"  {tabel} [label=<\n"
+        '    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" COLOR="#2F2A26">\n'
+        f"    {isi}\n"
+        "    </TABLE>>];"
+    )
+
+
+def buat_erd(semua, keluaran_png):
+    rel = relasi()
+    fk_per_tabel = {}
+    for r in rel:
+        fk_per_tabel.setdefault(r["anak"], set()).add(r["kolom"])
+
+    baris = [
+        "digraph ERD {",
+        '  graph [rankdir=LR, nodesep=0.5, ranksep=1.6, bgcolor="white", pad=0.25];',
+        '  node  [shape=plaintext, fontname="Helvetica"];',
+        '  edge  [color="#2F2A26", penwidth=1.2, dir=both, fontname="Helvetica", '
+        'fontsize=10, fontcolor="#444444"];',
+        "",
+    ]
+    for tabel, _ in TABLES:
+        baris.append(dot_entitas(tabel, semua[tabel], fk_per_tabel.get(tabel, set())))
+    baris.append("")
+
+    for r in rel:
+        baris.append(
+            f'  {r["induk"]}:id -> {r["anak"]}:{r["kolom"]} '
+            f'[arrowtail={r["sisi_induk"]}, arrowhead={r["sisi_anak"]}, '
+            f'label="{r["teks"]}"];'
+        )
+    baris.append("}")
+
+    path_dot = os.path.splitext(keluaran_png)[0] + ".dot"
+    os.makedirs(os.path.dirname(path_dot) or ".", exist_ok=True)
+    with open(path_dot, "w", encoding="utf-8") as f:
+        f.write("\n".join(baris) + "\n")
+
+    subprocess.run([DOT, "-Tpng", "-Gdpi=170", path_dot, "-o", keluaran_png], check=True)
+    return path_dot, rel
+
+
+def buat_legenda(keluaran_png):
+    """Gambar kecil berisi contoh keempat bentuk ujung garis Crow's Foot."""
+    # Graphviz menumpuk baris dari bawah ke atas, jadi daftar ini sengaja
+    # dibalik supaya urutan yang tampil dimulai dari "tepat satu".
+    contoh = [
+        ("nol atau banyak", KARD["nol_banyak"]),
+        ("satu atau banyak", KARD["satu_banyak"]),
+        ("nol atau satu", KARD["nol_satu"]),
+        ("tepat satu", KARD["tepat_satu"]),
+    ]
+    baris = [
+        "digraph LEGENDA {",
+        '  graph [rankdir=LR, nodesep=0.15, ranksep=1.1, bgcolor="white", pad=0.12];',
+        '  node [shape=box, style=filled, fillcolor="#FFFFFF", color="#FFFFFF", '
+        'fontname="Helvetica", fontsize=11, width=0.1, height=0.28];',
+        '  edge [color="#2F2A26", penwidth=1.3, fontname="Helvetica", fontsize=11];',
+    ]
+    for i, (teks, bentuk) in enumerate(contoh):
+        baris += [
+            f'  a{i} [label="", width=0.05];',
+            f'  b{i} [label="{teks}", fontsize=11];',
+            f'  a{i} -> b{i} [arrowhead={bentuk}, arrowtail=none, dir=forward];',
+        ]
+    baris.append("}")
+
+    path_dot = os.path.splitext(keluaran_png)[0] + ".dot"
+    with open(path_dot, "w", encoding="utf-8") as f:
+        f.write("\n".join(baris) + "\n")
+    subprocess.run([DOT, "-Tpng", "-Gdpi=170", path_dot, "-o", keluaran_png], check=True)
+    return keluaran_png
+
+
+def ukuran_png(path):
+    """Baca lebar dan tinggi PNG dari header, tanpa perlu paket tambahan."""
+    with open(path, "rb") as f:
+        head = f.read(26)
+    return int.from_bytes(head[16:20], "big"), int.from_bytes(head[20:24], "big")
+
+
+def atur_halaman(sec, margin):
+    """Samakan semua halaman ke ukuran A4 tegak dengan margin yang diminta."""
+    sec.orientation = WD_ORIENT.PORTRAIT
+    sec.page_width = Cm(21.0)
+    sec.page_height = Cm(29.7)
+    for m in ("left_margin", "right_margin", "top_margin", "bottom_margin"):
+        setattr(sec, m, margin)
+
+
 def set_font(doc):
     st = doc.styles["Normal"]
     st.font.name = "Times New Roman"
@@ -237,10 +414,7 @@ def main(keluaran):
     doc = Document()
     set_font(doc)
 
-    sec = doc.sections[0]
-    sec.orientation = WD_ORIENT.PORTRAIT
-    for m in ("left_margin", "right_margin"):
-        setattr(sec, m, Cm(2.5))
+    atur_halaman(doc.sections[0], Cm(2.5))
 
     judul(doc, "Struktur Tabel Basis Data", 1)
     p = doc.add_paragraph(
@@ -272,7 +446,76 @@ def main(keluaran):
             r = p.add_run(str(v))
             r.font.size = Pt(10)
 
+    # ── Halaman ERD (mendatar supaya diagram muat lebar) ──────
+    png = os.path.join(os.path.dirname(keluaran) or ".", "ERD_SW_Beauty_Salon.png")
+    path_dot, rel = buat_erd(semua, png)
+
+    # Diagram lebih tinggi daripada lebar, jadi halamannya tetap tegak
+    # dengan margin dipersempit supaya gambar bisa sebesar mungkin.
+    sec_erd = doc.add_section(WD_SECTION.NEW_PAGE)
+    atur_halaman(sec_erd, Cm(1.5))
+
+    judul(doc, "Entity Relationship Diagram", 2)
+    p = doc.add_paragraph(
+        "Relasi antar tabel digambarkan dengan notasi Crow's Foot. Garis penghubung "
+        "diambil langsung dari foreign key yang terpasang di basis data, sehingga "
+        "diagram ini selalu sesuai dengan keadaan tabel yang sebenarnya. Kotak "
+        "bertanda PK adalah primary key dan FK adalah foreign key."
+    )
+    p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+
+    # Skalakan gambar agar muat lebar sekaligus tinggi halaman.
+    px_w, px_h = ukuran_png(png)
+    lebar_ada = sec_erd.page_width - sec_erd.left_margin - sec_erd.right_margin
+    tinggi_ada = sec_erd.page_height - sec_erd.top_margin - sec_erd.bottom_margin - Cm(4.0)
+    lebar_pakai = min(lebar_ada, int(tinggi_ada * px_w / px_h))
+    doc.add_picture(png, width=lebar_pakai)
+    doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    cap = doc.add_paragraph("Gambar 1. Entity Relationship Diagram SW Beauty Salon")
+    cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    for r in cap.runs:
+        r.font.size = Pt(10)
+        r.italic = True
+
     doc.add_page_break()
+    judul(doc, "Keterangan Notasi dan Relasi", 2)
+
+    png_leg = buat_legenda(
+        os.path.join(os.path.dirname(keluaran) or ".", "ERD_Legenda_CrowsFoot.png")
+    )
+    p = doc.add_paragraph("Arti bentuk ujung garis pada diagram:")
+    doc.add_picture(png_leg, width=Cm(9.0))
+    doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
+    doc.add_paragraph()
+
+    trel = doc.add_table(rows=1, cols=5)
+    trel.style = "Table Grid"
+    for i, teks in enumerate(["No", "Tabel Induk", "Tabel Anak", "Kunci Penghubung", "Kardinalitas"]):
+        pp = trel.rows[0].cells[i].paragraphs[0]
+        pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        rr = pp.add_run(teks)
+        rr.bold = True
+        rr.font.size = Pt(10)
+    for i, r in enumerate(rel, start=1):
+        sel = trel.add_row().cells
+        nilai = [i, r["induk"], r["anak"], f'{r["anak"]}.{r["kolom"]}', r["teks"]]
+        for j, v in enumerate(nilai):
+            pp = sel[j].paragraphs[0]
+            if j in (0, 4):
+                pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            rr = pp.add_run(str(v))
+            rr.font.size = Pt(10)
+
+    p = doc.add_paragraph(
+        "Tabel settings tidak memiliki relasi ke tabel lain karena isinya berupa "
+        "pasangan kunci dan nilai untuk konfigurasi aplikasi, bukan data transaksi."
+    )
+    p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+
+    # ── Margin normal lagi untuk struktur tiap tabel ──────────
+    sec_tab = doc.add_section(WD_SECTION.NEW_PAGE)
+    atur_halaman(sec_tab, Cm(2.5))
 
     for i, (tabel, ket) in enumerate(TABLES, start=1):
         judul(doc, f"Tabel {tabel}", 2)
@@ -286,9 +529,11 @@ def main(keluaran):
     doc.save(keluaran)
     total = sum(len(v) for v in semua.values())
     print(f"Tersimpan: {keluaran}")
+    print(f"ERD      : {png}")
+    print(f"Sumber   : {path_dot}")
     for tabel, kols in semua.items():
         print(f"  {tabel}: {len(kols)} field")
-    print(f"  TOTAL: {total} field di {len(semua)} tabel")
+    print(f"  TOTAL: {total} field di {len(semua)} tabel, {len(rel)} relasi")
 
 
 if __name__ == "__main__":

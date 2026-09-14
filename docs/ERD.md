@@ -1,8 +1,33 @@
 # ERD — SW Beauty Salon
 
 Visualisasi ringkas schema. Lihat migration terbaru
-`app/Database/Migrations/2026-06-05-100000_AddEmailReminderFlag.php`
+`app/Database/Migrations/2026-09-14-100000_DropRedundantBookingPriceColumns.php`
 + migrasi sebelumnya untuk DDL definitif.
+
+**Diagram siap pakai untuk laporan** (notasi Crow's Foot, digambar dari foreign
+key yang benar-benar terpasang di database):
+
+- ![ERD SW Beauty Salon](ERD_SW_Beauty_Salon.png)
+- Sumber Graphviz: [ERD_SW_Beauty_Salon.dot](ERD_SW_Beauty_Salon.dot)
+- Versi Word lengkap dengan struktur tiap tabel: [Struktur_Tabel_SW_Beauty_Salon.docx](Struktur_Tabel_SW_Beauty_Salon.docx)
+
+Regenerasi setelah skema berubah (butuh MySQL menyala, python-docx, dan Graphviz):
+
+```bash
+python scripts/generate_struktur_tabel_docx.py docs/Struktur_Tabel_SW_Beauty_Salon.docx
+```
+
+Relasi yang terbentuk:
+
+| Tabel Induk | Tabel Anak | Kunci Penghubung | Kardinalitas |
+|---|---|---|---|
+| `users` | `bookings` | `bookings.user_id` | 1 : 0..N (nullable — walk-in tanpa akun) |
+| `layanan` | `bookings` | `bookings.layanan_id` | 1 : 0..N |
+| `bookings` | `booking_slots` | `booking_slots.booking_id` | 1 : 1..N |
+| `bookings` | `transaksi` | `transaksi.booking_id` | 1 : 0..1 (UNIQUE) |
+| `bookings` | `booking_logs` | `booking_logs.booking_id` | 1 : 0..N |
+
+`settings` berdiri sendiri tanpa relasi — isinya pasangan key/value konfigurasi.
 
 ## Hubungan utama
 

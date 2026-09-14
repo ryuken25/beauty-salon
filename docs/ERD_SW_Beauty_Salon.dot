@@ -1,0 +1,128 @@
+digraph ERD {
+  graph [rankdir=LR, nodesep=0.5, ranksep=1.6, bgcolor="white", pad=0.25];
+  node  [shape=plaintext, fontname="Helvetica"];
+  edge  [color="#2F2A26", penwidth=1.2, dir=both, fontname="Helvetica", fontsize=10, fontcolor="#444444"];
+
+  users [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" COLOR="#2F2A26">
+    <TR><TD BGCOLOR="#2F2A26" ALIGN="CENTER" PORT="__judul"><FONT COLOR="#FFFFFF" POINT-SIZE="13"><B>users</B></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FBF1DC" ALIGN="LEFT" PORT="id"><FONT POINT-SIZE="10"><B>PK</B>  <B>id</B>  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="email"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  email  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="password_hash"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  password_hash  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="nama"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  nama  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="nomor_hp"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  nomor_hp  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="role"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  role  <FONT COLOR="#8A8A8A">Enum</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="is_active"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  is_active  <FONT COLOR="#8A8A8A">Tinyint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="created_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  created_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="updated_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  updated_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    </TABLE>>];
+  layanan [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" COLOR="#2F2A26">
+    <TR><TD BGCOLOR="#2F2A26" ALIGN="CENTER" PORT="__judul"><FONT COLOR="#FFFFFF" POINT-SIZE="13"><B>layanan</B></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FBF1DC" ALIGN="LEFT" PORT="id"><FONT POINT-SIZE="10"><B>PK</B>  <B>id</B>  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="nama"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  nama  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="kategori"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  kategori  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="deskripsi"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  deskripsi  <FONT COLOR="#8A8A8A">Text</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="durasi_menit"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  durasi_menit  <FONT COLOR="#8A8A8A">Smallint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="harga"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  harga  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="ikon"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  ikon  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="gambar"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  gambar  <FONT COLOR="#8A8A8A">Json</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="promo_persen"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  promo_persen  <FONT COLOR="#8A8A8A">Tinyint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="promo_mulai"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  promo_mulai  <FONT COLOR="#8A8A8A">Date</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="promo_selesai"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  promo_selesai  <FONT COLOR="#8A8A8A">Date</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="promo_deskripsi"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  promo_deskripsi  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="is_active"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  is_active  <FONT COLOR="#8A8A8A">Tinyint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="created_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  created_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="updated_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  updated_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="deleted_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  deleted_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    </TABLE>>];
+  bookings [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" COLOR="#2F2A26">
+    <TR><TD BGCOLOR="#2F2A26" ALIGN="CENTER" PORT="__judul"><FONT COLOR="#FFFFFF" POINT-SIZE="13"><B>bookings</B></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FBF1DC" ALIGN="LEFT" PORT="id"><FONT POINT-SIZE="10"><B>PK</B>  <B>id</B>  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="kode_booking"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  kode_booking  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#E8EEF9" ALIGN="LEFT" PORT="user_id"><FONT POINT-SIZE="10"><B>FK</B>  user_id  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="nama_pelanggan"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  nama_pelanggan  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="nomor_hp_pelanggan"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  nomor_hp_pelanggan  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="email_pelanggan"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  email_pelanggan  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#E8EEF9" ALIGN="LEFT" PORT="layanan_id"><FONT POINT-SIZE="10"><B>FK</B>  layanan_id  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="tanggal"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  tanggal  <FONT COLOR="#8A8A8A">Date</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="slot_mulai"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  slot_mulai  <FONT COLOR="#8A8A8A">Time</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="slot_selesai"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  slot_selesai  <FONT COLOR="#8A8A8A">Time</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="jumlah_slot"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  jumlah_slot  <FONT COLOR="#8A8A8A">Smallint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="harga_layanan"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  harga_layanan  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="original_service_price"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  original_service_price  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="promo_name"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  promo_name  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="promo_discount_value"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  promo_discount_value  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="remaining_payment"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  remaining_payment  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="dp_amount"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  dp_amount  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="dp_proof_path"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  dp_proof_path  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="payment_status"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  payment_status  <FONT COLOR="#8A8A8A">Enum</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="dp_verified_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  dp_verified_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="email_reminder_sent_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  email_reminder_sent_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="status"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  status  <FONT COLOR="#8A8A8A">Enum</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="sumber"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  sumber  <FONT COLOR="#8A8A8A">Enum</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="catatan"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  catatan  <FONT COLOR="#8A8A8A">Text</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="wa_sent"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  wa_sent  <FONT COLOR="#8A8A8A">Tinyint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="verified_via"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  verified_via  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="verified_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  verified_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="completed_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  completed_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="cancelled_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  cancelled_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="cancelled_by"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  cancelled_by  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="cancellation_reason"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  cancellation_reason  <FONT COLOR="#8A8A8A">Text</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="rejection_reason"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  rejection_reason  <FONT COLOR="#8A8A8A">Text</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="created_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  created_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="updated_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  updated_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    </TABLE>>];
+  booking_slots [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" COLOR="#2F2A26">
+    <TR><TD BGCOLOR="#2F2A26" ALIGN="CENTER" PORT="__judul"><FONT COLOR="#FFFFFF" POINT-SIZE="13"><B>booking_slots</B></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FBF1DC" ALIGN="LEFT" PORT="id"><FONT POINT-SIZE="10"><B>PK</B>  <B>id</B>  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#E8EEF9" ALIGN="LEFT" PORT="booking_id"><FONT POINT-SIZE="10"><B>FK</B>  booking_id  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="tanggal"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  tanggal  <FONT COLOR="#8A8A8A">Date</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="slot_waktu"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  slot_waktu  <FONT COLOR="#8A8A8A">Time</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="status"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  status  <FONT COLOR="#8A8A8A">Enum</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="created_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  created_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    </TABLE>>];
+  transaksi [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" COLOR="#2F2A26">
+    <TR><TD BGCOLOR="#2F2A26" ALIGN="CENTER" PORT="__judul"><FONT COLOR="#FFFFFF" POINT-SIZE="13"><B>transaksi</B></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FBF1DC" ALIGN="LEFT" PORT="id"><FONT POINT-SIZE="10"><B>PK</B>  <B>id</B>  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#E8EEF9" ALIGN="LEFT" PORT="booking_id"><FONT POINT-SIZE="10"><B>FK</B>  booking_id  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="nominal"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  nominal  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="base_price"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  base_price  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="additional_price"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  additional_price  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="dp_paid"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  dp_paid  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="sisa_bayar"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  sisa_bayar  <FONT COLOR="#8A8A8A">Int</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="metode_bayar"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  metode_bayar  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="tanggal_transaksi"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  tanggal_transaksi  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="catatan"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  catatan  <FONT COLOR="#8A8A8A">Text</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="created_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  created_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    </TABLE>>];
+  settings [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" COLOR="#2F2A26">
+    <TR><TD BGCOLOR="#2F2A26" ALIGN="CENTER" PORT="__judul"><FONT COLOR="#FFFFFF" POINT-SIZE="13"><B>settings</B></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FBF1DC" ALIGN="LEFT" PORT="id"><FONT POINT-SIZE="10"><B>PK</B>  <B>id</B>  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="key_name"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  key_name  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="value"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  value  <FONT COLOR="#8A8A8A">Text</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="updated_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  updated_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    </TABLE>>];
+  booking_logs [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="3" COLOR="#2F2A26">
+    <TR><TD BGCOLOR="#2F2A26" ALIGN="CENTER" PORT="__judul"><FONT COLOR="#FFFFFF" POINT-SIZE="13"><B>booking_logs</B></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FBF1DC" ALIGN="LEFT" PORT="id"><FONT POINT-SIZE="10"><B>PK</B>  <B>id</B>  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#E8EEF9" ALIGN="LEFT" PORT="booking_id"><FONT POINT-SIZE="10"><B>FK</B>  booking_id  <FONT COLOR="#8A8A8A">Bigint</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="event_type"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  event_type  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="actor"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  actor  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="actor_role"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  actor_role  <FONT COLOR="#8A8A8A">Varchar</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="payload"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  payload  <FONT COLOR="#8A8A8A">Json</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="notes"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  notes  <FONT COLOR="#8A8A8A">Text</FONT></FONT></TD></TR>
+    <TR><TD BGCOLOR="#FFFFFF" ALIGN="LEFT" PORT="created_at"><FONT POINT-SIZE="10"><B>&#160;&#160;</B>  created_at  <FONT COLOR="#8A8A8A">Datetime</FONT></FONT></TD></TR>
+    </TABLE>>];
+
+  bookings:id -> booking_logs:booking_id [arrowtail=teetee, arrowhead=odotcrow, label="1 : 0..N"];
+  bookings:id -> booking_slots:booking_id [arrowtail=teetee, arrowhead=teecrow, label="1 : 1..N"];
+  bookings:id -> transaksi:booking_id [arrowtail=teetee, arrowhead=odottee, label="1 : 0..1"];
+  layanan:id -> bookings:layanan_id [arrowtail=teetee, arrowhead=odotcrow, label="1 : 0..N"];
+  users:id -> bookings:user_id [arrowtail=odottee, arrowhead=odotcrow, label="1 : 0..N"];
+}
